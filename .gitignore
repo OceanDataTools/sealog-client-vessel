@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Npm package lock file 
+package-lock.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Because Mac OS X
+.DS_Store
+
+# Output Directory
+/dist
+
+# CLient Config
+/src/client_config.js
+
+# Maptime Config
+/src/map_tilelayers.js
+
+
+# Webpack Config
+webpack.config.js
