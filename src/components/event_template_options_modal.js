@@ -240,6 +240,7 @@ class EventTemplateOptionsModal extends Component {
       <Form.Group>
         <Form.Label>{label}{requiredField}</Form.Label>
         <Datetime
+          variant="light"
           {...input}
           utc={true}
           value={(input.value && moment.utc(input.value).isValid()) ? moment.utc(input.value).format(dateFormat + " " + timeFormat) : null}
@@ -315,17 +316,17 @@ class EventTemplateOptionsModal extends Component {
 
     const footer = (this.state.event_id) ? 
       <span className="float-right">
-        <Button variant="secondary" disabled={submitting} onClick={this.handleFormHide}>Cancel</Button>
-        <Button variant="primary" type="submit" disabled={ submitting || !valid}>Submit</Button>
+        <Button size="sm" variant="secondary" disabled={submitting} onClick={this.handleFormHide}>Cancel</Button>
+        <Button size="sm" variant="primary" type="submit" disabled={ submitting || !valid}>Submit</Button>
       </span>
       : 
-      <Button className="float-right" variant="secondary" onClick={this.handleFormHide}>Close</Button>
+      <Button className="float-right" size="sm" variant="secondary" onClick={this.handleFormHide}>Close</Button>
       
 
     return (
       <Modal show={show} onHide={this.handleFormHide}>
         <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton className="bg-light">
             <Modal.Title>Event Options - {eventTemplate.event_value}</Modal.Title>
           </Modal.Header>
 
@@ -346,7 +347,7 @@ class EventTemplateOptionsModal extends Component {
               required={true}
             />
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="bg-light">
             {footer}
           </Modal.Footer>
         </form>

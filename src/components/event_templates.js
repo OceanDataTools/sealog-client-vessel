@@ -100,7 +100,7 @@ class EventTemplates extends Component {
     return this.props.event_templates.filter(template => template.system_template === false).map((template) => {
       return (
         <tr key={template.id}>
-          <td className={(this.props.event_templateid === template.id)? "text-warning" : ""}>{template.event_name}</td>
+          <td className={(this.props.event_templateid === template.id)? "text-primary" : ""}>{template.event_name}</td>
           <td>{template.event_value}</td>
           <td>
             <OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon className="text-primary" onClick={ () => this.handleEventTemplateSelect(template.id) } icon='pencil-alt' fixedWidth/></OverlayTrigger>{' '}
@@ -128,7 +128,7 @@ class EventTemplates extends Component {
         let delete_icon = (this.props.roles.includes("admin"))? (<OverlayTrigger placement="top" overlay={deleteTooltip}><FontAwesomeIcon className="text-danger" onClick={ () => this.handleEventTemplateDelete(template.id) } icon='trash' fixedWidth/></OverlayTrigger>): null;
         return (
           <tr key={template.id}>
-            <td className={(this.props.event_templateid === template.id)? "text-warning" : ""}>{template.event_name}</td>
+            <td className={(this.props.event_templateid === template.id)? "text-primary" : ""}>{template.event_name}</td>
             <td>{template.event_value}</td>
             <td>
               {edit_icon}{' '}

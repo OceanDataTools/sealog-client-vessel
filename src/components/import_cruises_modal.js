@@ -171,7 +171,7 @@ class ImportCruisesModal extends Component {
     
     return (
       <Modal show={show} onExit={handleExit} onHide={this.quitImport}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light">
           <Modal.Title>Import Cruises</Modal.Title>
         </Modal.Header>
 
@@ -192,7 +192,7 @@ class ImportCruisesModal extends Component {
           </Row>
         </Modal.Body>
 
-        <Modal.Footer>
+        <Modal.Footer className="bg-light">
           <Button variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
         </Modal.Footer>
       </Modal>

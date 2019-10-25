@@ -51,7 +51,7 @@ class DisplayUserTokenModal extends Component {
 
     return (
       <Modal show={show} onHide={handleHide}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light">
           <Modal.Title>User&#39;s Java Web Token</Modal.Title>
         </Modal.Header>
 
@@ -59,8 +59,8 @@ class DisplayUserTokenModal extends Component {
           <h6>Token:</h6><div style={{wordWrap:'break-word'}}>{this.state.token}</div>
         </Modal.Body>
 
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleHide}>Close</Button>
+        <Modal.Footer className="bg-light">
+          <Button size="sm" variant="secondary" onClick={handleHide}>Close</Button>
         </Modal.Footer>
       </Modal>
     );

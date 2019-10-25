@@ -179,9 +179,7 @@
 }
 
 .navbar {
-  margin-bottom: 0px;
-  padding-left: 2px;
-  padding-right: 2px;
+  margin-bottom: 8px;
 }
 
 .event-list-item {
@@ -257,7 +255,7 @@
   padding: 4px;
   margin-top: 1px;
   z-index: 99999 !important;
-  background: #060606;
+  background: #ffffff;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
   border: 1px solid #f9f9f9;
 }

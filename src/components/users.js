@@ -156,7 +156,7 @@ class Users extends Component {
       const style = (user.disabled)? {"textDecoration": "line-through"}: {};
       return (
         <tr key={user.id}>
-          <td style={style} className={(this.props.userid === user.id)? "text-warning" : ""}>{user.username}</td>
+          <td style={style} className={(this.props.userid === user.id)? "text-primary" : ""}>{user.username}</td>
           <td style={style}>{user.fullname}</td>
           <td>
             <OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon className="text-primary" onClick={ () => this.handleUserSelect(user.id) } icon='pencil-alt' fixedWidth/></OverlayTrigger>{' '}
@@ -183,7 +183,7 @@ class Users extends Component {
       if(user.system_user) {
         return (
           <tr key={user.id}>
-            <td style={style} className={(this.props.userid === user.id)? "text-warning" : ""}>{user.username}</td>
+            <td style={style} className={(this.props.userid === user.id)? "text-primary" : ""}>{user.username}</td>
             <td style={style} >{user.fullname}</td>
             <td>
               {(this.props.roles.includes('admin'))? <OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon className="text-primary" onClick={ () => this.handleUserSelect(user.id) } icon='pencil-alt' fixedWidth/></OverlayTrigger> : ''}{' '}
