@@ -137,7 +137,7 @@ class CruiseMenu extends Component {
 
       return (          
         <Card key={`cruise_${this.state.activeCruise.cruise_id}`}>
-          <Card.Header>Cruise: <span className="text-warning">{this.state.activeCruise.cruise_id}</span></Card.Header>
+          <Card.Header>Cruise: <span className="text-primary">{this.state.activeCruise.cruise_id}</span></Card.Header>
           <Card.Body>
             {cruiseName}
             {cruiseDescription}
@@ -201,7 +201,7 @@ class CruiseMenu extends Component {
       <ul>
         { this.state.yearCruises.map((cruise) => {
           if(this.state.activeCruise && cruise.id === this.state.activeCruise.id) {
-            return (<li key={`select_${cruise.id}`} ><span className="text-warning">{cruise.cruise_id}</span><br/></li>);
+            return (<li key={`select_${cruise.id}`} ><span className="text-primary">{cruise.cruise_id}</span><br/></li>);
           }
 
           return (<li key={`select_${cruise.id}`} ><Link to="#" onClick={ () => this.handleCruiseSelect(cruise.id) }>{cruise.cruise_id}</Link><br/></li>);
@@ -210,105 +210,57 @@ class CruiseMenu extends Component {
       </ul>
     ): null;
 
-    this.state.years.forEach((year) => {
+    if(this.state.years.length > 1) {
+      this.state.years.forEach((year) => {
 
-      let yearTxt = null;
-      if(year == this.state.activeYearKey) {
-        yearTxt = <span className="text-warning">{year}</span>
-      }
-      else {
-        yearTxt = <span className="text-primary">{year}</span> 
-      }
+        let yearTxt = <span className="text-primary">{year}</span> 
 
-      years.push(          
-        <Card key={`year_${year}`} >
-          <Accordion.Toggle as={Card.Header} eventKey={year}>
-            <h6>Year: {yearTxt}</h6>
-          </Accordion.Toggle>
-          <Accordion.Collapse eventKey={year}>
+        years.push(
+          <Card key={`year_${year}`} >
+            <Accordion.Toggle as={Card.Header} eventKey={year}>
+              <h6>Year: {yearTxt}</h6>
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey={year}>
+              <Card.Body>
+                <strong>Cruises:</strong>
+                {cruises}
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+        );
+      });
+    } else {
+      this.state.years.forEach((year) => {
+        const yearTxt = <span className="text-primary">{year}</span>
+        years.push(
+          <Card key={`year_${year}`} >
+            <Card.Header>
+              Year: {yearTxt}
+            </Card.Header>
             <Card.Body>
               <strong>Cruises:</strong>
               {cruises}
             </Card.Body>
-          </Accordion.Collapse>
-        </Card>
-      );
-    });
+          </Card>
+        );
+      });
+    }
 
     return years;    
   }
 
-  renderCruiseListItems() {
-
-    return this.props.cruises.map((cruise) => {
-
-      let cruiseName = (cruise.cruise_additional_meta.cruise_name)? <span><strong>Cruise Name:</strong> {cruise.cruise_additional_meta.cruise_name}<br/></span> : null;
-      let cruiseDescription = (cruise.cruise_additional_meta.cruise_description)? <span><strong>Description:</strong> {cruise.cruise_additional_meta.cruise_description}<br/></span> : null;
-      let cruiseLocation = (cruise.cruise_location)? <span><strong>Location:</strong> {cruise.cruise_location}<br/></span> : null;
-      let cruiseDates = <span><strong>Dates:</strong> {moment.utc(cruise.start_ts).format("YYYY/MM/DD")} - {moment.utc(cruise.stop_ts).format("YYYY/MM/DD")}<br/></span>;
-      let cruisePI = <span><strong>Chief Scientist:</strong> {cruise.cruise_pi}<br/></span>;
-      let cruiseFiles = (cruise.cruise_additional_meta.cruise_files && cruise.cruise_additional_meta.cruise_files.length > 0)? <span><strong>Files:</strong><br/>{this.renderCruiseFiles(cruise.id, cruise.cruise_additional_meta.cruise_files)}</span>: null;
-      
-      return (          
-        <Card key={cruise.id} >
-          <Accordion.Toggle as={Card.Header} eventKey={cruise.id}>
-            <h6>Cruise: <span className="text-primary">{cruise.cruise_id}</span></h6>
-          </Accordion.Toggle>
-          <Accordion.Collapse eventKey={cruise.id}>
-            <Card.Body>
-              {cruiseName}
-              {cruiseDescription}
-              {cruiseLocation}
-              {cruiseDates}
-              {cruisePI}
-              {cruiseFiles}
-              <Row>
-                <Col sm={12} md={6} xl={3}>
-                  <div className="text-primary" onClick={ () => this.handleCruiseSelectForReplay() }>Goto replay<FontAwesomeIcon icon='arrow-right' fixedWidth /></div>
-                </Col>
-                <Col sm={12} md={6} xl={3}>
-                  <div className="text-primary" onClick={ () => this.handleCruiseSelectForReview() }>Goto review<FontAwesomeIcon icon='arrow-right' fixedWidth /></div>
-                </Col>
-                <Col sm={12} md={6} xl={3}>
-                  <div className="text-primary" onClick={ () => this.handleCruiseSelectForMap() }>Goto map<FontAwesomeIcon icon='arrow-right' fixedWidth /></div>
-                </Col>
-                <Col sm={12} md={6} xl={3}>
-                  <div className="text-primary" onClick={ () => this.handleCruiseSelectForGallery() }>Goto gallery<FontAwesomeIcon icon='arrow-right' fixedWidth /></div>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Accordion.Collapse>
-        </Card>
-      );
-    });      
-  }
-
   renderYearList() {
 
-    if(this.state.years && this.state.years.size > 0){
+    if(this.state.years && this.state.years.size > 1){
       return (
         <Accordion id="accordion-controlled-year" activeKey={this.state.activeYearKey} onSelect={this.handleYearSelect}>
           {this.renderYearListItems()}
         </Accordion>
       );
-    }
-
-    return (
-      <Card>
-        <Card.Body>No cruises found!</Card.Body>
-      </Card>
-    );
-  }
-
-  renderCruiseList() {
-
-    if(this.props.cruises && this.props.cruises.length > 0) {
-
+    } else if(this.state.years && this.state.years.size === 1){
       return (
-        <Accordion id="accordion-controlled-example" activeKey={this.state.activeCruiseKey} onSelect={this.handleCruiseSelect}>
-          {this.renderCruiseListItems()}
-        </Accordion>
-      );
+        this.renderYearListItems()
+      )
     }
 
     return (
@@ -317,7 +269,6 @@ class CruiseMenu extends Component {
       </Card>
     );
   }
-
 
   render(){
     return (
@@ -330,10 +281,10 @@ class CruiseMenu extends Component {
           </Col>
         </Row>
         <Row>
-          <Col sm={3} md={3} lg={2}>
+          <Col sm={4} md={{offset:1, span:3}} lg={{offset:2, span:2}}>
             {this.renderYearList()}
           </Col>
-          <Col sm={4} md={4} lg={5}>
+          <Col sm={8} md={7} lg={6}>
             {this.renderCruiseCard()}
           </Col>
         </Row>

@@ -28,7 +28,7 @@ class DeleteExportModal extends Component {
 
     return (
       <Modal size="lg" show={show} onHide={handleHide}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light">
           <Modal.Title>Confirm Deletion</Modal.Title>
         </Modal.Header>
 
@@ -36,9 +36,9 @@ class DeleteExportModal extends Component {
           { 'Are you sure you want to delete this event export?' }
         </Modal.Body>
 
-        <Modal.Footer>
-          <Button onClick={handleHide}>Cancel</Button>
-          <Button variant="danger" onClick={this.handleConfirm}>Yup!</Button>
+        <Modal.Footer className="bg-light">
+          <Button size="sm" onClick={handleHide}>Cancel</Button>
+          <Button variant="danger" size="sm" onClick={this.handleConfirm}>Yup!</Button>
         </Modal.Footer>
       </Modal>
     );

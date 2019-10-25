@@ -118,7 +118,7 @@ class ImportAuxDataModal extends Component {
 
     return (
       <Modal show={show} onHide={this.handleHideCustom}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light">
           <Modal.Title>Import Auxiliary Data</Modal.Title>
         </Modal.Header>
 
@@ -139,7 +139,7 @@ class ImportAuxDataModal extends Component {
           </Row>
         </Modal.Body>
 
-        <Modal.Footer>
+        <Modal.Footer className="bg-light">
           <Button variant="secondary" size="sm" onClick={this.handleHideCustom}>Close</Button>
         </Modal.Footer>
       </Modal>

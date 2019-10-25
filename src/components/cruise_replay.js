@@ -408,7 +408,7 @@ class CruiseReplay extends Component {
       );
 
       return (
-        <Card style={{marginBottom: "8px"}}>
+        <Card bg="light" style={{marginBottom: "8px"}}>
           <Card.Body>
             <Row>
               <Col xs={4}>
@@ -481,7 +481,7 @@ class CruiseReplay extends Component {
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
           
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } icon='plus' inverse={!active} fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
 
@@ -518,7 +518,7 @@ class CruiseReplay extends Component {
         <Row>
           <Col lg={12}>
             <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-primary">Cruises</span>
               {' '}/{' '}
               <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise}/></span>
               {' '}/{' '}

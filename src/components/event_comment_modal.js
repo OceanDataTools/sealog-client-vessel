@@ -65,7 +65,7 @@ class EventCommentModal extends Component {
     return (
       <Modal show={show} onHide={handleHide}>
         <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton className="bg-light">
             <Modal.Title>Add/Update Comment</Modal.Title>
           </Modal.Header>
 
@@ -76,7 +76,7 @@ class EventCommentModal extends Component {
             />
           </Modal.Body>
 
-          <Modal.Footer>
+          <Modal.Footer className="bg-light">
             <Button variant="secondary" size="sm" disabled={submitting} onClick={handleHide}>Cancel</Button>
             <Button variant="primary" size="sm" type="submit" disabled={ submitting || !valid}>Submit</Button>
           </Modal.Footer>

@@ -153,7 +153,7 @@ class Cruises extends Component {
 
         return (
           <tr key={cruise.id}>
-            <td className={(this.props.cruiseid === cruise.id)? "text-warning" : ""}>{cruise.cruise_id}</td>
+            <td className={(this.props.cruiseid === cruise.id)? "text-primary" : ""}>{cruise.cruise_id}</td>
             <td>{cruiseName}{cruiseVessel}{cruiseLocation}{cruisePi}Dates: {moment.utc(cruise.start_ts).format('L')}<FontAwesomeIcon icon='arrow-right' fixedWidth/>{moment.utc(cruise.stop_ts).format('L')}</td>
             <td>
               <OverlayTrigger placement="top" overlay={editTooltip}><FontAwesomeIcon className="text-primary" onClick={ () => this.handleCruiseUpdate(cruise.id) } icon='pencil-alt' fixedWidth/></OverlayTrigger>

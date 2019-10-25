@@ -214,7 +214,7 @@ class EventShowDetailsModal extends Component {
     } else {
       return (
         <Modal size="lg" show={show} onHide={this.props.handleHide}>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton className="bg-light">
             <Modal.Title as="h5">Event Details: {this.state.event.event_value}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
