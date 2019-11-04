@@ -22,7 +22,7 @@ class CruiseDropdownToggle extends Component {
 
   render() {
     return (
-      <span className="text-warning dropdown-toggle" onClick={this.handleClick}>
+      <span className="text-primary dropdown-toggle" onClick={this.handleClick}>
         {this.props.children}
       </span>
     );
@@ -91,7 +91,7 @@ class CruiseDropdown extends Component {
       })
       
       const cruises = await response.data;
-      this.setState({menuItems: cruises.map((cruise) => (<Dropdown.Item className="text-warning" onClick={() => onClick(cruise.id)} key={cruise.id}>{cruise.cruise_id}</Dropdown.Item>))})
+      this.setState({menuItems: cruises.map((cruise) => (<Dropdown.Item className="text-primary" onClick={() => onClick(cruise.id)} key={cruise.id}>{cruise.cruise_id}</Dropdown.Item>))})
     }
     catch(error){
       console.log(error)

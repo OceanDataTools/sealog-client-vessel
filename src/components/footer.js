@@ -80,7 +80,7 @@ class Footer extends Component {
 
   render () {
 
-    let asnapStatus = null;
+    let asnapStatus = <span>&nbsp;</span>;
 
     if(this.props.authenticated && this.props.asnapStatus === "Off") {
       asnapStatus =  (
@@ -103,13 +103,11 @@ class Footer extends Component {
     }
 
     return (
-      <div>
-        <div style={{marginTop: "4px"}}>
-          {asnapStatus}
-          <span className="float-right">
-            <a href={`/github`} target="_blank">Sealog</a> is licensed under the <a href={`/license`} target="_blank">MIT</a> public license
-          </span>
-        </div>
+      <div className="bg-light" style={{marginTop: "8px", padding: ".5rem 1rem"}}>
+        {asnapStatus}
+        <span className="float-right bg-light">
+          <a href={`/github`} target="_blank">Sealog</a> is licensed under the <a href={`/license`} target="_blank">MIT</a> public license
+        </span>
       </div>
     );
   }

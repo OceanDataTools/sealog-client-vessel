@@ -154,7 +154,7 @@ class ImportEventTemplatesModal extends Component {
 
     return (
       <Modal show={show} onExit={this.props.handleExit} onHide={this.quitImport}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-light">
           <Modal.Title>Import Event Templates</Modal.Title>
         </Modal.Header>
 
@@ -175,7 +175,7 @@ class ImportEventTemplatesModal extends Component {
           </Row>
         </Modal.Body>
 
-        <Modal.Footer>
+        <Modal.Footer className="bg-light">
           <Button size="sm" variant="secondary" onClick={this.quitImport}>Close</Button>
         </Modal.Footer>
       </Modal>

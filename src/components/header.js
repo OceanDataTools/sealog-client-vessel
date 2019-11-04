@@ -30,7 +30,7 @@ class Header extends Component {
   renderUserOptions() {
     if(this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager')) {
       return (
-        <NavDropdown.Item onClick={this.props.gotoUsers}>Users</NavDropdown.Item>
+        <NavDropdown.Item className="text-primary" onClick={this.props.gotoUsers}>Users</NavDropdown.Item>
       );
     }
   }
@@ -46,7 +46,7 @@ class Header extends Component {
   renderEventManagementOptions() {
     if(this.props.roles.includes('admin') || this.props.roles.includes('event_manager')) {
       return (
-        <NavDropdown.Item onClick={this.props.gotoEventManagement}>Event Management</NavDropdown.Item>
+        <NavDropdown.Item className="text-primary" onClick={this.props.gotoEventManagement}>Event Management</NavDropdown.Item>
       );
     }
   }
@@ -54,7 +54,7 @@ class Header extends Component {
   renderEventTemplateOptions() {
     if(this.props.roles.includes('admin') || this.props.roles.includes('template_manager')) {
       return (
-        <NavDropdown.Item onClick={this.props.gotoEventTemplates}>Event Templates</NavDropdown.Item>
+        <NavDropdown.Item className="text-primary" onClick={this.props.gotoEventTemplates}>Event Templates</NavDropdown.Item>
       );
     }
   }
@@ -62,7 +62,7 @@ class Header extends Component {
   renderCruiseOptions() {
     if(this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager')) {
       return (
-        <NavDropdown.Item onClick={this.props.gotoCruises}>Cruises</NavDropdown.Item>
+        <NavDropdown.Item className="text-primary" onClick={this.props.gotoCruises}>Cruises</NavDropdown.Item>
       );
     }
   }
@@ -70,7 +70,7 @@ class Header extends Component {
   renderTaskOptions() {
     if(this.props.roles.includes('admin')) {
       return (
-        <NavDropdown.Item onClick={this.props.gotoTasks}>Tasks</NavDropdown.Item>
+        <NavDropdown.Item className="text-primary" onClick={this.props.gotoTasks}>Tasks</NavDropdown.Item>
       );
     }
   }
@@ -78,7 +78,7 @@ class Header extends Component {
   renderToggleASNAP() {
     if(this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager') || this.props.roles.includes('event_manager') || this.props.roles.includes('event_logger')) {
       return (
-        <NavDropdown.Item onClick={ () => this.handleASNAPToggle() }>Toggle ASNAP</NavDropdown.Item>
+        <NavDropdown.Item className="text-primary" onClick={ () => this.handleASNAPToggle() }>Toggle ASNAP</NavDropdown.Item>
       );
     }
   }
@@ -102,9 +102,9 @@ class Header extends Component {
     if(this.props.authenticated) {
       return (
         <NavDropdown title={<span>{this.props.fullname} <FontAwesomeIcon icon="user" /></span>} id="basic-nav-dropdown-user">
-          {(this.props.fullname !== "Guest") ? <NavDropdown.Item onClick={this.props.gotoProfile} key="profile" >User Profile</NavDropdown.Item> : null }
-          {(this.props.fullname !== 'Guest' && RECAPTCHA_SITE_KEY === "")? (<NavDropdown.Item key="switch2Guest" onClick={ () => this.handleSwitchToGuest() } >Switch to Guest</NavDropdown.Item>) : null }
-          <NavDropdown.Item key="logout" onClick={ () => this.handleLogout() } >Log Out</NavDropdown.Item>
+          {(this.props.fullname !== "Guest") ? <NavDropdown.Item className="text-primary" onClick={this.props.gotoProfile} key="profile" >User Profile</NavDropdown.Item> : null }
+          {(this.props.fullname !== 'Guest' && RECAPTCHA_SITE_KEY === "")? (<NavDropdown.Item className="text-primary" key="switch2Guest" onClick={ () => this.handleSwitchToGuest() } >Switch to Guest</NavDropdown.Item>) : null }
+          <NavDropdown.Item className="text-primary" key="logout" onClick={ () => this.handleLogout() } >Log Out</NavDropdown.Item>
         </NavDropdown>
       );
     }
@@ -120,8 +120,8 @@ class Header extends Component {
 
   render () {
     return (
-      <Navbar collapseOnSelect expand="md" variant="dark" bg="dark" style={{"border": "none"}}>
-        <Navbar.Brand onClick={this.props.gotoHome}>{HEADER_TITLE}</Navbar.Brand>
+      <Navbar collapseOnSelect expand="md" bg="light" variant="primary">
+        <Navbar.Brand className="text-primary" onClick={this.props.gotoHome}>{HEADER_TITLE}</Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
         <Navbar.Collapse id="responsive-navbar-nav"className="justify-content-end">
           <Nav>
