@@ -210,7 +210,7 @@ class CruiseMenu extends Component {
       </ul>
     ): null;
 
-    if(this.state.years.length > 1) {
+    if(this.state.years.size > 1) {
       this.state.years.forEach((year) => {
 
         let yearTxt = <span className="text-primary">{year}</span> 
@@ -229,7 +229,7 @@ class CruiseMenu extends Component {
           </Card>
         );
       });
-    } else {
+    } else if(this.state.years.size > 0) {
       this.state.years.forEach((year) => {
         const yearTxt = <span className="text-primary">{year}</span>
         years.push(
@@ -251,13 +251,13 @@ class CruiseMenu extends Component {
 
   renderYearList() {
 
-    if(this.state.years && this.state.years.size > 1){
+    if(this.state.years && this.state.years.size > 1) {
       return (
         <Accordion id="accordion-controlled-year" activeKey={this.state.activeYearKey} onSelect={this.handleYearSelect}>
           {this.renderYearListItems()}
         </Accordion>
       );
-    } else if(this.state.years && this.state.years.size === 1){
+    } else if(this.state.years && this.state.years.size > 0) {
       return (
         this.renderYearListItems()
       )

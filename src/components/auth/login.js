@@ -73,7 +73,7 @@ class Login extends Component {
       <span>
         <ReCAPTCHA
           sitekey={RECAPTCHA_SITE_KEY}
-          theme="dark"
+          theme="light"
           size="normal"
           onChange={this.onCaptchaChange.bind(this)}
         />
