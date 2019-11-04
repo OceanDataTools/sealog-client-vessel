@@ -178,12 +178,6 @@
   padding: 0.50rem 0.75rem;
 }
 
-.navbar {
-  margin-bottom: 0px;
-  padding-left: 2px;
-  padding-right: 2px;
-}
-
 .event-list-item {
   padding-top: 0.3rem;
   padding-bottom: 0.3rem;
@@ -214,7 +208,8 @@
 .form-signin {
   min-width: 330px;
   max-width: 330px;
-  margin: 0px auto 20px auto;
+
+  margin: 20px auto 20px auto;
 }
 
 .form-standard {
