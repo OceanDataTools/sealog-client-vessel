@@ -1,10 +1,10 @@
 {
   "name": "sealog-client-vessel",
-  "version": "1.0.2-rc",
+  "version": "1.0.3-rc",
   "license": "GPL-3.0",
   "description": "Sealog Client intended for use with oceanographic vessels",
   "bugs": {
-    "url": "https://github.com/webbpinner/sealog-client-vessel/issues"
+    "url": "https://github.com/oceandatatools/sealog-client-vessel/issues"
   },
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/webbpinner/sealog-client-vessel.git"
+    "url": "https://github.com/oceandatatools/sealog-client-vessel.git"
   },
   "keywords": [
     "react",
