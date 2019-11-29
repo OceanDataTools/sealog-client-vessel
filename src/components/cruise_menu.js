@@ -24,6 +24,8 @@ class CruiseMenu extends Component {
     this.state = {
       activeYearKey: null,
       years: null,
+      yearCruises: null,
+      cruises: null,
       activeCruiseKey: null,
       activeCruise: null,
 
@@ -39,15 +41,20 @@ class CruiseMenu extends Component {
     this.props.fetchCruises();
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps, prevState){
 
-    if(this.props.cruises.length > 0 && this.state.years === null) {
+    if(this.props.cruise !== prevProps.cruise && this.props.cruise.id){
+      this.setState({activeYearKey: moment.utc(this.props.cruise.start_ts).format("YYYY"), activeCruise: this.props.cruise, activeCruiseKey: this.props.cruise.id})
+    }
+
+    if(this.props.cruises !== prevProps.cruises && this.props.cruises.length > 0 ) {
+      // console.log("building year list");
       this.buildYearList();
     }
 
-    if(this.props.cruise && this.props.cruise.id && this.props.cruises.length > 0 && this.state.activeCruise === null) {
-      this.handleYearSelect(moment.utc(this.props.cruise.start_ts).format("YYYY"));
-      this.handleCruiseSelect(this.props.cruise.id);
+    if(this.state.years !== prevState.years && this.state.years.size > 0) {
+      // console.log("building cruises-by-year list");
+      this.buildCruiseList();
     }
   }
 
@@ -108,8 +115,9 @@ class CruiseMenu extends Component {
 
   handleYearSelect(activeYearKey) {
     if(this.state.activeYearKey !== activeYearKey) {
-      this.setState({ activeYearKey: activeYearKey, activeCruise: null});
-      this.buildCruiseList(activeYearKey);
+      // console.log("set active year state 1");
+      this.setState({ activeYearKey: activeYearKey, activeCruise: null, activeCruiseKey: null});
+      // this.buildCruiseList(activeYearKey);
     }
   }
 
@@ -180,73 +188,87 @@ class CruiseMenu extends Component {
     this.handleYearSelect(activeYearKey);
   }
 
-  buildCruiseList(year) {
-    let startOfYear = new Date(year);
-    let endOfYear = new Date(startOfYear.getFullYear()+1, startOfYear.getMonth(), startOfYear.getDate());
-    // let yearCruises = this.props.cruises.filter(cruise => moment.utc(cruise.start_ts).isBetween(startOfYear, endOfYear));
-    let yearCruises = this.props.cruises.filter(cruise => moment.utc(cruise.start_ts).isBetween(moment.utc(startOfYear), moment.utc(endOfYear)));
+  buildCruiseList() {
 
-    this.setState({ yearCruises });
+    const yearCruises = {}
 
-    if(yearCruises.length === 1 && this.state.activeCruise === null) {
-      this.handleCruiseSelect(yearCruises[0].id);
+    if (this.state.years && this.state.years.size > 0) {
+      this.state.years.forEach((year) => {
+
+        // let cruise_start_ts = new Date(Date.UTC(year));
+        // console.log("cruise_start_ts:", cruise_start_ts);
+        // let startOfYear1 = new Date(Date.UTC(cruise_start_ts.getFullYear(), 0, 1, 0, 0, 0));
+        // console.log("startOfYear1:", startOfYear1);
+        // let endOfYear1 = new Date(Date.UTC(cruise_start_ts.getFullYear(), 11, 31, 23, 59, 59));
+        // console.log("endOfYear1:", endOfYear1);
+
+        let startOfYear = new Date(year);
+        // console.log("startOfYear:", startOfYear);
+        let endOfYear = new Date(startOfYear.getFullYear()+1, startOfYear.getMonth(), startOfYear.getDate());
+        // console.log("endOfYear:", endOfYear);
+
+        // let yearCruises = this.props.cruises.filter(cruise => moment.utc(cruise.start_ts).isBetween(startOfYear, endOfYear));
+        const yearCruisesTemp = this.props.cruises.filter(cruise => moment.utc(cruise.start_ts).isBetween(moment.utc(startOfYear), moment.utc(endOfYear)))
+        // console.log("yearCruisesTemp:",yearCruisesTemp);
+        yearCruises[year] = yearCruisesTemp.map((cruise) => { return { id: cruise.id, cruise_id: cruise.cruise_id } } );
+      });
+
+      // console.log('yearCruises:', yearCruises)
+      this.setState({ yearCruises });
     }
   }
 
   renderYearListItems() {
 
-    let years = [];
+    const yearCards = []
 
-    let cruises = (this.state.yearCruises)? (
-      <ul>
-        { this.state.yearCruises.map((cruise) => {
-          if(this.state.activeCruise && cruise.id === this.state.activeCruise.id) {
-            return (<li key={`select_${cruise.id}`} ><span className="text-primary">{cruise.cruise_id}</span><br/></li>);
-          }
-
-          return (<li key={`select_${cruise.id}`} ><Link to="#" onClick={ () => this.handleCruiseSelect(cruise.id) }>{cruise.cruise_id}</Link><br/></li>);
-        })
-        }
-      </ul>
-    ): null;
-
-    if(this.state.years.size > 1) {
-      this.state.years.forEach((year) => {
+    if (this.state.yearCruises) {
+      Object.entries(this.state.yearCruises).forEach(([year,cruises])=>{
+        // console.log(`${year}:${cruises.join(", ")}`)
 
         let yearTxt = <span className="text-primary">{year}</span> 
 
-        years.push(
-          <Card key={`year_${year}`} >
-            <Accordion.Toggle as={Card.Header} eventKey={year}>
-              <h6>Year: {yearTxt}</h6>
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey={year}>
+        let yearCruises = (
+          <ul>
+            {
+              cruises.map((cruise) => {
+                return (<li key={`select_${cruise.id}`} ><Link to="#" onClick={ () => this.handleCruiseSelect(cruise.id) }>{cruise.cruise_id}</Link><br/></li>);
+              })
+            }
+          </ul>
+        );
+
+        if (this.state.years.size > 1) {
+          yearCards.unshift(
+            <Card key={`year_${year}`} >
+              <Accordion.Toggle as={Card.Header} eventKey={year}>
+                <h6>Year: {yearTxt}</h6>
+              </Accordion.Toggle>
+              <Accordion.Collapse eventKey={year}>
+                <Card.Body>
+                  <strong>Cruises:</strong>
+                  {yearCruises}
+                </Card.Body>
+              </Accordion.Collapse>
+            </Card>
+          );
+        }
+        else {
+          yearCards.push(
+            <Card key={`year_${year}`} >
+              <Card.Header>Year: {yearTxt}</Card.Header>
               <Card.Body>
                 <strong>Cruises:</strong>
-                {cruises}
+                {yearCruises}
               </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        );
-      });
-    } else if(this.state.years.size > 0) {
-      this.state.years.forEach((year) => {
-        const yearTxt = <span className="text-primary">{year}</span>
-        years.push(
-          <Card key={`year_${year}`} >
-            <Card.Header>
-              Year: {yearTxt}
-            </Card.Header>
-            <Card.Body>
-              <strong>Cruises:</strong>
-              {cruises}
-            </Card.Body>
-          </Card>
-        );
-      });
+            </Card>
+          );
+        }
+      })
     }
 
-    return years;    
+    return yearCards;
+ 
   }
 
   renderYearList() {
@@ -268,7 +290,7 @@ class CruiseMenu extends Component {
         <Card.Body>No cruises found!</Card.Body>
       </Card>
     );
-  }
+  } 
 
   render(){
     return (

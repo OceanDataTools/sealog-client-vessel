@@ -123,7 +123,7 @@ class CruiseGallery extends Component {
         <Row>
           <Col lg={12}>
             <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-primary">Cruises</span>
               {' '}/{' '}
               <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
               {' '}/{' '}

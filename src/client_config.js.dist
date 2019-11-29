@@ -1,3 +1,4 @@
+const Pkg = require('../package.json');
 
 // Use these settings if connecting to a server using http
 const API_ROOT_URL = `http://localhost:8000/sealog-server`;
@@ -27,7 +28,7 @@ const LOGIN_IMAGE = "";
 const MAIN_SCREEN_TXT = "Please select a cruise from the list below. Selecting a cruise will open the cruise information panel.  At the bottom of the cruise information panel there will be links for proceeding to the cruise replay section, the cruise review section and the cruise gallery section of Sealog. If at any time you wish to return to this page please click the \"Review Cruises\" text in upper navigation bar.";
 
 // Title displayed on the left side of the title bar
-const HEADER_TITLE = "Sealog - Vessel";
+const HEADER_TITLE = `Sealog for Vessels v${Pkg.version}`;
 
 // Set default vessel
 const DEFAULT_VESSEL = "";

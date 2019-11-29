@@ -42,18 +42,13 @@ class CreateCruise extends Component {
     }
 
     if(formProps.departure_port) {
-      formProps.cruise_additional_meta.departure_port = formProps.departure_port;
+      formProps.cruise_additional_meta.cruise_departure_location = formProps.departure_port;
       delete formProps.departure_port;
     }
 
     if(formProps.arrival_port) {
-      formProps.cruise_additional_meta.arrival_port = formProps.arrival_port;
+      formProps.cruise_additional_meta.cruise_arrival_location = formProps.arrival_port;
       delete formProps.arrival_port;
-    }
-
-    if(formProps.cruise_vessel) {
-      formProps.cruise_additional_meta.cruise_vessel = formProps.cruise_vessel;
-      delete formProps.cruise_vessel;
     }
 
     if(formProps.cruise_description) {

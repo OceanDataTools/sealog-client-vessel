@@ -148,7 +148,7 @@ class Cruises extends Component {
 
         let cruiseName = (cruise.cruise_additional_meta.cruise_name)? <span>Name: {cruise.cruise_additional_meta.cruise_name}<br/></span> : null;
         let cruiseLocation = (cruise.cruise_location)? <span>Location: {cruise.cruise_location}<br/></span> : null;
-        let cruiseVessel = (cruise.cruise_additional_meta.cruise_vessel)? <span>Vessel: {cruise.cruise_additional_meta.cruise_vessel}<br/></span> : null;
+        let cruiseVessel = (cruise.cruise_vessel)? <span>Vessel: {cruise.cruise_vessel}<br/></span> : null;
         let cruisePi = (cruise.cruise_pi)? <span>PI: {cruise.cruise_pi}<br/></span> : null;
 
         return (

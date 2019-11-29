@@ -20,17 +20,22 @@ class UpdateUser extends Component {
   }
 
   handleFormSubmit(formProps) {
+
+    if (formProps.email) {
+      delete formProps.email;
+    }
+
     this.props.updateUser(formProps);
   }
 
-  renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
+  renderTextField({ input, label, placeholder, disabled, type="text", required, meta: { touched, error } }) {
     let requiredField = (required)? <span className='text-danger'> *</span> : '';
     let placeholder_txt = (placeholder)? placeholder: label;
 
     return (
       <Form.Group as={Col} lg="12">
         <Form.Label>{label}{requiredField}</Form.Label>
-        <Form.Control type={type} {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
+        <Form.Control type={type} {...input} placeholder={placeholder_txt} isInvalid={touched && error} disabled={disabled}/>
         <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
       </Form.Group>
     );
@@ -218,6 +223,7 @@ class UpdateUser extends Component {
                 component={this.renderTextField}
                 label="Email"
                 required={true}
+                disabled
               />
               <Field
                 name="password"

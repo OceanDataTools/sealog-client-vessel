@@ -27,7 +27,6 @@ class ImportCruisesModal extends Component {
 
   static propTypes = {
     handleHide: PropTypes.func.isRequired,
-    // handleDestroy: PropTypes.func.isRequired,
     handleExit: PropTypes.func
   };
 
@@ -37,7 +36,7 @@ class ImportCruisesModal extends Component {
     this.props.handleHide()
   }
 
-  async insertCruise({ id, cruise_id, start_ts, stop_ts, cruise_location = '', cruise_pi, cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
+  async insertCruise({ id, cruise_id, start_ts, stop_ts, cruise_vessel, cruise_location = '', cruise_pi, cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
 
     try {
       const result = await axios.get(`${API_ROOT_URL}/api/v1/cruises/${id}`,
@@ -63,7 +62,7 @@ class ImportCruisesModal extends Component {
 
         try {
           const result = await axios.post(`${API_ROOT_URL}/api/v1/cruises`,
-          { id, cruise_id, start_ts, stop_ts, cruise_location, cruise_pi, cruise_tags, cruise_hidden, cruise_additional_meta},
+          { id, cruise_id, start_ts, stop_ts, cruise_vessel, cruise_location, cruise_pi, cruise_tags, cruise_hidden, cruise_additional_meta},
           {
             headers: {
               authorization: cookies.get('token'),
@@ -169,34 +168,39 @@ class ImportCruisesModal extends Component {
 
     const { show, handleExit } = this.props
     
-    return (
-      <Modal show={show} onExit={handleExit} onHide={this.quitImport}>
-        <Modal.Header closeButton className="bg-light">
-          <Modal.Title>Import Cruises</Modal.Title>
-        </Modal.Header>
+    if ( handleExit ) {
+      return (
+        <Modal show={show} onExit={handleExit} onHide={this.quitImport}>
+          <Modal.Header closeButton className="bg-light">
+            <Modal.Title>Import Cruises</Modal.Title>
+          </Modal.Header>
 
-        <Modal.Body>
-          <Row>
-            <Col xs={6}>
-              <ReactFileReader fileTypes={[".json"]} handleFiles={this.handleCruiseRecordImport}>
-                  <Button size="sm">Select File</Button>
-              </ReactFileReader>
-            </Col>
-            <Col xs={4}>
-              Pending: {this.state.pending}
-              <hr/>
-              Imported: {this.state.imported}<br/>
-              Skipped: {this.state.skipped}<br/>
-              Errors: {this.state.errors}<br/>
-            </Col>
-          </Row>
-        </Modal.Body>
+          <Modal.Body>
+            <Row>
+              <Col xs={6}>
+                <ReactFileReader fileTypes={[".json"]} handleFiles={this.handleCruiseRecordImport}>
+                    <Button size="sm">Select File</Button>
+                </ReactFileReader>
+              </Col>
+              <Col xs={4}>
+                Pending: {this.state.pending}
+                <hr/>
+                Imported: {this.state.imported}<br/>
+                Skipped: {this.state.skipped}<br/>
+                Errors: {this.state.errors}<br/>
+              </Col>
+            </Row>
+          </Modal.Body>
 
-        <Modal.Footer className="bg-light">
-          <Button variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
-        </Modal.Footer>
-      </Modal>
-    );
+          <Modal.Footer className="bg-light">
+            <Button variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
+          </Modal.Footer>
+        </Modal>
+      );
+    }
+    else {
+      return null;
+    }
   }
 }
 

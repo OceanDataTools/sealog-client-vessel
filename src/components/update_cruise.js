@@ -62,18 +62,13 @@ class UpdateCruise extends Component {
       delete formProps.cruise_name
     }
 
-    if(formProps.cruise_vessel) {
-      formProps.cruise_additional_meta.cruise_vessel = formProps.cruise_vessel
-      delete formProps.cruise_vessel
-    }
-
     if(formProps.departure_port) {
-      formProps.cruise_additional_meta.departure_port = formProps.departure_port
+      formProps.cruise_additional_meta.cruise_departure_location = formProps.departure_port
       delete formProps.departure_port
     }
 
     if(formProps.arrival_port) {
-      formProps.cruise_additional_meta.arrival_port = formProps.arrival_port
+      formProps.cruise_additional_meta.cruise_arrival_location = formProps.arrival_port
       delete formProps.arrival_port
     }
 
@@ -130,9 +125,9 @@ Chief Scientist: ${this.props.cruise.cruise_pi}
 Working Site:    ${this.props.cruise.cruise_location}\n
 Vessel:          ${(this.props.cruise.cruise_additional_meta.cruise_vessel) ? this.props.cruise.cruise_additional_meta.cruise_vessel : ""}\n
 Departure Date:  ${moment.utc(this.props.cruise.start_ts).format("dddd, MMMM Do YYYY")}
-Departure Port   ${(this.props.cruise.cruise_additional_meta.departure_port) ? this.props.cruise.cruise_additional_meta.departure_port : ""}\n
+Departure Port   ${(this.props.cruise.cruise_additional_meta.cruise_departure_location) ? this.props.cruise.cruise_additional_meta.cruise_departure_location : ""}\n
 Arrival Date:    ${moment.utc(this.props.cruise.stop_ts).format("dddd, MMMM Do YYYY")}
-Arrival Port:    ${(this.props.cruise.cruise_additional_meta.arrival_port) ? this.props.cruise.cruise_additional_meta.arrival_port : ""}\n
+Arrival Port:    ${(this.props.cruise.cruise_additional_meta.cruise_arrival_location) ? this.props.cruise.cruise_additional_meta.cruise_arrival_location : ""}\n
 Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description) ? this.props.cruise.cruise_additional_meta.cruise_description : ""}`
       )
     }
@@ -439,6 +434,14 @@ function validate(formProps) {
     errors.cruise_vessel = 'Required'
   }
 
+  if (!formProps.departure_port) {
+    errors.departure_port = 'Required'
+  }
+
+  if (!formProps.arrival_port) {
+    errors.arrival_port = 'Required'
+  }
+
   if (!formProps.cruise_pi) {
     errors.cruise_pi = 'Required'
   }
@@ -456,8 +459,9 @@ function validate(formProps) {
   }
 
   if ((formProps.start_ts !== '') && (formProps.stop_ts !== '')) {
-    if(moment(formProps.stop_ts, dateFormat).isBefore(moment(formProps.start_ts, dateFormat))) {
-      errors.stop_ts = 'Stop date must be later than start data'
+    if(moment(formProps.start_ts, dateFormat).isAfter(moment(formProps.stop_ts, dateFormat))) {
+      errors.start_ts = 'Start date must be before Stop date'
+      errors.stop_ts = 'Stop date must be after Start date'
     }
   }
 
@@ -490,16 +494,12 @@ function mapStateToProps(state) {
       initialValues.cruise_name = initialValues.cruise_additional_meta.cruise_name
     }
 
-    if (initialValues.cruise_additional_meta.cruise_vessel) {
-      initialValues.cruise_vessel = initialValues.cruise_additional_meta.cruise_vessel
+    if (initialValues.cruise_additional_meta.cruise_departure_location) {
+      initialValues.departure_port = initialValues.cruise_additional_meta.cruise_departure_location
     }
 
-    if (initialValues.cruise_additional_meta.departure_port) {
-      initialValues.departure_port = initialValues.cruise_additional_meta.departure_port
-    }
-
-    if (initialValues.cruise_additional_meta.arrival_port) {
-      initialValues.arrival_port = initialValues.cruise_additional_meta.arrival_port
+    if (initialValues.cruise_additional_meta.cruise_arrival_location) {
+      initialValues.arrival_port = initialValues.cruise_additional_meta.cruise_arrival_location
     }
 
     if (initialValues.cruise_additional_meta.cruise_description) {
