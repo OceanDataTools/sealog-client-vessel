@@ -213,7 +213,7 @@ class CruiseMenu extends Component {
         yearCruises[year] = yearCruisesTemp.map((cruise) => { return { id: cruise.id, cruise_id: cruise.cruise_id } } );
       });
 
-      // console.log('yearCruises:', yearCruises)
+      console.log('yearCruises:', yearCruises)
       this.setState({ yearCruises });
     }
   }
@@ -238,19 +238,32 @@ class CruiseMenu extends Component {
           </ul>
         );
 
-        yearCards.unshift(
-          <Card key={`year_${year}`} >
-            <Accordion.Toggle as={Card.Header} eventKey={year}>
-              <h6>Year: {yearTxt}</h6>
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey={year}>
+        if (this.state.years.size > 1) {
+          yearCards.unshift(
+            <Card key={`year_${year}`} >
+              <Accordion.Toggle as={Card.Header} eventKey={year}>
+                <h6>Year: {yearTxt}</h6>
+              </Accordion.Toggle>
+              <Accordion.Collapse eventKey={year}>
+                <Card.Body>
+                  <strong>Cruises:</strong>
+                  {yearCruises}
+                </Card.Body>
+              </Accordion.Collapse>
+            </Card>
+          );
+        }
+        else {
+          yearCards.push(
+            <Card key={`year_${year}`} >
+              <Card.Header>Year: {yearTxt}</Card.Header>
               <Card.Body>
                 <strong>Cruises:</strong>
                 {yearCruises}
               </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        );
+            </Card>
+          );
+        }
       })
     }
 
