@@ -108,7 +108,7 @@ export function updateProfileState() {
 
   const id = cookies.get('id');
   return function (dispatch) {
-    axios.get(`${API_ROOT_URL}/api/v1/users/${id}`,
+    axios.get(`${API_ROOT_URL}/api/v1/profile`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -490,10 +490,10 @@ export function createUser({username, fullname, password = '', email, roles, sys
   };
 }
 
-export function createCruise({cruise_id, start_ts, stop_ts, cruise_location = '', cruise_pi = '', cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
+export function createCruise({cruise_id, start_ts, stop_ts, cruise_vessel, cruise_location = '', cruise_pi = '', cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
   return function (dispatch) {
     axios.post(`${API_ROOT_URL}/api/v1/cruises`,
-      {cruise_id, start_ts, stop_ts, cruise_location, cruise_pi, cruise_tags, cruise_hidden, cruise_additional_meta },
+      {cruise_id, start_ts, stop_ts, cruise_vessel, cruise_location, cruise_pi, cruise_tags, cruise_hidden, cruise_additional_meta },
       {
         headers: {
           authorization: cookies.get('token'),
@@ -628,7 +628,7 @@ export function updateProfile(formProps) {
 
 export function showCruise(id) {
 
-  let fields = { id: id, cruise_hidden: false };
+  let fields = { cruise_hidden: false };
 
   return async function (dispatch) {
     await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${id}`,
@@ -650,7 +650,7 @@ export function showCruise(id) {
 
 export function hideCruise(id) {
 
-  let fields = { id: id, cruise_hidden: true };
+  let fields = { cruise_hidden: true };
 
   return async function (dispatch) {
     await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${id}`,
@@ -682,6 +682,10 @@ export function updateCruise(formProps) {
     fields.cruise_location = formProps.cruise_location;
   } else {
     fields.cruise_location = '';
+  }
+
+  if(formProps.cruise_vessel) {
+    fields.cruise_vessel = formProps.cruise_vessel;
   }
 
   if(formProps.cruise_pi) {
