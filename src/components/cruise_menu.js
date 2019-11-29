@@ -213,7 +213,7 @@ class CruiseMenu extends Component {
         yearCruises[year] = yearCruisesTemp.map((cruise) => { return { id: cruise.id, cruise_id: cruise.cruise_id } } );
       });
 
-      console.log('yearCruises:', yearCruises)
+      // console.log('yearCruises:', yearCruises)
       this.setState({ yearCruises });
     }
   }

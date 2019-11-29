@@ -93,7 +93,8 @@ class EventCommentModal extends Component {
 
 function mapStateToProps(state, ownProps) {
 
-  let event_option_comment = ownProps.event.event_options.find(event_option => event_option.event_option_name === 'event_comment')
+
+  let event_option_comment = ( ownProps.event ) ? ownProps.event.event_options.find(event_option => event_option.event_option_name === 'event_comment') : null;
   if(event_option_comment) {
     return {
       initialValues: { event_comment: event_option_comment.event_option_value }
