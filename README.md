@@ -1,4 +1,4 @@
-# sealog-client-vehicle
+# sealog-client-vessel
 React-Redux based client for the Sealog Eventlogging Server
 
 For installation instruction please look at [INSTALL.md](./INSTALL.md)
