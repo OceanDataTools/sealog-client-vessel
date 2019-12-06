@@ -22,11 +22,9 @@ class CruiseMenu extends Component {
     super(props);
 
     this.state = {
-      activeYearKey: null,
+      activeYear: null,
       years: null,
       yearCruises: null,
-      cruises: null,
-      activeCruiseKey: null,
       activeCruise: null,
 
     };
@@ -44,7 +42,7 @@ class CruiseMenu extends Component {
   componentDidUpdate(prevProps, prevState){
 
     if(this.props.cruise !== prevProps.cruise && this.props.cruise.id){
-      this.setState({activeYearKey: moment.utc(this.props.cruise.start_ts).format("YYYY"), activeCruise: this.props.cruise, activeCruiseKey: this.props.cruise.id})
+      this.setState({activeYear: moment.utc(this.props.cruise.start_ts).format("YYYY"), activeCruise: this.props.cruise})
     }
 
     if(this.props.cruises !== prevProps.cruises && this.props.cruises.length > 0 ) {
@@ -65,7 +63,7 @@ class CruiseMenu extends Component {
     if(this.state.activeCruise === null || this.state.activeCruise && this.state.activeCruise.id !== id) {
       window.scrollTo(0, 0);
       const activeCruise = this.props.cruises.find(cruise => cruise.id === id);
-      this.setState({activeCruiseKey: activeCruise.id, activeCruise: activeCruise});
+      this.setState({activeCruise: activeCruise});
     }
   }
 
@@ -113,11 +111,11 @@ class CruiseMenu extends Component {
       });
   }
 
-  handleYearSelect(activeYearKey) {
-    if(this.state.activeYearKey !== activeYearKey) {
+  handleYearSelect(activeYear) {
+    if(this.state.activeYear !== activeYear) {
       // console.log("set active year state 1");
-      this.setState({ activeYearKey: activeYearKey, activeCruise: null, activeCruiseKey: null});
-      // this.buildCruiseList(activeYearKey);
+      this.setState({ activeYear: activeYear, activeCruise: null});
+      // this.buildCruiseList(activeYear);
     }
   }
 
@@ -181,11 +179,11 @@ class CruiseMenu extends Component {
       return moment.utc(cruise.start_ts).format("YYYY");
     }));
 
-    const activeYearKey = (years.size == 1) ? years.values().next().value : null;
+    const activeYear = (years.size == 1) ? years.values().next().value : null;
 
     this.setState({years});
 
-    this.handleYearSelect(activeYearKey);
+    this.handleYearSelect(activeYear);
   }
 
   buildCruiseList() {
@@ -275,7 +273,7 @@ class CruiseMenu extends Component {
 
     if(this.state.years && this.state.years.size > 1) {
       return (
-        <Accordion id="accordion-controlled-year" activeKey={this.state.activeYearKey} onSelect={this.handleYearSelect}>
+        <Accordion id="accordion-controlled-year" activeKey={this.state.activeYear} onSelect={this.handleYearSelect}>
           {this.renderYearListItems()}
         </Accordion>
       );
