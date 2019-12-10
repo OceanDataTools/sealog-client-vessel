@@ -518,6 +518,8 @@ export function createEventTemplate(formProps) {
   fields.event_name = formProps.event_name;
   fields.event_value = formProps.event_value;
   fields.system_template = formProps.system_template;
+  fields.template_disabled = formProps.template_disabled;
+  fields.template_categories = formProps.template_categories;
 
   if(!formProps.event_free_text_required) {
     fields.event_free_text_required = false;
@@ -798,6 +800,8 @@ export function updateEventTemplate(formProps) {
 
   fields.event_name = formProps.event_name;
   fields.event_value = formProps.event_value;
+  fields.template_disabled = formProps.template_disabled;
+  fields.template_categories = formProps.template_categories;
 
   if(!formProps.event_free_text_required) {
     fields.event_free_text_required = false;
