@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
-import { Alert, Button, Col, Card, Form, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import { Button, Card, Form, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import { renderAlert, renderDatePicker, renderMessage, renderTextField, renderTextArea, dateFormat } from './form_elements';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import moment from 'moment';
-import Datetime from 'react-datetime';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -18,8 +18,6 @@ import 'filepond/dist/filepond.min.css';
 import { API_ROOT_URL } from '../client_config';
 import * as mapDispatchToProps from '../actions';
 
-const dateFormat = "YYYY-MM-DD"
-
 const CRUISE_ROUTE = "/files/cruises";
 
 const cookies = new Cookies();
@@ -28,6 +26,10 @@ class UpdateCruise extends Component {
 
   constructor (props) {
     super(props);
+
+    this.state = {
+      filepondPristine: true
+    }
 
     this.handleFileDownload = this.handleFileDownload.bind(this);
     this.handleFileDelete = this.handleFileDelete.bind(this);
@@ -62,19 +64,29 @@ class UpdateCruise extends Component {
       delete formProps.cruise_name
     }
 
-    if(formProps.departure_port) {
-      formProps.cruise_additional_meta.cruise_departure_location = formProps.departure_port
-      delete formProps.departure_port
+    if(formProps.cruise_vessel) {
+      formProps.cruise_additional_meta.cruise_vessel = formProps.cruise_vessel
+      delete formProps.cruise_vessel
     }
 
-    if(formProps.arrival_port) {
-      formProps.cruise_additional_meta.cruise_arrival_location = formProps.arrival_port
-      delete formProps.arrival_port
+    if(formProps.cruise_pi) {
+      formProps.cruise_additional_meta.cruise_pi = formProps.cruise_pi
+      delete formProps.cruise_pi
     }
 
     if(formProps.cruise_description) {
       formProps.cruise_additional_meta.cruise_description = formProps.cruise_description
       delete formProps.cruise_description
+    }
+
+    if(formProps.cruise_departure_location) {
+      formProps.cruise_additional_meta.cruise_departure_location = formProps.cruise_departure_location;
+      delete formProps.cruise_departure_location;
+    }
+
+    if(formProps.cruise_arrival_location) {
+      formProps.cruise_additional_meta.cruise_arrival_location = formProps.cruise_arrival_location;
+      delete formProps.cruise_arrival_location;
     }
 
     formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
@@ -84,8 +96,8 @@ class UpdateCruise extends Component {
     this.props.handleFormSubmit()
   }
 
-  handleFileDownload(cruiseID, filename) {
-    axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${cruiseID}/${filename}`,
+  async handleFileDownload(cruiseID, filename) {
+    await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${cruiseID}/${filename}`,
     {
       headers: {
         authorization: cookies.get('token')
@@ -100,8 +112,8 @@ class UpdateCruise extends Component {
     });
   }
 
-  handleFileDelete(cruiseID, filename) {
-    axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${cruiseID}/${filename}`,
+  async handleFileDelete(cruiseID, filename) {
+    await axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${cruiseID}/${filename}`,
     {
       headers: {
         authorization: cookies.get('token')
@@ -119,132 +131,19 @@ class UpdateCruise extends Component {
   copyToClipboard() {
     if(this.props.cruise.cruise_id) {
       return  (
-`Cruise ID:       ${this.props.cruise.cruise_id}
-Cruise Name:     ${(this.props.cruise.cruise_additional_meta.cruise_name) ? this.props.cruise.cruise_additional_meta.cruise_name : ""}
-Chief Scientist: ${this.props.cruise.cruise_pi}
-Working Site:    ${this.props.cruise.cruise_location}\n
-Vessel:          ${(this.props.cruise.cruise_additional_meta.cruise_vessel) ? this.props.cruise.cruise_additional_meta.cruise_vessel : ""}\n
-Departure Date:  ${moment.utc(this.props.cruise.start_ts).format("dddd, MMMM Do YYYY")}
-Departure Port   ${(this.props.cruise.cruise_additional_meta.cruise_departure_location) ? this.props.cruise.cruise_additional_meta.cruise_departure_location : ""}\n
-Arrival Date:    ${moment.utc(this.props.cruise.stop_ts).format("dddd, MMMM Do YYYY")}
-Arrival Port:    ${(this.props.cruise.cruise_additional_meta.cruise_arrival_location) ? this.props.cruise.cruise_additional_meta.cruise_arrival_location : ""}\n
-Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description) ? this.props.cruise.cruise_additional_meta.cruise_description : ""}`
+`Cruise:          ${this.props.cruise.cruise_id}
+Name:            ${(this.props.cruise.cruise_additional_meta.cruise_name) ? this.props.cruise.cruise_additional_meta.cruise_name : ""}
+Chief Scientist: ${this.props.cruise.cruise_additional_meta.cruise_pi}
+Vessel:          ${this.props.cruise.cruise_additional_meta.cruise_vessel}
+Location:        ${this.props.cruise.cruise_location}\n
+Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description) ? this.props.cruise.cruise_additional_meta.cruise_description : ""}\n
+Departure Port:  ${this.props.cruise.cruise_additional_meta.cruise_departure_location}
+Start of Cruise: ${moment.utc(this.props.cruise.start_ts).format(dateFormat)}\n
+Arrival Port:    ${this.props.cruise.cruise_additional_meta.cruise_arrival_location}
+End of Cruise:   ${moment.utc(this.props.cruise.stop_ts).format(dateFormat)}\n`
       )
     }
   }
-
-  renderTextField({ input, label, placeholder, required, meta: { touched, error } }) {
-    let requiredField = (required)? <span className='text-danger'> *</span> : ''
-    let placeholder_txt = (placeholder)? placeholder: label
-
-    return (
-      <Form.Group as={Col} lg="6">
-        <Form.Label>{label}{requiredField}</Form.Label>
-        <Form.Control type="text" {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    )
-  }
-
-  renderTextArea({ input, label, placeholder, required, rows = 4, meta: { error } }) {
-    let requiredField = (required)? <span className='text-danger'> *</span> : ''
-    let placeholder_txt = (placeholder)? placeholder: label
-
-    return (
-      <Form.Group as={Col} lg="12">
-        <Form.Label>{label}{requiredField}</Form.Label>
-        <Form.Control as="textarea" {...input} placeholder={placeholder_txt} rows={rows}/>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    )
-  }
-
-  renderSelectField({ input, label, placeholder, required, options, meta: { touched, error } }) {
-
-    let requiredField = (required)? <span className='text-danger'> *</span> : ''
-    let placeholder_txt = (placeholder)? placeholder: label
-    let defaultOption = ( <option key={`${input.name}.empty`} value=""></option> );
-    let optionList = options.map((option, index) => {
-      return (
-        <option key={`${input.name}.${index}`} value={`${option}`}>{ `${option}`}</option>
-      );
-    });
-
-    return (
-      <Form.Group as={Col} lg="6">
-        <Form.Label>{label}{requiredField}</Form.Label>
-        <Form.Control as="select" {...input} placeholder={placeholder_txt} isInvalid={touched && error}>
-          { defaultOption }
-          { optionList }
-        </Form.Control>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    )
-  }
-
-  renderDatePicker({ input, label, required, meta: { touched, error } }) {
-    let requiredField = (required)? <span className='text-danger'> *</span> : ''
-    
-    return (
-      <Form.Group as={Col} lg="6">
-        <Form.Label>{label}{requiredField}</Form.Label>
-        <Datetime {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat) : null} dateFormat={dateFormat} timeFormat={false} selected={input.value ? moment.utc(input.value, dateFormat) : null }/>
-        {touched && (error && <div style={{width: "100%", marginTop: "0.25rem", fontSize: "80%"}} className='text-danger'>{error}</div>)}
-      </Form.Group>
-    )
-  }
-
-  renderCheckboxGroup({ label, options, input, required, meta: { dirty, error } }) {
-
-    let requiredField = (required)? (<span className='text-danger'> *</span>) : ''
-    let checkboxList = options.map((option, index) => {
-
-    return (
-        <Form.Check
-          inline
-          label={option.value}
-          name={`${option.label}[${index}]`}
-          key={`${label}.${index}`}
-          value={option.value}
-          checked={input.value.indexOf(option.value) !== -1}
-          onChange={event => {
-            const newValue = [...input.value];
-            if(event.target.checked) {
-              newValue.push(option.value);
-            } else {
-              newValue.splice(newValue.indexOf(option.value), 1);
-            }
-            return input.onChange(newValue);
-          }}
-        />
-      );
-    });
-
-    return (
-      <Form.Group>
-        <Form.Label>{label}{requiredField}</Form.Label><br/>
-        {checkboxList}
-        {dirty && (error && <div className="text-danger" style={{width: "100%", marginTop: "0.25rem", fontSize: "80%"}}>{error}</div>)}
-      </Form.Group>
-    );
-  }
-
-  renderCheckbox({ input, label, meta: { dirty, error } }) {    
-    return (
-      <Form.Group as={Col} lg="6">
-        <Form.Check
-          {...input}
-          label={label}
-          checked={input.value ? true : false}
-          onChange={(e) => input.onChange(e.target.checked)}
-          isInvalid={dirty && error}
-        >
-        </Form.Check>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    );
-  }
-
 
   renderFiles() {
     if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files && this.props.cruise.cruise_additional_meta.cruise_files.length > 0) {
@@ -254,26 +153,6 @@ Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description)
       return <div>{files}<br/></div>
     }
     return null
-  }
-
-  renderAlert() {
-    if (this.props.errorMessage) {
-      return (
-        <Alert variant="danger">
-          <strong>Opps!</strong> {this.props.errorMessage}
-        </Alert>
-      )
-    }
-  }
-
-  renderMessage() {
-    if (this.props.message) {
-      return (
-        <Alert variant="success">
-          <strong>Success!</strong> {this.props.message}
-        </Alert>
-      )
-    }
   }
 
   render() {
@@ -291,43 +170,44 @@ Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description)
               <Form.Row>
                 <Field
                   name="cruise_id"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   label="Cruise ID"
                   placeholder="i.e. AT42-01"
                   required={true}
                 />
                 <Field
                   name="cruise_name"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   label="Cruise Name"
                   placeholder="i.e. Lost City 2018"
                 />
                 <Field
                   name="cruise_vessel"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   label="Vessel Name"
                   placeholder="i.e. R/V Atlantis"
                   required={true}
                 />
                 <Field
                   name="cruise_pi"
-                  component={this.renderTextField}
-                  label="Chief Scientist"
+                  component={renderTextField}
+                  label="Primary Investigator"
                   placeholder="i.e. Dr. Susan Lang"
                   required={true}
                 />
                 <Field
                   name="cruise_location"
-                  component={this.renderTextArea}
-                  label="Working Site"
+                  component={renderTextField}
+                  label="Cruise Location"
                   placeholder="i.e. Lost City, Mid Atlantic Ridge"
-                  rows={1}
+                  lg={12}
+                  sm={12}
                 />
               </Form.Row>
               <Form.Row>
                 <Field
                   name="cruise_description"
-                  component={this.renderTextArea}
+                  component={renderTextArea}
                   label="Cruise Description"
                   placeholder="i.e. A brief summary of the cruise"
                   rows={8}
@@ -336,75 +216,75 @@ Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description)
               <Form.Row>
                 <Field
                   name="start_ts"
-                  component={this.renderDatePicker}
+                  component={renderDatePicker}
                   label="Start Date (UTC)"
                   required={true}
                 />
                 <Field
                   name="stop_ts"
-                  component={this.renderDatePicker}
+                  component={renderDatePicker}
                   label="Stop Date (UTC)"
                   required={true}
                 />
               </Form.Row>
               <Form.Row>
-                <Field
-                  name="departure_port"
-                  component={this.renderTextField}
-                  label="Departure Port"
-                  placeholder="i.e. Norfolk, VA"
-                  required={true}
-                />
-                <Field
-                  name="arrival_port"
-                  component={this.renderTextField}
-                  label="Arrival Port"
-                  placeholder="i.e. St. George's, Bermuda"
-                  required={true}
-                />
+                  <Field
+                    name="cruise_departure_location"
+                    component={renderTextField}
+                    label="Departure Port"
+                    placeholder="i.e. Norfolk, VA"
+                    required={true}
+                  />
+                  <Field
+                    name="cruise_arrival_location"
+                    component={renderTextField}
+                    label="Arrival Port"
+                    placeholder="i.e. St. George's, Bermuda"
+                    required={true}
+                  />
               </Form.Row>
               <Form.Row>
                 <Field
                   name="cruise_participants"
-                  component={this.renderTextArea}
+                  component={renderTextArea}
                   label="Cruise Participants, comma delimited"
                   placeholder="i.e. Dave Butterfield,Sharon Walker"
                   rows={2}
                 />
                 <Field
                   name="cruise_tags"
-                  component={this.renderTextArea}
+                  component={renderTextArea}
                   label="Cruise Tags, comma delimited"
                   placeholder="i.e. coral,chemistry,engineering"
                   rows={2}
                 />
               </Form.Row>
-                  <Form.Label>Cruise Files</Form.Label>
-                  {this.renderFiles()}
-                  <FilePond ref={ref => this.pond = ref} allowMultiple={true} 
-                    maxFiles={5} 
-                    server={{
-                      url: API_ROOT_URL,
-                      process: {
-                        url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
-                        headers: { authorization: cookies.get('token') },
-                      },
-                      load: {
-                        url: CRUISE_ROUTE + '/filepond/load',
-                        headers: { authorization: cookies.get('token') },
-                      },
-                      revert: {
-                        url: CRUISE_ROUTE + '/filepond/revert',
-                        headers: { authorization: cookies.get('token') },
-                      }
-                    }}
-                  >
-                  </FilePond>
-              {this.renderAlert()}
-              {this.renderMessage()}
+                <Form.Label>Cruise Files</Form.Label>
+                {this.renderFiles()}
+                <FilePond ref={ref => this.pond = ref} allowMultiple={true} 
+                  maxFiles={5}
+                  server={{
+                    url: API_ROOT_URL,
+                    process: {
+                      url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
+                      headers: { authorization: cookies.get('token') },
+                    },
+                    revert: {
+                      url: CRUISE_ROUTE + '/filepond/revert',
+                      headers: { authorization: cookies.get('token') },
+                    }
+                  }}
+                  onupdatefiles={() => {
+                    // Set currently active file objects to this.state
+                    this.setState({ filepondPristine: false });
+                  }}
+                >
+                </FilePond>
+              {renderAlert(this.props.errorMessage)}
+              {renderMessage(this.props.message)}
               <div className="float-right" style={{marginRight: "-20px", marginBottom: "-8px"}}>
                 <Button variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Values</Button>
-                <Button variant="primary" size="sm" type="submit" disabled={submitting || !valid || pristine}>Update</Button>
+                <Button variant="primary" size="sm" type="submit" disabled={(submitting || !valid || pristine) && this.state.filepondPristine}>Update</Button>
               </div>
             </Form>
           </Card.Body>
@@ -434,14 +314,6 @@ function validate(formProps) {
     errors.cruise_vessel = 'Required'
   }
 
-  if (!formProps.departure_port) {
-    errors.departure_port = 'Required'
-  }
-
-  if (!formProps.arrival_port) {
-    errors.arrival_port = 'Required'
-  }
-
   if (!formProps.cruise_pi) {
     errors.cruise_pi = 'Required'
   }
@@ -459,10 +331,17 @@ function validate(formProps) {
   }
 
   if ((formProps.start_ts !== '') && (formProps.stop_ts !== '')) {
-    if(moment(formProps.start_ts, dateFormat).isAfter(moment(formProps.stop_ts, dateFormat))) {
-      errors.start_ts = 'Start date must be before Stop date'
-      errors.stop_ts = 'Stop date must be after Start date'
+    if(moment(formProps.stop_ts, dateFormat).isBefore(moment(formProps.start_ts, dateFormat))) {
+      errors.stop_ts = 'Stop date must be later than start data'
     }
+  }
+
+  if (!formProps.cruise_departure_location) {
+    errors.cruise_departure_location = 'Required';
+  }
+
+  if (!formProps.cruise_arrival_location) {
+    errors.cruise_arrival_location = 'Required';
   }
 
   if (typeof formProps.cruise_tags === "string") {
@@ -494,12 +373,12 @@ function mapStateToProps(state) {
       initialValues.cruise_name = initialValues.cruise_additional_meta.cruise_name
     }
 
-    if (initialValues.cruise_additional_meta.cruise_departure_location) {
-      initialValues.departure_port = initialValues.cruise_additional_meta.cruise_departure_location
+    if (initialValues.cruise_additional_meta.cruise_vessel) {
+      initialValues.cruise_vessel = initialValues.cruise_additional_meta.cruise_vessel
     }
 
-    if (initialValues.cruise_additional_meta.cruise_arrival_location) {
-      initialValues.arrival_port = initialValues.cruise_additional_meta.cruise_arrival_location
+    if (initialValues.cruise_additional_meta.cruise_pi) {
+      initialValues.cruise_pi = initialValues.cruise_additional_meta.cruise_pi
     }
 
     if (initialValues.cruise_additional_meta.cruise_description) {
@@ -510,6 +389,13 @@ function mapStateToProps(state) {
       initialValues.cruise_participants = initialValues.cruise_additional_meta.cruise_participants
     }
 
+    if (initialValues.cruise_additional_meta.cruise_departure_location) {
+      initialValues.cruise_departure_location = initialValues.cruise_additional_meta.cruise_departure_location
+    }
+
+    if (initialValues.cruise_additional_meta.cruise_arrival_location) {
+      initialValues.cruise_arrival_location = initialValues.cruise_additional_meta.cruise_arrival_location
+    }
     // delete initialValues.cruise_additional_meta
   }
 

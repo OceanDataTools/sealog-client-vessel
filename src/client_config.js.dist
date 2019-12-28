@@ -25,16 +25,22 @@ const LOGIN_SCREEN_TXT = "Sealog provides the Oceanographic Research community w
 const LOGIN_IMAGE = "";
 
 // Text show on the main page above the cruise list.
-const MAIN_SCREEN_TXT = "Please select a cruise from the list below. Selecting a cruise will open the cruise information panel.  At the bottom of the cruise information panel there will be links for proceeding to the cruise replay section, the cruise review section and the cruise gallery section of Sealog. If at any time you wish to return to this page please click the \"Review Cruises\" text in upper navigation bar.";
+const MAIN_SCREEN_TXT = "Please select a cruise from the list below.  Once a cruise is selected please select the desired replay mode. If at any time you wish to return to this page please click the \"Review Cruises\" text in upper navigation bar.";
 
 // Title displayed on the left side of the title bar
 const HEADER_TITLE = `Sealog for Vessels v${Pkg.version}`;
 
 // Set default vessel
-const DEFAULT_VESSEL = "";
+const DEFAULT_VESSEL = "R/V Atlantis";
 
 // Use an internal tile server (true), or pull tiles directly from the Internet (false).
 const USE_MAPTILE_PROXY = false;
+
+// Add cruise-level authentication. This needs to match the 'useAccessControl' setting on the sealog-server.
+const USE_ACCESS_CONTROL = false;
+
+// Remove ability to add new events
+const DISABLE_EVENT_LOGGING = false;
 
 module.exports = {
   API_ROOT_URL,
@@ -47,5 +53,7 @@ module.exports = {
   MAIN_SCREEN_TXT,
   HEADER_TITLE,
   DEFAULT_VESSEL,
-  USE_MAPTILE_PROXY
+  USE_MAPTILE_PROXY,
+  USE_ACCESS_CONTROL,
+  DISABLE_EVENT_LOGGING
 }

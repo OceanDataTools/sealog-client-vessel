@@ -61,7 +61,7 @@ class ImportUsersModal extends Component {
         // console.log("Attempting to add user")
 
         try {
-          const result = axios.post(`${API_ROOT_URL}/api/v1/users`,
+          const result = await axios.post(`${API_ROOT_URL}/api/v1/users`,
           {id, username, fullname, email, password, roles, system_user},
           {
             headers: {
@@ -149,10 +149,10 @@ class ImportUsersModal extends Component {
   render() {
     const { show, handleExit } = this.props
 
-    if ( handleExit ) {
+    if(handleExit) {
       return (
-        <Modal show={show} onExit={this.props.handleExit} onHide={this.quitImport}>
-          <Modal.Header closeButton className="bg-light">
+        <Modal show={show} onExit={handleExit} onHide={this.quitImport}>
+          <Modal.Header closeButton>
             <Modal.Title>Import Users</Modal.Title>
           </Modal.Header>
 
@@ -173,7 +173,7 @@ class ImportUsersModal extends Component {
             </Row>
           </Modal.Body>
 
-          <Modal.Footer className="bg-light">
+          <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
           </Modal.Footer>
         </Modal>

@@ -34,6 +34,7 @@ class CruiseGallery extends Component {
     if(!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
       this.props.initCruise(this.props.match.params.id);
     }
+
   }
 
   componentDidUpdate() {
@@ -42,11 +43,10 @@ class CruiseGallery extends Component {
   componentWillUnmount(){
   }
 
-  initCruiseImages(id, auxDatasourceFilter = 'vesselRealtimeFramegrabberData') {
+  async initCruiseImages(id, auxDatasourceFilter = 'vesselRealtimeFramegrabberData') {
     this.setState({ fetching: true});
 
-    let url = `${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${auxDatasourceFilter}`;
-    axios.get(url,
+    const image_data = await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${auxDatasourceFilter}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -64,14 +64,16 @@ class CruiseGallery extends Component {
         }
       });
 
-      this.setState({ aux_data: image_data, fetching: false });
+      return image_data;
     }).catch((error)=>{
-      if(error.response.data.statusCode === 404) {
-        this.setState({ aux_data: [], fetching: false });
-      } else {
-        console.log(error);
+      if(error.response.data.statusCode !== 404) {
+        console.error(error);
       }
+      return [];
     });
+
+    this.setState({ aux_data: image_data, fetching: false });
+
   }
 
   handleCruiseSelect(id) {
@@ -123,9 +125,9 @@ class CruiseGallery extends Component {
         <Row>
           <Col lg={12}>
             <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-primary">Cruises</span>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
               {' '}/{' '}
-              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
+              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} /></span>
               {' '}/{' '}
               <span><CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Gallery"} modes={["Review", "Replay", "Map"]}/></span>
             </span>

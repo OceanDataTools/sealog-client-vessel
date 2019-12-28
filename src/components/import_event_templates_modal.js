@@ -149,41 +149,36 @@ class ImportEventTemplatesModal extends Component {
 
   render() {
 
-    const { show, handleExit } = this.props
+    const { show } = this.props
 
-    if ( handleExit ) {
-      return (
-        <Modal show={show} onExit={this.props.handleExit} onHide={this.quitImport}>
-          <Modal.Header closeButton className="bg-light">
-            <Modal.Title>Import Event Templates</Modal.Title>
-          </Modal.Header>
+    return (
+      <Modal show={show} onExit={this.props.handleExit} onHide={this.quitImport}>
+        <Modal.Header closeButton>
+          <Modal.Title>Import Event Templates</Modal.Title>
+        </Modal.Header>
 
-          <Modal.Body>
-            <Row>
-              <Col xs={6}>
-                <ReactFileReader fileTypes={[".json"]} handleFiles={this.handleEventTemplateImport}>
-                    <Button size="sm">Select File</Button>
-                </ReactFileReader>
-              </Col>
-              <Col xs={3}>
-                Pending: {this.state.pending}
-                <hr/>
-                Imported: {this.state.imported}<br/>
-                Skipped: {this.state.skipped}<br/>
-                Errors: {this.state.errors}<br/>
-              </Col>
-            </Row>
-          </Modal.Body>
+        <Modal.Body>
+          <Row>
+            <Col xs={6}>
+              <ReactFileReader fileTypes={[".json"]} handleFiles={this.handleEventTemplateImport}>
+                  <Button size="sm">Select File</Button>
+              </ReactFileReader>
+            </Col>
+            <Col xs={3}>
+              Pending: {this.state.pending}
+              <hr/>
+              Imported: {this.state.imported}<br/>
+              Skipped: {this.state.skipped}<br/>
+              Errors: {this.state.errors}<br/>
+            </Col>
+          </Row>
+        </Modal.Body>
 
-          <Modal.Footer className="bg-light">
-            <Button size="sm" variant="secondary" onClick={this.quitImport}>Close</Button>
-          </Modal.Footer>
-        </Modal>
-      );
-    }
-    else {
-      return null;
-    }
+        <Modal.Footer>
+          <Button size="sm" variant="secondary" onClick={this.quitImport}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+    );
   }
 }
 

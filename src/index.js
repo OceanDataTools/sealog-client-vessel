@@ -19,11 +19,11 @@ import Tasks from './components/tasks';
 import EventLogging from './components/event_logging';
 import EventManagement from './components/event_management';
 import EventTemplates from './components/event_templates';
+import Cruises from './components/cruises';
 import CruiseMap from './components/cruise_map';
 import CruiseGallery from './components/cruise_gallery';
 import CruiseReplay from './components/cruise_replay';
 import CruiseReview from './components/cruise_review';
-import Cruises from './components/cruises';
 import ForgotPassword from './components/auth/forgot_password';
 import ResetPassword from './components/auth/reset_password';
 
@@ -54,9 +54,10 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons/faTimes';
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash';
 import { faVial } from '@fortawesome/free-solid-svg-icons/faVial';
 import { faUser } from '@fortawesome/free-solid-svg-icons/faUser';
+import { faUserLock } from '@fortawesome/free-solid-svg-icons/faUserLock';
 import { faWindowMaximize } from '@fortawesome/free-solid-svg-icons/faWindowMaximize';
 
-library.add(faArrowLeft,faArrowRight,faBackward,faCalculator,faChevronDown,faChevronUp,faClipboard,faComment,faCompress,faDownload,faExpand,faEye,faEyeSlash,faForward,faLink,faPause,faPencilAlt,faPlay,faPlus,faStepBackward,faStepForward,faTimes,faTrash,faVial,faUser,faWindowMaximize);
+library.add(faArrowLeft,faArrowRight,faBackward,faCalculator,faChevronDown,faChevronUp,faClipboard,faComment,faCompress,faDownload,faExpand,faEye,faEyeSlash,faForward,faLink,faPause,faPencilAlt,faPlay,faPlus,faStepBackward,faStepForward,faTimes,faTrash,faVial,faUser,faUserLock,faWindowMaximize);
 
 import './assets/style/bootstrap.min.css';
 import 'leaflet/dist/leaflet.css';
@@ -64,6 +65,8 @@ import './assets/style/style.css';
 
 import configureStore from './store';
 import history from './history';
+
+import { DISABLE_EVENT_LOGGING } from './client_config';
 
 const store = configureStore();
 
@@ -79,7 +82,7 @@ ReactDOM.render(
       <div>
         <Header />
         <Switch>
-          <Route path={ `/` } exact={true} component={RequireAuth(EventLogging)}/>
+          <Route path={ `/` } exact={true} component={RequireAuth((DISABLE_EVENT_LOGGING) ? CruiseMenu : EventLogging )}/>
           <Route path={ `/github`} exact={true} component={() => window.location = 'https://github.com/oceandatatools/sealog-client-vessel'}/>
           <Route path={ `/license`} exact={true} component={() => window.location = 'https://github.com/oceandatatools/sealog-client-vessel/blob/master/LICENSE'}/>
           <Route path={ `/profile` } exact={true} component={RequireAuth(Profile)} />

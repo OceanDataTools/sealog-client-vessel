@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { Client } from '@hapi/nes/lib/client';
-import { WS_ROOT_URL } from '../client_config';
+import { WS_ROOT_URL, DISABLE_EVENT_LOGGING } from '../client_config';
 
 import * as mapDispatchToProps from '../actions';
 
@@ -23,7 +23,7 @@ class Footer extends Component {
   componentDidMount() {
     this.handleASNAPNotification();
 
-    if(this.props.authenticated) {
+    if ( !DISABLE_EVENT_LOGGING && this.props.authenticated ) {
       this.connectToWS();
     }
     
@@ -33,7 +33,7 @@ class Footer extends Component {
   }
 
   componentWillUnmount() {
-    if(this.props.authenticated) {
+    if ( !DISABLE_EVENT_LOGGING && this.props.authenticated ) {
       this.client.disconnect();
     }
 
@@ -80,9 +80,12 @@ class Footer extends Component {
 
   render () {
 
-    let asnapStatus = <span>&nbsp;</span>;
+    let asnapStatus = null;
 
-    if(this.props.authenticated && this.props.asnapStatus === "Off") {
+    if ( DISABLE_EVENT_LOGGING ) {
+      asnapStatus = null;
+    }
+    else if(this.props.authenticated && this.props.asnapStatus === "Off") {
       asnapStatus =  (
         <span>
           ASNAP: <span className="text-danger">Off</span>
@@ -103,11 +106,13 @@ class Footer extends Component {
     }
 
     return (
-      <div className="bg-light" style={{marginTop: "8px", padding: ".5rem 1rem"}}>
-        {asnapStatus}
-        <span className="float-right bg-light">
-          <a href={`/github`} target="_blank">Sealog</a> is licensed under the <a href={`/license`} target="_blank">MIT</a> public license
-        </span>
+      <div>
+        <div style={{marginTop: "4px"}}>
+          {asnapStatus}
+          <span className="float-right">
+            <a href={`/github`} target="_blank">Sealog</a> is licensed under the <a href={`/license`} target="_blank">MIT</a> public license
+          </span>
+        </div>
       </div>
     );
   }
