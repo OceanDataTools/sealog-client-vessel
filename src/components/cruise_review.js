@@ -21,8 +21,7 @@ class CruiseReview extends Component {
     this.divFocus = null;
 
     this.state = {
-      activePage: 1,
-      replayEventIndex: 0
+      activePage: 1
     };
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -34,26 +33,20 @@ class CruiseReview extends Component {
 
   }
 
-  componentDidMount() {
-
+  componentDidMount(){
     if(!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
       this.props.initCruiseReplay(this.props.match.params.id, this.props.event.hideASNAP);
     }
     else {
       const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id);
-      this.setState(
-        {
-          replayEventIndex: eventIndex,
-          activePage: Math.ceil((eventIndex+1)/maxEventsPerPage)
-        }
-      );
+      this.handlePageSelect(Math.ceil((eventIndex + 1)/maxEventsPerPage), false);
     }
 
-    this.props.initCruise(this.props.match.params.id);
+    
     this.divFocus.focus();
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate() {
   }
 
   componentWillUnmount(){
@@ -131,10 +124,8 @@ class CruiseReview extends Component {
   }
 
   handleCruiseSelect(id) {
-    this.props.gotoCruiseReview(id);
     this.props.initCruiseReplay(id, this.props.event.hideASNAP);
-    this.setState({activePage: 1, replayEventIndex: 0});
-    this.divFocus.focus();
+    this.setState({activePage: 1});
   }
 
   handleCruiseModeSelect(mode) {
@@ -226,7 +217,7 @@ class CruiseReview extends Component {
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
           
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } icon='plus' fixedWidth inverse={!active} transform="shrink-4"/></span>;
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } inverse={!active} icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
 
@@ -254,20 +245,20 @@ class CruiseReview extends Component {
         <Row>
           <Col lg={12}>
             <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-primary">Cruises</span>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{cruise_id}</span>
               {' '}/{' '}
-              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise}/></span>
+              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
               {' '}/{' '}
               <span><CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Review"} modes={["Replay", "Map", "Gallery"]}/></span>
             </span>
           </Col>
         </Row>
         <Row style={{paddingTop: "8px"}}>
-          <Col sm={7} md={8} lg={9}>
+          <Col sm={12} md={12} lg={9}>
             {this.renderEventCard()}
             <CustomPagination style={{marginTop: "8px"}} page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
           </Col>
-          <Col sm={5} md={4} lg={3}>
+          <Col sm={6} md={5} lg={3}>
             <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
           </Col>
         </Row>
@@ -280,7 +271,6 @@ function mapStateToProps(state) {
   return {
     roles: state.user.profile.roles,
     event: state.event,
-    cruise: state.cruise.cruise,
     cruise: state.cruise.cruise
   };
 }

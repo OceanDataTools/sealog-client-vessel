@@ -27,7 +27,6 @@ class EventShowDetailsModal extends Component {
     this.state = { event: {} }
 
     this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this);
-    this.handleKeyPress = this.handleKeyPress.bind(this);
 
   }
 
@@ -65,12 +64,6 @@ class EventShowDetailsModal extends Component {
 
   handleImagePreviewModal(source, filepath) {
     this.props.showModal('imagePreview', { name: source, filepath: filepath })
-  }
-
-  handleKeyPress(event) {
-    if(event.key === "Esc") {
-      this.props.handleHide();
-    }
   }
 
   renderImage(source, filepath) {
@@ -178,7 +171,7 @@ class EventShowDetailsModal extends Component {
 
     const event_comment_card = (event_comment)?(<Card><Card.Body className="data-card-body">Comment: {event_comment.event_option_value}</Card.Body></Card>) : null;
     
-    if ( event ) {
+    if (event ) {
       if(this.state.event.event_options) {
         return (
           <Modal size="lg" show={show} onHide={this.props.handleHide}>
@@ -215,7 +208,7 @@ class EventShowDetailsModal extends Component {
       } else {
         return (
           <Modal size="lg" show={show} onHide={this.props.handleHide}>
-            <Modal.Header closeButton className="bg-light">
+            <Modal.Header closeButton>
               <Modal.Title as="h5">Event Details: {this.state.event.event_value}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -233,7 +226,9 @@ class EventShowDetailsModal extends Component {
 
 function mapStateToProps(state) {
 
-  return {}
+  return {
+    roles: state.user.profile.roles
+  }
 }
 
 export default compose(

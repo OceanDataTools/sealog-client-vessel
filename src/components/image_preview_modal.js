@@ -29,7 +29,7 @@ class ImagePreviewModal extends Component {
 
     const { show, handleHide, name } = this.props
 
-    if ( name ) {
+    if (name) {
       return (
         <Modal size="lg" show={show} onHide={handleHide}>
           <Modal.Header closeButton>

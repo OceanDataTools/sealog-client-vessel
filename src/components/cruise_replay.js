@@ -75,7 +75,6 @@ class CruiseReplay extends Component {
       );
     }
 
-    this.props.initCruise(this.props.match.params.id);
     this.divFocus.focus();
   }
 
@@ -194,7 +193,6 @@ class CruiseReplay extends Component {
     this.props.gotoCruiseReplay(id);
     this.props.initCruiseReplay(id, this.props.event.hideASNAP);
     this.setState({replayEventIndex: 0, activePage: 1});
-    this.divFocus.focus();
   }
 
   handleCruiseModeSelect(mode) {
@@ -408,7 +406,7 @@ class CruiseReplay extends Component {
       );
 
       return (
-        <Card bg="light" style={{marginBottom: "8px"}}>
+        <Card style={{marginBottom: "8px"}}>
           <Card.Body>
             <Row>
               <Col xs={4}>
@@ -481,7 +479,7 @@ class CruiseReplay extends Component {
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
           
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } icon='plus' inverse={!active} fixedWidth transform="shrink-4"/></span>;
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } inverse={!active} icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
 
@@ -510,6 +508,7 @@ class CruiseReplay extends Component {
   render(){
 
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading...";
+    // console.log("cruise:", this.props.cruise);
 
     return (
       <div tabIndex="-1" onKeyDown={this.handleKeyPress} ref={(div) => { this.divFocus = div }}>
@@ -518,9 +517,9 @@ class CruiseReplay extends Component {
         <Row>
           <Col lg={12}>
             <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-primary">Cruises</span>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
               {' '}/{' '}
-              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise}/></span>
+              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
               {' '}/{' '}
               <span><CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Replay"} modes={["Review", "Map", "Gallery"]}/></span>
             </span>
@@ -533,13 +532,13 @@ class CruiseReplay extends Component {
           {this.renderEventOptionsCard()}
           {this.renderAuxDataCard()}
           <Col sm={12}>
+            {this.renderControlsCard()}
             <Row style={{paddingTop: "4px"}}>
-              <Col md={9} lg={9}>
-                {this.renderControlsCard()}
+              <Col md={12} lg={9}>
                 {this.renderEventCard()}
                 <CustomPagination style={{marginTop: "8px"}} page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
               </Col>          
-              <Col md={3} lg={3}>
+              <Col md={4} lg={3}>
                 <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
               </Col>          
             </Row>
@@ -553,7 +552,7 @@ class CruiseReplay extends Component {
 function mapStateToProps(state) {
 
   return {
-    cruise: state.cruise.cruise,
+    cruise: state.cruise.cruise,  
     roles: state.user.profile.roles,
     event: state.event
   };

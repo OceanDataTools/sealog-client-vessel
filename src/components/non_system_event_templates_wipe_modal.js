@@ -24,11 +24,10 @@ class NonSystemEventTemplatesWipeModal extends Component {
   render() {
 
     const { show, handleHide, handleDelete } = this.props
-
-    if ( handleDelete ) {
+    if( handleDelete ) {
       return (
         <Modal show={show} onHide={handleHide}>
-          <Modal.Header closeButton className="bg-light">
+          <Modal.Header closeButton>
             <Modal.Title>Confirm Wipe</Modal.Title>
           </Modal.Header>
 
@@ -36,9 +35,9 @@ class NonSystemEventTemplatesWipeModal extends Component {
             { 'Are you sure you want to remove the non-system event templates from the local database?' }
           </Modal.Body>
 
-          <Modal.Footer className="bg-light">
-            <Button size="sm" variant="secondary" onClick={handleHide}>Cancel</Button>
-            <Button size="sm" variant="danger" onClick={this.handleConfirm}>Yup!</Button>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleHide}>Cancel</Button>
+            <Button variant="danger" onClick={this.handleConfirm}>Yup!</Button>
           </Modal.Footer>
         </Modal>
       );

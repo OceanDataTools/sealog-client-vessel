@@ -97,7 +97,6 @@ class ForgotPassword extends Component {
         <span>
           <ReCAPTCHA
             sitekey={RECAPTCHA_SITE_KEY}
-            theme="dark"
             size="normal"
             onChange={this.onCaptchaChange.bind(this)}
           />

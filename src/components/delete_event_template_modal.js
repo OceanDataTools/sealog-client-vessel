@@ -26,10 +26,10 @@ class DeleteEventTemplateModal extends Component {
 
     const { show, handleHide, id } = this.props
 
-    if ( id ) {
+    if(id) {
       return (
         <Modal show={show} onHide={handleHide}>
-          <Modal.Header closeButton className="bg-light">
+          <Modal.Header closeButton>
             <Modal.Title>Confirm Deletion</Modal.Title>
           </Modal.Header>
 
@@ -37,9 +37,9 @@ class DeleteEventTemplateModal extends Component {
             { 'Are you sure you want to delete this event template?' }
           </Modal.Body>
 
-          <Modal.Footer className="bg-light">
-            <Button size="sm" variant="secondary" onClick={handleHide}>Cancel</Button>
-            <Button size="sm" variant="danger" onClick={this.handleConfirm}>Yup!</Button>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleHide}>Cancel</Button>
+            <Button variant="danger" onClick={this.handleConfirm}>Yup!</Button>
           </Modal.Footer>
         </Modal>
       );

@@ -179,7 +179,9 @@
 }
 
 .navbar {
-  margin-bottom: 8px;
+  margin-bottom: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 .event-list-item {
@@ -212,8 +214,7 @@
 .form-signin {
   min-width: 330px;
   max-width: 330px;
-
-  margin: 20px auto 20px auto;
+  margin: 0px auto 20px auto;
 }
 
 .form-standard {
@@ -256,9 +257,9 @@
   padding: 4px;
   margin-top: 1px;
   z-index: 99999 !important;
-  background: #ffffff;
+  background: #FFFFFF;
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  border: 1px solid #f9f9f9;
+  border: 1px solid rgba(0,0,0,.125);
 }
 .rdtOpen .rdtPicker {
   display: block;
@@ -336,7 +337,7 @@
   cursor: not-allowed;
 }
 .rdtPicker th {
-  border-bottom: 1px solid #f9f9f9;
+  border-bottom: 1px solid rgba(0,0,0,.125);
 }
 .rdtPicker .dow {
   width: 14.2857%;
@@ -378,7 +379,7 @@
 }
 
 .rdtPicker tfoot {
-  border-top: 1px solid #f9f9f9;
+  border-top: 1px solid rgba(0,0,0,.125);
 }
 
 .rdtPicker button {
@@ -466,8 +467,6 @@ td.rdtYear:hover {
 }
 
 .categoryTab .nav-link.active {
-  color: #FF8800 !important;
-  background-color: white !important;
   border: 0;
 }
 

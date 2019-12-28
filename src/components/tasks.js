@@ -31,8 +31,24 @@ class Tasks extends Component {
     this.props.showModal('importAuxData');
   }
 
+  handleCruiseImport() {
+    this.props.showModal('importCruises');
+  }
+
+  handleLoweringImport() {
+    this.props.showModal('importLowerings');
+  }
+
+  handleEventTemplateImport() {
+    this.props.showModal('importEventTemplates');
+  }
+
   handleDataWipe() {
     this.props.showModal('dataWipe', { handleDelete: this.props.deleteAllEvents });
+  }
+
+  handleUserImport() {
+    this.props.showModal('importUsers');
   }
 
   componentDidMount() {

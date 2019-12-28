@@ -15,11 +15,8 @@ export default function( state={ selected_event: {}, events: [], eventFilter: {}
   switch(action.type){
 
     case INIT_EVENT:
-      if (action.payload.length === 0) {
-        return { ...state, events: action.payload, selected_event: {} };
-      } else {
-        return { ...state, events: action.payload, selected_event: action.payload[0] };
-      }
+      return { ...state, events: action.payload, selected_event: action.payload[0] };
+
     case UPDATE_EVENT:
       let newEvents = state.events.map((event) => {
         if(event.id === action.payload.id) {

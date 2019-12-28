@@ -18,7 +18,7 @@ import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
 import * as mapDispatchToProps from '../actions';
 import { API_ROOT_URL } from '../client_config';
-import tilelayers from '../map_tilelayers';
+import { TILE_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers';
 
 const { BaseLayer } = LayersControl;
 
@@ -28,7 +28,7 @@ const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 const maxEventsPerPage = 10;
 
-const initCenterPosition = {lat:41.38250, lng:-71.500}
+const initCenterPosition = DEFAULT_LOCATION;
 
 const positionAuxDataSources = ['vesselRealtimeNavData'];
 
@@ -62,7 +62,7 @@ class CruiseMap extends Component {
     this.handlePageSelect = this.handlePageSelect.bind(this);
     this.updateEventFilter = this.updateEventFilter.bind(this);
 
-    this.calcVehiclePosition = this.calcVehiclePosition.bind(this);
+    this.calcvesselPosition = this.calcvesselPosition.bind(this);
     this.handleCruiseSelect = this.handleCruiseSelect.bind(this);
     this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this);
     this.handleMoveEnd = this.handleMoveEnd.bind(this);
@@ -86,6 +86,7 @@ class CruiseMap extends Component {
     }
 
     this.initCruiseTrackline(this.props.match.params.id);
+
     this.divFocus.focus();
   }
 
@@ -167,11 +168,7 @@ class CruiseMap extends Component {
   }
 
   initMapView() {
-    if(this.state.tracklines.vesselReNavData && !this.state.tracklines.vesselReNavData.polyline.isEmpty()) {
-      this.map.leafletElement.panTo(this.state.tracklines.vesselReNavData.polyline.getBounds());
-      this.map.leafletElement.fitBounds(this.state.tracklines.vesselReNavData.polyline.getBounds());
-    }
-    else if(this.state.tracklines.vesselRealtimeNavData && !this.state.tracklines.vesselRealtimeNavData.polyline.isEmpty()) {
+    if(this.state.tracklines.vesselRealtimeNavData && !this.state.tracklines.vesselRealtimeNavData.polyline.isEmpty()) {
       this.map.leafletElement.panTo(this.state.tracklines.vesselRealtimeNavData.polyline.getBounds().getCenter());
       this.map.leafletElement.fitBounds(this.state.tracklines.vesselRealtimeNavData.polyline.getBounds());
     }
@@ -249,7 +246,7 @@ class CruiseMap extends Component {
     }
   }
 
-  calcVehiclePosition(selected_event) {
+  calcvesselPosition(selected_event) {
     if(selected_event && selected_event.aux_data) {
       let vesselRealtimeNavData = selected_event.aux_data.find(aux_data => aux_data.data_source == "vesselRealtimeNavData");
       if(vesselRealtimeNavData) {
@@ -273,7 +270,6 @@ class CruiseMap extends Component {
     this.props.gotoCruiseMap(id);
     this.props.initCruiseReplay(id);
     this.initCruiseTrackline(id);
-    this.divFocus.focus();
   }
 
   handleCruiseModeSelect(mode) {
@@ -296,7 +292,7 @@ class CruiseMap extends Component {
       const cruiseDuration = cruiseEndTime.diff(cruiseStartTime);
       
       return (
-        <Card bg="light" style={{marginBottom: "8px"}}>
+        <Card style={{marginBottom: "8px"}}>
           <Card.Body>
             <Row>
               <Col xs={4}>
@@ -377,7 +373,7 @@ class CruiseMap extends Component {
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
           
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } icon='plus' fixedWidth inverse={!active} transform="shrink-4"/></span>;
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } inverse={!active} icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
 
@@ -411,7 +407,7 @@ class CruiseMap extends Component {
 
   render() {
 
-    const baseLayers = tilelayers.map((layer, index) => {
+    const baseLayers = TILE_LAYERS.map((layer, index) => {
       if(layer.wms) {
         return (
           <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name}>
@@ -449,7 +445,7 @@ class CruiseMap extends Component {
         <Row>
           <Col lg={12}>
             <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-primary">Cruises</span>
+              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
               {' '}/{' '}
               <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
               {' '}/{' '}
@@ -478,13 +474,13 @@ class CruiseMap extends Component {
             </Card>
           </Col>
           <Col sm={12}>
+            {this.renderControlsCard()}
             <Row style={{paddingTop: "4px"}}>
-              <Col md={9} lg={9}>
-                {this.renderControlsCard()}
+              <Col md={12} lg={9}>
                 {this.renderEventCard()}
                 <CustomPagination style={{marginTop: "8px"}} page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
               </Col>          
-              <Col md={3} lg={3}>
+              <Col md={5} lg={3}>
                 <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
               </Col>          
             </Row>
@@ -498,7 +494,7 @@ class CruiseMap extends Component {
 function mapStateToProps(state) {
 
   return {
-    cruise: state.cruise.cruise,
+    cruise: state.cruise.cruise,  
     roles: state.user.profile.roles,
     event: state.event
   };
