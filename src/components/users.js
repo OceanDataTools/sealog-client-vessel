@@ -20,7 +20,7 @@ let fileDownload = require('js-file-download');
 const maxSystemUsersPerPage = 4;
 const maxUsersPerPage = 6;
 
-const tableHeaderStyle = { width: (USE_ACCESS_CONTROL) ? "120px" : "90px" };
+const tableHeaderStyle = { width: (USE_ACCESS_CONTROL) ? "120px" : "100px" };
 
 class Users extends Component {
 

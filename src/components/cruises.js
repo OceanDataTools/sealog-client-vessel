@@ -16,7 +16,7 @@ let fileDownload = require('js-file-download');
 
 const maxCruisesPerPage = 6;
 
-const tableHeaderStyle = { width: (USE_ACCESS_CONTROL) ? "110px" : "85px" };
+const tableHeaderStyle = { width: (USE_ACCESS_CONTROL) ? "110px" : "95px" };
 
 class Cruises extends Component {
 
