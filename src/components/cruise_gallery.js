@@ -147,7 +147,7 @@ class CruiseGallery extends Component {
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <span  className="text-warning">{this.props.cruise.cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
-            <LoweringModeDropdown onClick={this.handleLoweringModeSelect} active_mode={"Gallery"} modes={["Replay", "Review", "Map"]}/>
+            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Gallery"} modes={["Replay", "Review", "Map"]}/>
           </ButtonToolbar>
           <span className="float-right">
             <Form style={{marginTop: '-4px'}} className='float-right' inline>

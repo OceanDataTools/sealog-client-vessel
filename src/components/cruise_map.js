@@ -28,7 +28,7 @@ const maxEventsPerPage = 10;
 
 const initCenterPosition = DEFAULT_LOCATION;
 
-const positionAuxDataSources = ['vehicleRealtimeNavData'];
+const positionAuxDataSources = ['vesselRealtimeNavData'];
 
 class CruiseMap extends Component {
 
@@ -172,13 +172,13 @@ class CruiseMap extends Component {
   }
 
   initMapView() {
-    if(this.state.tracklines.vehicleReNavData && !this.state.tracklines.vehicleReNavData.polyline.isEmpty()) {
-      this.map.leafletElement.panTo(this.state.tracklines.vehicleReNavData.polyline.getBounds());
-      this.map.leafletElement.fitBounds(this.state.tracklines.vehicleReNavData.polyline.getBounds());
+    if(this.state.tracklines.vesselReNavData && !this.state.tracklines.vesselReNavData.polyline.isEmpty()) {
+      this.map.leafletElement.panTo(this.state.tracklines.vesselReNavData.polyline.getBounds());
+      this.map.leafletElement.fitBounds(this.state.tracklines.vesselReNavData.polyline.getBounds());
     }
-    else if(this.state.tracklines.vehicleRealtimeNavData && !this.state.tracklines.vehicleRealtimeNavData.polyline.isEmpty()) {
-      this.map.leafletElement.panTo(this.state.tracklines.vehicleRealtimeNavData.polyline.getBounds().getCenter());
-      this.map.leafletElement.fitBounds(this.state.tracklines.vehicleRealtimeNavData.polyline.getBounds());
+    else if(this.state.tracklines.vesselRealtimeNavData && !this.state.tracklines.vesselRealtimeNavData.polyline.isEmpty()) {
+      this.map.leafletElement.panTo(this.state.tracklines.vesselRealtimeNavData.polyline.getBounds().getCenter());
+      this.map.leafletElement.fitBounds(this.state.tracklines.vesselRealtimeNavData.polyline.getBounds());
     }
   }
 
@@ -256,11 +256,11 @@ class CruiseMap extends Component {
 
   calcVehiclePosition(selected_event) {
     if(selected_event && selected_event.aux_data) {
-      let vehicleRealtimeNavData = selected_event.aux_data.find(aux_data => aux_data.data_source == "vehicleRealtimeNavData");
-      if(vehicleRealtimeNavData) {
+      let vesselRealtimeNavData = selected_event.aux_data.find(aux_data => aux_data.data_source == "vesselRealtimeNavData");
+      if(vesselRealtimeNavData) {
         try {
-          let latObj = vehicleRealtimeNavData.data_array.find(data => data.data_name == "latitude");
-          let lonObj = vehicleRealtimeNavData.data_array.find(data => data.data_name == "longitude");
+          let latObj = vesselRealtimeNavData.data_array.find(data => data.data_name == "latitude");
+          let lonObj = vesselRealtimeNavData.data_array.find(data => data.data_name == "longitude");
 
           if(latObj && lonObj && latObj.data_value != this.state.position.lat && lonObj.data_value != this.state.position.lng) {
             this.setState({ showMarker: true, position:{ lat:latObj.data_value, lng: lonObj.data_value}});
@@ -393,9 +393,9 @@ class CruiseMap extends Component {
 
   renderMarker() {
 
-    if(this.props.event.selected_event.aux_data && typeof this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vehicleRealtimeNavData') !== 'undefined') {
+    if(this.props.event.selected_event.aux_data && typeof this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vesselRealtimeNavData') !== 'undefined') {
 
-      const realtimeNavData = this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vehicleRealtimeNavData');
+      const realtimeNavData = this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vesselRealtimeNavData');
       try {
         const latLng = [ parseFloat(realtimeNavData['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(realtimeNavData['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])]
         return (
@@ -439,12 +439,12 @@ class CruiseMap extends Component {
       }
     });
 
-    const realtimeTrack = (this.state.tracklines.vehicleRealtimeNavData && !this.state.tracklines.vehicleRealtimeNavData.polyline.isEmpty()) ? 
-      <Polyline color="lime" positions={this.state.tracklines.vehicleRealtimeNavData.polyline.getLatLngs()} />
+    const realtimeTrack = (this.state.tracklines.vesselRealtimeNavData && !this.state.tracklines.vesselRealtimeNavData.polyline.isEmpty()) ? 
+      <Polyline color="lime" positions={this.state.tracklines.vesselRealtimeNavData.polyline.getLatLngs()} />
       : null;
 
-    const reNavTrack = (this.state.tracklines.vehicleReNavData && !this.state.tracklines.vehicleReNavData.polyline.isEmpty()) ? 
-      <Polyline color="red" positions={this.state.tracklines.vehicleReNavData.polyline.getLatLngs()} />
+    const reNavTrack = (this.state.tracklines.vesselReNavData && !this.state.tracklines.vesselReNavData.polyline.isEmpty()) ? 
+      <Polyline color="red" positions={this.state.tracklines.vesselReNavData.polyline.getLatLngs()} />
       : null;
 
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading...";

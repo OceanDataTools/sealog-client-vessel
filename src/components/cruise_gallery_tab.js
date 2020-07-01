@@ -8,7 +8,7 @@ import { ROOT_PATH } from '../client_config';
 
 // const maxImagesPerPage = 16
 
-class LoweringGalleryTab extends Component {
+class CruiseGalleryTab extends Component {
 
   constructor (props) {
     super(props);
@@ -96,4 +96,4 @@ function mapStateToProps() {
   return {}
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoweringGalleryTab);
+export default connect(mapStateToProps, mapDispatchToProps)(CruiseGalleryTab);

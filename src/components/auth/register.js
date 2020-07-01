@@ -85,7 +85,6 @@ class Register extends Component {
             ref={this.recaptchaRef}
             sitekey={RECAPTCHA_SITE_KEY}
             size="invisible"
-            onChange={this.onCaptchaChange.bind(this)}
           />
           <br/>
         </span>
@@ -147,7 +146,7 @@ class Register extends Component {
   render() {
 
     return(
-      <div className="mb-2">
+      <div className="my-4">
         <Row className="justify-content-center">
           <Col sm={6} md={5} lg={4} xl={3}>
             {this.renderSuccess()}

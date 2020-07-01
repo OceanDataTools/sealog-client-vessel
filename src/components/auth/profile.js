@@ -85,7 +85,7 @@ class UserProfile extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
 
     return (
-      <div className="mb-2">
+      <div className="my-4">
         <Row className="justify-content-center">
           <Col sm={8} md={6} lg={4}>
             <Card>

@@ -14,7 +14,6 @@ import { API_ROOT_URL, MAIN_SCREEN_TXT, DEFAULT_VESSEL } from '../client_config'
 import * as mapDispatchToProps from '../actions';
 
 const CRUISE_ROUTE = "/files/cruises";
-const LOWERING_ROUTE = "/files/lowerings";
 
 const cookies = new Cookies();
 
@@ -55,9 +54,8 @@ class CruiseMenu extends Component {
         const now = moment.utc();
         return (now.isBetween(moment.utc(cruise.start_ts), moment.utc(cruise.stop_ts)));
       }) : null;
-      (currentCruise) ? this.buildLoweringList() : null;
 
-      this.setState({ activeYear: (currentCruise) ? moment.utc(currentCruise.start_ts).format("YYYY") : null, activeCruise: (currentCruise) ? currentCruise : null, activeLowering: null });
+      this.setState({ activeYear: (currentCruise) ? moment.utc(currentCruise.start_ts).format("YYYY") : null, activeCruise: (currentCruise) ? currentCruise : null });
 
     }
 

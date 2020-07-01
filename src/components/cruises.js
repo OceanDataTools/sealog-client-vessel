@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
-import { Row, Button, Col, Card, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Row, Button, Container, Col, Card, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import moment from 'moment';
 import CreateCruise from './create_cruise';
 import UpdateCruise from './update_cruise';
 import DeleteCruiseModal from './delete_cruise_modal';
 import DeleteFileModal from './delete_file_modal';
 import ImportCruisesModal from './import_cruises_modal';
+import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 import CruisePermissionsModal from './cruise_permissions_modal';
 import CustomPagination from './custom_pagination';
 import { USE_ACCESS_CONTROL, DEFAULT_VESSEL } from '../client_config';
@@ -158,6 +159,7 @@ class Cruises extends Component {
               {(USE_ACCESS_CONTROL && this.props.roles.includes('admin')) ? <OverlayTrigger placement="top" overlay={permissionTooltip}><FontAwesomeIcon  className="text-primary" onClick={ () => this.handleCruisePermissionsModal(cruise) } icon='user-lock' fixedWidth/></OverlayTrigger> : ''}{' '}
               {hiddenLink}{' '}
               {deleteLink}
+              <CopyCruiseToClipboard cruise={cruise} />
             </td>
           </tr>
         );
@@ -224,7 +226,7 @@ class Cruises extends Component {
       }
 
       return (
-        <div className="mt-2">
+        <Container className="mt-2">
           <DeleteCruiseModal />
           <DeleteFileModal />
           <CruisePermissionsModal />
@@ -245,7 +247,7 @@ class Cruises extends Component {
               { cruiseForm }
             </Col>
           </Row>
-        </div>
+        </Container>
       );
     } else {
       return (

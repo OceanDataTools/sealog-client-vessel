@@ -69,10 +69,10 @@ class Footer extends Component {
 
   render () {
 
-    let asnapStatus = null;
+    let asnapStatus = <span/>;
 
     if ( DISABLE_EVENT_LOGGING ) {
-      asnapStatus = null;
+      asnapStatus = <span/>;
     }
     else if(this.props.authenticated && this.props.asnapStatus === "Off") {
       asnapStatus =  (
@@ -95,7 +95,7 @@ class Footer extends Component {
     }
 
     return (
-      <div className="mt-2 justify-content-center bg-light p-2">
+      <div className="mt-4 justify-content-center px-2">
         {asnapStatus}
         <span className="float-right">
           <Link to="/github" target="_blank">Sealog</Link> is licensed under the <Link to="/license" target="_blank">MIT</Link> public license

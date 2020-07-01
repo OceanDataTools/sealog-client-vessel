@@ -13,11 +13,11 @@ import { WS_ROOT_URL, API_ROOT_URL, IMAGE_PATH, ROOT_PATH } from '../client_conf
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vehicleRealtimeFramegrabberData']
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData']
 
-const imageAuxDataSources = ['vehicleRealtimeFramegrabberData']
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData']
 
-const sortAuxDataSourceReference = ['vehicleRealtimeNavData','vesselRealtimeNavData'];
+const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
 const eventHistoryRef = "eventHistory";
 

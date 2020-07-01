@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
-import { Row, Button, Col, Card, Table, OverlayTrigger, Tooltip, Form, FormControl } from 'react-bootstrap';
+import { Row, Button, Col, Container, Card, Table, OverlayTrigger, Tooltip, Form, FormControl } from 'react-bootstrap';
 import CreateEventTemplate from './create_event_template';
 import UpdateEventTemplate from './update_event_template';
 import NonSystemEventTemplatesWipeModal from './non_system_event_templates_wipe_modal';
@@ -325,7 +325,7 @@ class EventTemplates extends Component {
       let eventTemplatesForm = (this.props.event_templateid)? <UpdateEventTemplate /> : <CreateEventTemplate />;
 
       return (
-        <div className="mt-2">
+        <Container className="mt-2">
           <DeleteEventTemplateModal />
           <NonSystemEventTemplatesWipeModal />
           <EventTemplateOptionsModal />
@@ -351,7 +351,7 @@ class EventTemplates extends Component {
               { eventTemplatesForm }
             </Col>
           </Row>
-        </div>
+        </Container>
       );
 
     } else {

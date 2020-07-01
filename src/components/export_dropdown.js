@@ -18,18 +18,9 @@ class ExportDropdown extends Component {
   constructor (props) {
     super(props);
 
-    let cruiseOrLowering = "";
-    if(this.props.cruiseID) {
-      cruiseOrLowering = `/bycruise/${this.props.cruiseID}`
-    }
-    else if(this.props.loweringID) {
-      cruiseOrLowering = `/bylowering/${this.props.loweringID}`
-    }
-
     this.state = {
       id: (this.props.id)? this.props.id : "dropdown-download",
       prefix: (this.props.prefix)? this.props.prefix : null,
-      cruiseOrLowering: cruiseOrLowering
     };
   }
 
@@ -37,27 +28,15 @@ class ExportDropdown extends Component {
     id: PropTypes.string,
     prefix: PropTypes.string,
     cruiseID: PropTypes.string,
-    loweringID: PropTypes.string,
     disabled: PropTypes.bool.isRequired,
     hideASNAP: PropTypes.bool.isRequired,
     eventFilter: PropTypes.object.isRequired
   };
 
   componentDidUpdate(prevProps) {
-    // Typical usage (don't forget to compare props):
-    if (this.props.cruiseID !== prevProps.cruiseID) {
-      const cruiseOrLowering = `/bycruise/${this.props.cruiseID}`
-      this.setState({cruiseOrLowering: cruiseOrLowering});
-    }
-    else if (this.props.loweringID !== prevProps.loweringID) {
-      const cruiseOrLowering = `/bylowering/${this.props.loweringID}`
-      this.setState({cruiseOrLowering: cruiseOrLowering});
-    }
-
     if (this.props.prefix !== prevProps.prefix) {
       this.setState({prefix: this.props.prefix});
     }
-
   }
 
   async fetchEvents(format, eventFilter, hideASNAP) {
@@ -72,7 +51,7 @@ class ExportDropdown extends Component {
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
 
-    return await axios.get(`${API_ROOT_URL}/api/v1/events${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+    return await axios.get(`${API_ROOT_URL}/api/v1/events/bycruise/${this.props.cruiseID}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -101,7 +80,7 @@ class ExportDropdown extends Component {
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
 
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data${this.state.cruiseOrLowering}?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+    return await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${this.props.cruiseID}?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -131,7 +110,7 @@ class ExportDropdown extends Component {
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
 
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports/bycruise/${this.props.cruiseID}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
         headers: {
           authorization: cookies.get('token')

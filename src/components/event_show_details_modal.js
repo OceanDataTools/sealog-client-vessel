@@ -15,11 +15,11 @@ import { API_ROOT_URL, IMAGE_PATH, ROOT_PATH } from '../client_config';
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vehicleRealtimeFramegrabberData']
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData']
 
-const imageAuxDataSources = ['vehicleRealtimeFramegrabberData']
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData']
 
-const sortAuxDataSourceReference = ['vehicleRealtimeNavData','vesselRealtimeNavData'];
+const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
 class EventShowDetailsModal extends Component {
 

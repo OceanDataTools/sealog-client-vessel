@@ -20,7 +20,6 @@ class CopyCruiseToClipboard extends Component {
 
   static propTypes = {
     cruise: PropTypes.object,
-    cruiseLowerings: PropTypes.array
   };
 
   componentDidMount() {
@@ -28,7 +27,7 @@ class CopyCruiseToClipboard extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if(this.props.cruise !== prevProps.cruise || this.props.cruiseLowerings !== prevProps.cruiseLowerings) {
+    if(this.props.cruise !== prevProps.cruise ) {
       this.copyToClipboard();
     }
   }
@@ -42,11 +41,12 @@ class CopyCruiseToClipboard extends Component {
       let cruiseDurationValue = cruiseStopTime.diff(cruiseStartTime);
 
       let text = "";
-      text += `Cruise:      ${this.props.cruise.cruise_id}\n`;
-      text += (this.props.cruise.cruise_additional_meta.cruise_name) ? `Name:        ${this.props.cruise.cruise_additional_meta.cruise_name}\n` : "";
-      text += (this.props.cruise.cruise_additional_meta.cruise_description) ? `Description: ${this.props.cruise.cruise_additional_meta.cruise_description}\n` : "";
-      text += (this.props.cruise.cruise_additional_meta.cruise_vessel) ? `Vessel:      ${this.props.cruise.cruise_additional_meta.cruise_vessel}\n` : "";
-      text += `Location:    ${this.props.cruise.cruise_location}\n`;
+      text += `Cruise ID:       ${this.props.cruise.cruise_id}\n`;
+      text += (this.props.cruise.cruise_additional_meta.cruise_name) ? `Cruise Name:     ${this.props.cruise.cruise_additional_meta.cruise_name}\n` : "";
+      text += (this.props.cruise.cruise_additional_meta.cruise_pi) ? `Chief Scientist: ${this.props.cruise.cruise_additional_meta.cruise_pi}\n` : "";
+      text += (this.props.cruise.cruise_additional_meta.cruise_description) ? `Description:     ${this.props.cruise.cruise_additional_meta.cruise_description}\n` : "";
+      text += (this.props.cruise.cruise_additional_meta.cruise_vessel) ? `Vessel:          ${this.props.cruise.cruise_additional_meta.cruise_vessel}\n` : "";
+      text += (this.props.cruise.cruise_location) ? `Location:        ${this.props.cruise.cruise_location}\n` : "";
       text += '\n';
       text += `Start of Cruise: ${cruiseStartTime.format("YYYY/MM/DD")}\n`;
       text += (this.props.cruise.cruise_additional_meta.cruise_departure_location) ? `Departure Port:  ${this.props.cruise.cruise_additional_meta.cruise_departure_location}\n` : "";
@@ -54,7 +54,6 @@ class CopyCruiseToClipboard extends Component {
       text += (this.props.cruise.cruise_additional_meta.cruise_arrival_location) ? `Arrival Port:    ${this.props.cruise.cruise_additional_meta.cruise_arrival_location}\n` : "";
       text += '\n';
       text += `Cruise Duration: ${moment.duration(cruiseDurationValue).format("d [days] h [hours] m [minutes]")}\n`;
-      text += (this.props.cruiseLowerings && this.props.cruiseLowerings.length > 0) ? `\nLowerings:  ${this.props.cruiseLowerings.map((lowering) => { return lowering.lowering_id }).join(', ')}\n` : "";
 
       this.setState({text});
     }

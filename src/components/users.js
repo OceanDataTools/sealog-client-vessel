@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
-import { Row, Button, Col, Card, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Row, Button, Col, Container, Card, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import CreateUser from './create_user';
 import UpdateUser from './update_user';
 import DisplayUserTokenModal from './display_user_token_modal';
@@ -307,7 +307,7 @@ class Users extends Component {
       const  userForm = (this.props.userid) ? <UpdateUser /> : <CreateUser />;
 
       return (
-        <div className="mt-2">
+        <Container className="mt-2">
           <DisplayUserTokenModal />
           <DeleteUserModal />
           <ImportUsersModal handleExit={this.handleUserImportClose}/>
@@ -334,7 +334,7 @@ class Users extends Component {
               { userForm }
             </Col>
           </Row>
-        </div>
+        </Container>
       );
     } else {
       return (

@@ -75,7 +75,6 @@ class ResetPassword extends Component {
             ref={this.recaptchaRef}
             sitekey={RECAPTCHA_SITE_KEY}
             size="invisible"
-            onChange={this.onCaptchaChange.bind(this)}
           />
           <br/>
         </span>
@@ -122,7 +121,7 @@ class ResetPassword extends Component {
 
   render() {
     return(
-      <div className="mb-2">
+      <div className="my-4">
         <Row>
           <Col>
             {this.renderForm()}

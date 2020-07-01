@@ -35,10 +35,6 @@ class Tasks extends Component {
     this.props.showModal('importCruises');
   }
 
-  handleLoweringImport() {
-    this.props.showModal('importLowerings');
-  }
-
   handleEventTemplateImport() {
     this.props.showModal('importEventTemplates');
   }

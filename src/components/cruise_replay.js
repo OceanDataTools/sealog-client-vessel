@@ -24,11 +24,11 @@ const FREV = 3;
 
 const maxEventsPerPage = 10;
 
-const excludeAuxDataSources = ['vehicleRealtimeFramegrabberData'];
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
 
-const imageAuxDataSources = ['vehicleRealtimeFramegrabberData'];
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
 
-const sortAuxDataSourceReference = ['vehicleRealtimeNavData','vesselRealtimeNavData'];
+const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
