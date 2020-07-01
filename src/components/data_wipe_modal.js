@@ -28,7 +28,7 @@ class DataWipeModal extends Component {
     if(handleDelete) {
       return (
         <Modal show={show} onHide={handleHide}>
-          <Modal.Header closeButton>
+          <Modal.Header className="bg-light" closeButton>
             <Modal.Title>Confirm Wipe</Modal.Title>
           </Modal.Header>
 

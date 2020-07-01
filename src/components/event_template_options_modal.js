@@ -4,7 +4,7 @@ import { connectModal } from 'redux-modal';
 import { reduxForm, Field } from 'redux-form';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { renderCheckboxGroup, renderDateTimePicker, renderSelectField, renderTextArea, renderTextField } from './form_elements';
+import { renderCheckboxGroup, renderDateTimePicker, renderRadioGroup, renderSelectField, renderStaticTextField, renderTextArea, renderTextField } from './form_elements';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { API_ROOT_URL } from '../client_config';
 
@@ -141,6 +141,30 @@ class EventTemplateOptionsModal extends Component {
               component={renderCheckboxGroup}
               label={option.event_option_name}
               options={optionList}
+              indication={true}
+              inline={true}
+              required={ option.event_option_required }
+              validate={ option.event_option_required ? requiredArray : undefined }
+              lg={12}
+              sm={12}
+            />
+          </div>
+        )
+      } else if (option.event_option_type === 'radio buttons') {
+
+        let optionList = option.event_option_values.map((option_value) => {
+          return { value: option_value, label: option_value }
+        });
+
+        return (
+          <div key={`option_${index}`}>
+            <Field
+              name={`option_${index}`}
+              component={renderRadioGroup}
+              label={option.event_option_name}
+              options={optionList}
+              indication={true}
+              inline={true}
               required={ option.event_option_required }
               validate={ option.event_option_required ? requiredArray : undefined }
               lg={12}
@@ -162,6 +186,18 @@ class EventTemplateOptionsModal extends Component {
             />
           </div>
         )
+      } else if (option.event_option_type === 'static text') {
+        return (
+          <div key={`option_${index}`}>
+            <Field
+              name={`option_${index}`}
+              component={renderStaticTextField}
+              label={option.event_option_name}
+              lg={12}
+              sm={12}
+            />
+          </div>
+        )
       }
     }));
   }
@@ -172,18 +208,18 @@ class EventTemplateOptionsModal extends Component {
 
     const footer = (this.state.event_id) ? 
       <span className="float-right">
-        <Button variant="secondary" disabled={submitting} onClick={this.handleFormHide}>Cancel</Button>
-        <Button variant="primary" type="submit" disabled={ submitting || !valid}>Submit</Button>
+        <Button className="mr-1" size="sm" variant="secondary" disabled={submitting} onClick={this.handleFormHide}>Cancel</Button>
+        <Button size="sm" variant="primary" type="submit" disabled={ submitting || !valid}>Submit</Button>
       </span>
       : 
-      <Button className="float-right" variant="secondary" onClick={this.handleFormHide}>Close</Button>
+      <Button size="sm" className="float-right" variant="secondary" onClick={this.handleFormHide}>Close</Button>
       
 
     if (eventTemplate) {
       return (
         <Modal show={show} onHide={this.handleFormHide}>
           <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-light" closeButton>
               <Modal.Title>{eventTemplate.event_value}</Modal.Title>
             </Modal.Header>
 

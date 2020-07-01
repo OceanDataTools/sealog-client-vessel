@@ -73,7 +73,7 @@ class Tasks extends Component {
 
     else if(this.props.roles.includes("admin")) {
       return (
-        <div>
+        <div className="mt-2">
           <ImportEventsModal />
           <ImportAuxDataModal />
           <DataWipeModal />

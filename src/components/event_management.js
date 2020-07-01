@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import Cookies from 'universal-cookie';
-import { Row, Col, Card, ListGroup, Tooltip, OverlayTrigger } from 'react-bootstrap';
+import { Row, Container, Col, Card, ListGroup, Tooltip, OverlayTrigger, Form } from 'react-bootstrap';
 import axios from 'axios';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
@@ -163,8 +163,7 @@ class EventManagement extends Component {
   renderEventListHeader() {
 
     const Label = "Filtered Events";
-    const ASNAPToggleIcon = (this.state.hideASNAP)? "Show ASNAP" : "Hide ASNAP";
-    const ASNAPToggle = (<span disabled={this.props.event.fetching} style={{ marginRight: "10px" }} onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</span>);
+    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.state.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.props.event.fetching} label='ASNAP'/>);
 
     return (
       <div>
@@ -188,7 +187,7 @@ class EventManagement extends Component {
           if(option.event_option_name === 'event_comment') {
             comment_exists = (option.event_option_value !== '')? true : false;
           } else {
-            filtered.push(`${option.event_option_name}: "${option.event_option_value}"`);
+            filtered.push(`${option.event_option_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}: "${option.event_option_value}"`);
           }
           return filtered;
         },[]);
@@ -198,26 +197,26 @@ class EventManagement extends Component {
         } 
 
         let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
-        let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon inverse icon='plus' fixedWidth inverse transform="shrink-4"/></span>;
+        let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={ "text-secondary" } icon='plus' fixedWidth inverse transform="shrink-4"/></span>;
         let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
 
         let deleteIcon = <FontAwesomeIcon className={"text-danger"} onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth/>;
         let deleteTooltip = (this.props.roles && this.props.roles.includes("admin"))? (<OverlayTrigger placement="top" overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>{deleteIcon}</OverlayTrigger>): null;
 
-        return (<ListGroup.Item className="event-list-item" key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{deleteTooltip} {commentTooltip}</span></ListGroup.Item>);
+        return (<ListGroup.Item className="event-list-item py-1" key={event.id}><span onClick={() => this.handleEventShowDetailsModal(event)}>{event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}</span><span className="float-right">{deleteTooltip} {commentTooltip}</span></ListGroup.Item>);
       });
 
       return eventList;
     }
 
-    return (<ListGroup.Item key="emptyHistory" >No events found</ListGroup.Item>);
+    return (<ListGroup.Item className="event-list-item py-1" key="emptyHistory" >No events found</ListGroup.Item>);
   }
 
   renderEventCard() {
 
     if (!this.state.events) {
       return (
-        <Card>
+        <Card className="border-secondary">
           <Card.Header>{ this.renderEventListHeader() }</Card.Header>
           <Card.Body>Loading...</Card.Body>
         </Card>
@@ -225,9 +224,9 @@ class EventManagement extends Component {
     }
 
     return (
-      <Card>
+      <Card className="border-secondary">
         <Card.Header>{ this.renderEventListHeader() }</Card.Header>
-        <ListGroup>
+        <ListGroup className="eventList">
           {this.renderEvents()}
         </ListGroup>
       </Card>
@@ -236,20 +235,20 @@ class EventManagement extends Component {
 
   render(){
     return (
-      <div>
+      <Container className="mt-2">
         <EventCommentModal />
         <DeleteEventModal />
         <EventShowDetailsModal />
         <Row>
-          <Col sm={12} md={8} lg={8}>
+          <Col className="px-1 pb-2" sm={12} md={9} lg={9}>
             {this.renderEventCard()}
-            <CustomPagination style={{marginTop: "8px"}} page={this.state.activePage} count={this.state.eventCount} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
+            <CustomPagination className="mt-2" page={this.state.activePage} count={this.state.eventCount} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
           </Col>
-          <Col sm={12} md={4} lg={4}>
-            <EventFilterForm disabled={this.state.fetching} hideASNAP={this.state.hideASNAP} handlePostSubmit={ this.updateEventFilter } cruise_id={null}/>
+          <Col className="px-1 pb-2" sm={12} md={3} lg={3}>
+            <EventFilterForm disabled={this.state.fetching} hideASNAP={this.state.hideASNAP} handlePostSubmit={ this.updateEventFilter } lowering_id={null}/>
           </Col>
         </Row>
-      </div>
+      </Container>
     );
   }
 }

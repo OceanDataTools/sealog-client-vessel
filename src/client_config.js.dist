@@ -25,18 +25,18 @@ const LOGIN_SCREEN_TXT = "Sealog provides the Oceanographic Research community w
 const LOGIN_IMAGE = "";
 
 // Text show on the main page above the cruise list.
-const MAIN_SCREEN_TXT = "Please select a cruise from the list below.  Once a cruise is selected please select the desired replay mode. If at any time you wish to return to this page please click the \"Review Cruises\" text in upper navigation bar.";
+const MAIN_SCREEN_TXT = "Please select a cruise from the list below.  Once a cruise is selected please select a lowering from the list of lowerings associated with that cruise that appear at the bottom of the cruise information panel.  Selecting a lowering will open the lowering information panel.  At the bottom of the cruise information panel there will be links for proceeding to the lowering replay section, the lowering review section and the lowering gallery section of Sealog. If at any time you wish to return to this page please click the \"Review Cruises/Lowerings\" text in upper navigation bar.";
 
 // Title displayed on the left side of the title bar
 const HEADER_TITLE = `Sealog for Vessels v${Pkg.version}`;
 
 // Set default vessel
-const DEFAULT_VESSEL = "R/V Atlantis";
+const DEFAULT_VESSEL = "R/V Discovery";
 
 // Use an internal tile server (true), or pull tiles directly from the Internet (false).
 const USE_MAPTILE_PROXY = false;
 
-// Add cruise-level authentication. This needs to match the 'useAccessControl' setting on the sealog-server.
+// Add cruise-level and lowering-level authentication. This needs to match the 'useAccessControl' setting on the sealog-server.
 const USE_ACCESS_CONTROL = false;
 
 // Remove ability to add new events

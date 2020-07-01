@@ -152,7 +152,7 @@ class ImportUsersModal extends Component {
     if(handleExit) {
       return (
         <Modal show={show} onExit={handleExit} onHide={this.quitImport}>
-          <Modal.Header closeButton>
+          <Modal.Header className="bg-light" closeButton>
             <Modal.Title>Import Users</Modal.Title>
           </Modal.Header>
 
@@ -174,7 +174,7 @@ class ImportUsersModal extends Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
+            <Button size="sm" variant="secondary" size="sm" onClick={this.quitImport}>Close</Button>
           </Modal.Footer>
         </Modal>
       );

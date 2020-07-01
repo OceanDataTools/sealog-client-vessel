@@ -23,6 +23,7 @@ class CreateEventTemplate extends Component {
   }
 
   handleFormSubmit(formProps) {
+
     if(typeof formProps.system_template === 'undefined'){
       formProps.system_template = false;
     }
@@ -31,18 +32,31 @@ class CreateEventTemplate extends Component {
       formProps.disabled = false;
     }
 
-    // if(formProps.template_categories) {
-    //   formProps.template_categories = formProps.template_categories.split(',');
-    //   formProps.template_categories = formProps.template_categories.map(string => {
-    //     return string.trim();
-    //   });
-    // }    
+    if(formProps.template_categories) {
+      formProps.template_categories = formProps.template_categories.split(',');
+      formProps.template_categories = formProps.template_categories.map(string => {
+        return string.trim();
+      });
+    }    
 
     this.props.createEventTemplate(formProps);
   }
 
   renderOptionOptions(prefix, index) {
-    if(this.props.event_options[index].event_option_type === 'text') {
+    if(this.props.event_options[index].event_option_type === 'static text') {
+      return (
+        <div>
+          <Field
+            name={`${prefix}.event_option_default_value`}
+            component={renderTextField}
+            label="Value"
+            required={true}
+            lg={12}
+            sm={12}
+          />
+        </div>
+      );
+    } else if(this.props.event_options[index].event_option_type === 'text') {
       return (
         <div>
           <Field
@@ -50,7 +64,6 @@ class CreateEventTemplate extends Component {
             component={renderTextField}
             label="Default Value"
             lg={12}
-            md={12}
             sm={12}
           />
         </div>
@@ -64,16 +77,14 @@ class CreateEventTemplate extends Component {
             label="Dropdown Options"
             required={true}
             lg={12}
-            md={12}
             sm={12}
           />
           <Field
             name={`${prefix}.event_option_default_value`}
             component={renderTextField}
-            label="Default Value"
+            label="Default Selection"
             placeholder="i.e. a value from the list of options"
             lg={12}
-            md={12}
             sm={12}
           />
         </div>
@@ -87,16 +98,35 @@ class CreateEventTemplate extends Component {
             label="Checkbox Options"
             required={true}
             lg={12}
-            md={12}
             sm={12}
           />
           <Field
             name={`${prefix}.event_option_default_value`}
             component={renderTextField}
-            label="Default Value"
+            label="Default Selections"
             placeholder="i.e. a value from the list of options"
             lg={12}
-            md={12}
+            sm={12}
+          />
+        </div>
+      );
+    } else if(this.props.event_options[index].event_option_type === 'radio buttons') {
+      return (
+        <div>
+          <Field
+            name={`${prefix}.event_option_values`}
+            component={renderTextField}
+            label="Radio Button Options"
+            required={true}
+            lg={12}
+            sm={12}
+          />
+          <Field
+            name={`${prefix}.event_option_default_value`}
+            component={renderTextField}
+            label="Default Selection"
+            placeholder="i.e. a value from the list of options"
+            lg={12}
             sm={12}
           />
         </div>
@@ -121,9 +151,9 @@ class CreateEventTemplate extends Component {
     };
 
     return (
-      <div>
+      <div className="w-100">
         {fields.map((options, index) =>
-          <div key={`option_${index}`}>
+          <React.Fragment>
             <hr className="border-secondary" />
             <span>
               <Form.Label>Option #{index + 1}</Form.Label>
@@ -131,39 +161,39 @@ class CreateEventTemplate extends Component {
               {promote(index, fields)}
               {demote(index, fields)}
             </span>
-            <Field
-              name={`${options}.event_option_name`}
-              component={renderTextField}
-              label="Name"
-              required={true}
-              lg={12}
-              md={12}
-              sm={12}
-            />
-            <Field
-              name={`${options}.event_option_type`}
-              component={renderSelectField}
-              options={EventTemplateOptionTypes}
-              label="Type"
-              required={true}
-              lg={12}
-              md={12}
-              sm={12}
-            />
-            { this.renderOptionOptions(options, index) }
-            <Field
-              name={`${options}.event_option_required`}
-              component={renderSwitch}
-              label="Required?"
-              lg={12}
-              md={12}
-              sm={12}
-            />
-          </div>
+            <div key={`option_${index}`}>
+              <Field
+                name={`${options}.event_option_name`}
+                component={renderTextField}
+                label="Name"
+                required={true}
+                lg={12}
+                sm={12}
+              />
+              <Field
+                name={`${options}.event_option_type`}
+                component={renderSelectField}
+                options={EventTemplateOptionTypes}
+                label="Type"
+                required={true}
+                lg={12}
+                sm={12}
+              />
+              { this.renderOptionOptions(options, index) }
+              <Field
+                name={`${options}.event_option_required`}
+                component={renderSwitch}
+                label="Required?"
+                lg={12}
+                sm={12}
+              />
+            </div>
+          </React.Fragment>
         )}
-        <span className="text-primary" onClick={() => fields.push({})}>
+        <hr className="border-secondary" />
+        <div className="text-primary" onClick={() => fields.push({})}>
           <FontAwesomeIcon icon='plus' fixedWidth/> Add Option
-        </span>
+        </div>
         {touched && error && <span>{error}</span>}
       </div>
     );
@@ -188,7 +218,6 @@ class CreateEventTemplate extends Component {
         component={renderSwitch}
         label="System Template"
         lg={12}
-        md={12}
         sm={12}
       />
     );
@@ -201,7 +230,6 @@ class CreateEventTemplate extends Component {
         label="Disable Template"
         component={renderSwitch}
         lg={12}
-        md={12}
         sm={12}
       />
     );
@@ -215,58 +243,53 @@ class CreateEventTemplate extends Component {
 
     if (this.props.roles && (this.props.roles.includes("admin") || this.props.roles.includes("template_manager"))) {
       return (
-        <Card className="form-standard">
+        <Card className="border-secondary">
           <Card.Header>{formHeader}</Card.Header>
           <Card.Body>
-            <form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Field
-                name="event_name"
-                component={renderTextField}
-                type="text"
-                label="Button Name"
-                required={true}
-                lg={12}
-                md={12}
-                sm={12}
-              />
-              <Field
-                name="event_value"
-                type="text"
-                component={renderTextField}
-                label="Event Value"
-                required={true}
-                lg={12}
-                md={12}
-                sm={12}
-              />
-              <Field
-                name="template_categories"
-                type="text"
-                component={renderTextField}
-                label="Template Categories (comma delimited)"
-                placeholder="i.e. biology,geology"
-                lg={12}
-                md={12}
-                sm={12}
-              />
-              <Field
-                name='event_free_text_required'
-                component={renderSwitch}
-                label={"Free text Required?"}
-                lg={12}
-                md={12}
-                sm={12}
-              />
-              {this.renderAdminOptions()}
+            <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+              <Form.Row>
+                <Field
+                  name="event_name"
+                  component={renderTextField}
+                  label="Button Name"
+                  required={true}
+                  lg={12}
+                  sm={12}
+                />
+                <Field
+                  name="event_value"
+                  component={renderTextField}
+                  label="Event Value"
+                  required={true}
+                  lg={12}
+                  sm={12}
+                />
+                <Field
+                  name="template_categories"
+                  component={renderTextField}
+                  label="Template Categories (comma delimited)"
+                  placeholder="i.e. biology,geology"
+                  lg={12}
+                  sm={12}
+                />
+                <Field
+                  name='event_free_text_required'
+                  component={renderSwitch}
+                  label={"Free text Required?"}
+                  lg={12}
+                  sm={12}
+                />
+                {this.renderAdminOptions()}
+              </Form.Row>
               <FieldArray name="event_options" component={this.renderOptions}/>
               <br/>
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
-              <div className="float-right" style={{marginRight: "-20px", marginBottom: "-8px"}}>
-                <Button variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Form</Button>
+              <div className="float-right">
+                <Button className="mr-1" variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Form</Button>
                 <Button variant="primary" type="submit" size="sm" disabled={pristine || submitting || !valid}>Create</Button>
               </div>
-            </form>
+            </Form>
           </Card.Body>
         </Card>
       );
@@ -285,8 +308,8 @@ function validate(formProps) {
 
   if (!formProps.event_name) {
     errors.event_name = 'Required';
-  } else if (formProps.event_name.length > 15) {
-    errors.event_name = 'Must be 15 characters or less';
+  } else if (formProps.event_name.length > 32) {
+    errors.event_name = 'Must be 32 characters or less';
   }
 
   if (!formProps.event_value) {
@@ -340,6 +363,30 @@ function validate(formProps) {
           event_optionsArrayErrors[event_optionIndex] = event_optionErrors;
 
         } else if (event_option.event_option_type === 'checkboxes') {
+
+          let valueArray = [];
+
+          if (!event_option.event_option_values) {
+            event_optionErrors.event_option_values = 'Required';
+          }
+          else {
+            try {
+              valueArray = event_option.event_option_values.split(',');
+              valueArray = valueArray.map(string => {
+                return string.trim();
+              });
+            }
+            catch(err) {
+              event_optionErrors.event_option_values = 'Invalid csv list';
+            }
+          }
+
+          if(event_option.event_option_default_value && !valueArray.includes(event_option.event_option_default_value)) {
+            event_optionErrors.event_option_default_value = 'Value is not in options list';
+          }
+
+          event_optionsArrayErrors[event_optionIndex] = event_optionErrors;
+        } else if (event_option.event_option_type === 'radio buttons') {
 
           let valueArray = [];
 

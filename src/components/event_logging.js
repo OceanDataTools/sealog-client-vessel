@@ -29,19 +29,19 @@ class EventLogging extends Component {
         <div>
           <EventShowDetailsModal />
           <EventCommentModal/>
-          <Row>
+          <Row className="mt-2" >
             <Col>
-              <EventTemplateList style={{marginBottom: "4px"}} />
+              <EventTemplateList />
             </Col>
           </Row>
           <Row>
             <Col>
-              <EventInput style={{marginBottom: "4px"}} />
+              <EventInput className="mt-2" />
             </Col>
           </Row>
           <Row>
             <Col>
-              <EventHistory />
+              <EventHistory className="mt-2"/>
             </Col>
           </Row>
         </div>

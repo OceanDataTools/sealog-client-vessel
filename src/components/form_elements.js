@@ -6,14 +6,26 @@ import moment from 'moment';
 export const dateFormat = "YYYY-MM-DD";
 export const timeFormat = "HH:mm:ss";
 
-export function renderTextField({ input, label, placeholder, required, meta: { touched, error }, type="text", disabled=false, xs=12, sm=6, md=6, lg=6}) {
+export function renderStaticTextField({ input, label, xs=12, sm=6, md=12, lg=6}) {
+  
+  const labelComponent = (label)? <Form.Label>{label}</Form.Label> : null;
+
+  return (
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+      {labelComponent}
+      <Form.Control type="text" {...input} disabled />
+    </Form.Group>
+  );
+}
+
+export function renderTextField({ input, label, placeholder, required, meta: { touched, error }, type="text", disabled=false, xs=12, sm=6, md=12, lg=6}) {
   const requiredField = (required)? <span className='text-danger'> *</span> : '';
   const labelComponent = (label)? <Form.Label>{label}{requiredField}</Form.Label> : null;
 
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
       {labelComponent}
-      <Form.Control type={type} {...input} placeholder={placeholder} isInvalid={touched && error} />
+      <Form.Control type={type} {...input} placeholder={placeholder} isInvalid={touched && error} disabled={disabled} />
       <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
     </Form.Group>
   );
@@ -31,7 +43,7 @@ export function renderTextArea({ input, label, placeholder, required, meta: { to
   );
 }
 
-export function renderSelectField({ input, label, placeholder, required, options, meta: { touched, error }, disabled=false, xs=12, sm=6, md=6, lg=6 }) {
+export function renderSelectField({ input, label, placeholder, required, options, meta: { touched, error }, disabled=false, xs=12, sm=6, md=12, lg=6 }) {
 
   let requiredField = (required)? <span className='text-danger'> *</span> : '';
   let defaultOption = ( <option key={`${input.name}.empty`} value=""></option> );
@@ -53,7 +65,7 @@ export function renderSelectField({ input, label, placeholder, required, options
   );
 }
 
-export function renderDatePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', disabled=false, xs=12, sm=6, md=6, lg=6 }) {
+export function renderDatePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', disabled=false, xs=12, sm=6, md=12, lg=6 }) {
   let requiredField = (required)? <span className='text-danger'> *</span> : '';
   
   // inputProps={{className: "form-control form-control-sm"}} 
@@ -61,13 +73,13 @@ export function renderDatePicker({ input, label, required, meta: { touched, erro
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
       <Form.Label>{label}{requiredField}</Form.Label>
-      <Datetime {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat) : null} dateFormat={dateFormat} timeFormat={false} selected={input.value ? moment.utc(input.value, dateFormat) : null }/>
-      {touched && (error && <div style={{width: "100%", marginTop: "0.25rem", fontSize: "80%"}} className='text-danger'>{error}</div>)}
+      <Datetime className="rdtPicker-sealog" {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat) : null} dateFormat={dateFormat} timeFormat={false} selected={input.value ? moment.utc(input.value, dateFormat) : null }/>
+      {touched && (error && <div className={"w-100 mt-1 text-danger"} style={{fontSize: ".7rem"}}>{error}</div>)}
     </Form.Group>
   );
 }
 
-export function renderDateTimePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', timeFormat='HH:mm:ss', disabled=false, xs=12, sm=6, md=6, lg=6 }) {
+export function renderDateTimePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', timeFormat='HH:mm:ss', disabled=false, xs=12, sm=6, md=12, lg=6 }) {
   let requiredField = (required)? <span className='text-danger'> *</span> : ''
 
   // inputProps={{className: "form-control form-control-sm"}} 
@@ -75,13 +87,13 @@ export function renderDateTimePicker({ input, label, required, meta: { touched, 
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
       <Form.Label>{label}{requiredField}</Form.Label>
-      <Datetime {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat + ' ' + timeFormat) : null} dateFormat={dateFormat} timeFormat={timeFormat} selected={input.value ? moment.utc(input.value) : null } />
-      {touched && (error && <div style={{width: "100%", marginTop: "0.25rem", fontSize: "80%"}} className='text-danger'>{error}</div>)}
+      <Datetime className="rdtPicker-sealog" {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat + ' ' + timeFormat) : null} dateFormat={dateFormat} timeFormat={timeFormat} selected={input.value ? moment.utc(input.value) : null } />
+      {touched && (error && <div className={"w-100 mt-1 text-danger"} style={{fontSize: ".7rem"}}>{error}</div>)}
     </Form.Group>
   )
 }
 
-export function renderCheckboxGroup({ label, options, input, required, meta: { dirty, error }, disabled=false }) {
+export function renderCheckboxGroup({ label, options, input, required, meta: { dirty, error }, disabled=false, inline=false, indication=false }) {
 
   const requiredField = (required)? (<span className='text-danger'> *</span>) : '';
   // console.log(options);
@@ -90,12 +102,13 @@ export function renderCheckboxGroup({ label, options, input, required, meta: { d
     const tooltip = (option.description)? (<Tooltip id={`${option.value}_Tooltip`}>{option.description}</Tooltip>) : null
     
     const checkbox = <Form.Check
-      label={option.value}
+      label={(indication && input.value.includes(option.value)) ? <span className="text-warning">{option.value}</span> : option.value }
       name={`${option.label}[${index}]`}
       key={`${label}.${index}`}
       value={option.value}
       checked={input.value.indexOf(option.value) !== -1}
       disabled={disabled}
+      inline={inline}
       onChange={event => {
         const newValue = [...input.value];
         if(event.target.checked) {
@@ -112,7 +125,7 @@ export function renderCheckboxGroup({ label, options, input, required, meta: { d
 
   return (
     <Form.Group as={Col}>
-      <Form.Label><span>{label}{requiredField}</span> {dirty && (error && <span className="text-danger" style={{marginTop: "-16px", fontSize: "80%"}}>{error}<br/></span>)}</Form.Label><br/>
+      <Form.Label><span>{label}{requiredField}</span> {dirty && (error && <span className="text-danger" style={{fontSize: ".7rem"}}>{error}<br/></span>)}</Form.Label><br/>
       {checkboxList}
     </Form.Group>      
   );
@@ -135,10 +148,44 @@ export function renderCheckbox({ input, label, meta: { dirty, error }, disabled=
   );
 }
 
+
+export function renderRadioGroup({ label, options, input, required, meta: { dirty, error }, disabled=false, inline=false, indication=false }) {
+
+  const requiredField = (required)? (<span className='text-danger'> *</span>) : '';
+  // console.log(options);
+  const radioList = options.map((option, index) => {
+
+    const tooltip = (option.description)? (<Tooltip id={`${option.value}_Tooltip`}>{option.description}</Tooltip>) : null
+    
+    const radio = <Form.Check
+      label={(indication && input.value === option.value) ? <span className="text-warning">{option.value}</span> : option.value }
+      name={`${label}`}
+      key={`${label}.${index}`}
+      value={option.value}
+      checked={input.value === option.value}
+      disabled={disabled}
+      type="radio"
+      inline={inline}
+      onChange={event => {
+        return input.onChange(option.value);
+      }}
+    />
+
+    return (tooltip) ? <span key={`${label}.${index}`}><OverlayTrigger placement="right" overlay={tooltip}>{radio}</OverlayTrigger></span> : <span key={`${label}.${index}`}>{radio}</span>;
+  });
+
+  return (
+    <Form.Group as={Col}>
+      <Form.Label><span>{label}{requiredField}</span> {dirty && (error && <span className="text-danger" style={{fontSize: ".7rem"}}>{error}<br/></span>)}</Form.Label><br/>
+      {radioList}
+    </Form.Group>      
+  );
+}
+
 export function renderSwitch({ input, label, meta: { dirty, error }, disabled=false }) {    
 
   return (
-    <Form.Group>
+    <Form.Group className="ml-2">
       <Form.Switch
         {...input}
         id={input.name}

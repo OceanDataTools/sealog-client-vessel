@@ -15,9 +15,11 @@ import { API_ROOT_URL, IMAGE_PATH, ROOT_PATH } from '../client_config';
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData']
+const excludeAuxDataSources = ['vehicleRealtimeFramegrabberData']
 
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData']
+const imageAuxDataSources = ['vehicleRealtimeFramegrabberData']
+
+const sortAuxDataSourceReference = ['vehicleRealtimeNavData','vesselRealtimeNavData'];
 
 class EventShowDetailsModal extends Component {
 
@@ -68,14 +70,23 @@ class EventShowDetailsModal extends Component {
 
   renderImage(source, filepath) {
     return (
-      <Card id={`image_${source}`}>
-        <Card.Body className="data-card-body">
-          <Image  fluid onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)} />
-          <div>{source}</div>
-        </Card.Body>
+      <Card  className="event-image-data-card" id={`image_${source}`}>
+        <Image fluid onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)} />
+        <span>{source}</span>
       </Card>
-    )
+    );
   }
+
+  // renderImage(source, filepath) {
+  //   return (
+  //     <Card id={`image_${source}`}>
+  //       <Card.Body className="data-card-body">
+  //         <Image  fluid onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)} />
+  //         <div>{source}</div>
+  //       </Card.Body>
+  //     </Card>
+  //   )
+  // }
 
   renderImageryCard() {
     if(this.props.event && this.state.event.aux_data) { 
@@ -89,17 +100,13 @@ class EventShowDetailsModal extends Component {
         }
 
         return (
-          <Row>
-            {
-              tmpData.map((camera) => {
-                return (
-                  <Col key={camera.source} xs={12} sm={6} md={6} lg={3}>
-                    {this.renderImage(camera.source, camera.filepath)}
-                  </Col>
-                )
-              })
-            }
-          </Row>
+          tmpData.map((camera) => {
+            return (
+              <Col className="px-1 pb-2" key={camera.source} xs={12} sm={6} md={6} lg={4}>
+                {this.renderImage(camera.source, camera.filepath)}
+              </Col>
+            );
+          })
         )
       }
     }
@@ -110,19 +117,17 @@ class EventShowDetailsModal extends Component {
     // return null;
     let return_event_options = this.state.event.event_options.reduce((filtered, event_option, index) => {
       if(event_option.event_option_name !== 'event_comment') {
-        filtered.push(<div key={`event_option_${index}`}><span>{event_option.event_option_name}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{event_option.event_option_value}</span><br/></div>);
+        filtered.push(<div key={`event_option_${index}`}><span className="data-name">{event_option.event_option_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{event_option.event_option_value}</span><br/></div>);
       }
       return filtered
     },[])
 
     return (return_event_options.length > 0)? (
-      <Col xs={12} sm={6} md={6} lg={4}>
-        <Card>
-          <Card.Header className="data-card-header">Event Options</Card.Header>
-          <Card.Body className="data-card-body">
-            <div style={{paddingLeft: "10px"}}>
-              {return_event_options}
-            </div>
+      <Col className="px-1 pb-2" xs={12} sm={6} md={6} lg={4}>
+        <Card className="event-data-card">
+          <Card.Header>Event Options</Card.Header>
+          <Card.Body>
+            {return_event_options}
           </Card.Body>
         </Card>
       </Col>
@@ -131,76 +136,73 @@ class EventShowDetailsModal extends Component {
 
   renderAuxDataCard() {
 
-    if(this.props.event && this.state.event.aux_data) {
-      let return_aux_data = this.state.event.aux_data.reduce((filtered, aux_data) => {
-        if(!excludeAuxDataSources.includes(aux_data.data_source)) {
-          let aux_data_points = aux_data.data_array.map((data, index) => {
-            return(<div key={`${aux_data.data_source}_data_point_${index}`}><span>{data.data_name}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>)
-          })
+    if(this.state.event && this.state.event.aux_data) {
 
-          if(aux_data_points.length > 0) {
-            filtered.push(
-              <Col key={`${aux_data.data_source}_col`} xs={12} sm={6} md={6} lg={4}>
-                <Card key={`${aux_data.data_source}`}>
-                  <Card.Header className="data-card-header">{aux_data.data_source}</Card.Header>
-                  <Card.Body className="data-card-body">
-                    <div style={{paddingLeft: "10px"}}>
-                      {aux_data_points}
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            )
-          }
-        }
+      const aux_data = this.state.event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
 
-        return filtered
-      },[])
+      aux_data.sort((a, b) => {
+        return (sortAuxDataSourceReference.indexOf(a.data_source) < sortAuxDataSourceReference.indexOf(b.data_source)) ? -1 : 1;
+      });
 
-      return return_aux_data
+      let return_aux_data = aux_data.map((aux_data, index) => {
+        const aux_data_points = aux_data.data_array.map((data, index) => {
+          return(<div key={`${aux_data.data_source}_data_point_${index}`}><span className="data-name">{data.data_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>);
+        });
+
+        return (
+          <Col className="px-1 pb-2" key={`${aux_data.data_source}_col`} sm={6} md={6} lg={4}>
+            <Card className="event-data-card" key={`${aux_data.data_source}`}>
+              <Card.Header>{aux_data.data_source.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</Card.Header>
+              <Card.Body>
+                {aux_data_points}
+              </Card.Body>
+            </Card>
+          </Col>
+        );
+      });
+
+      return return_aux_data;
     }
 
-    return null
+    return null;
   }
 
   render() {
     const { show, event } = this.props
 
-    const event_free_text_card = (this.state.event.event_free_text)? (<Card><Card.Body className="data-card-body">Free-form Text: {this.state.event.event_free_text}</Card.Body></Card>) : null;
+    const event_free_text_card = (this.state.event.event_free_text)? (<Col className="px-1 pb-2" xs={12}><Card className="event-data-card"><Card.Body>Free-form Text: {this.state.event.event_free_text}</Card.Body></Card></Col>) : null;
     const event_comment = (this.state.event.event_options) ? this.state.event.event_options.find((event_option) => (event_option.event_option_name === 'event_comment' && event_option.event_option_value.length > 0)) : null
 
-    const event_comment_card = (event_comment)?(<Card><Card.Body className="data-card-body">Comment: {event_comment.event_option_value}</Card.Body></Card>) : null;
+    const event_comment_card = (event_comment)?(<Col className="px-1" xs={12}><Card className="event-data-card"><Card.Body>Comment: {event_comment.event_option_value}</Card.Body></Card></Col>) : null;
     
     if (event ) {
       if(this.state.event.event_options) {
         return (
           <Modal size="lg" show={show} onHide={this.props.handleHide}>
               <ImagePreviewModal />
-              <Modal.Header closeButton>
+              <Modal.Header className="bg-light" closeButton>
                 <Modal.Title as="h5">Event Details: {this.state.event.event_value}</Modal.Title>
               </Modal.Header>
 
-              <Modal.Body>
-                <span>User: {this.state.event.event_author}</span><br/>
-                <span>Date: {this.state.event.ts}</span>
-                <Row style={{paddingTop: "8px"}}>
-                  <Col xs={12}>
-                    {this.renderImageryCard()}
+              <Modal.Body className="px-4">
+                <Row>
+                  <Col className="px-1 pb-2" xs={12}>
+                    <Card className="event-data-card">
+                      <Card.Body>
+                        <span>User: {this.state.event.event_author}</span>
+                        <span className="float-right">Date: {this.state.event.ts}</span>
+                      </Card.Body>
+                    </Card>
                   </Col>
                 </Row>
-                <Row style={{paddingTop: "8px"}}>
-                  {this.renderEventOptionsCard()}
+                <Row>
+                  {this.renderImageryCard()}
                   {this.renderAuxDataCard()}
+                  {this.renderEventOptionsCard()}
                 </Row>
-                <Row style={{paddingTop: "8px"}}>
-                  <Col xs={12}>
-                    {event_free_text_card}
-                  </Col>
-                </Row>
-                <Row style={{paddingTop: "8px"}}>
-                  <Col xs={12}>
-                    {event_comment_card}
-                  </Col>
+                <Row>
+                  {event_free_text_card}
+                  {event_comment_card}
                 </Row>
               </Modal.Body>
           </Modal>
@@ -208,7 +210,7 @@ class EventShowDetailsModal extends Component {
       } else {
         return (
           <Modal size="lg" show={show} onHide={this.props.handleHide}>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-light" closeButton>
               <Modal.Title as="h5">Event Details: {this.state.event.event_value}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -227,7 +229,8 @@ class EventShowDetailsModal extends Component {
 function mapStateToProps(state) {
 
   return {
-    roles: state.user.profile.roles
+    cruise: state.cruise.cruise,
+    roles: state.user.profile.roles,
   }
 }
 

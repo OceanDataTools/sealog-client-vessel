@@ -29,7 +29,7 @@ class DeleteEventTemplateModal extends Component {
     if(id) {
       return (
         <Modal show={show} onHide={handleHide}>
-          <Modal.Header closeButton>
+          <Modal.Header className="bg-light" closeButton>
             <Modal.Title>Confirm Deletion</Modal.Title>
           </Modal.Header>
 
@@ -38,8 +38,8 @@ class DeleteEventTemplateModal extends Component {
           </Modal.Body>
 
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleHide}>Cancel</Button>
-            <Button variant="danger" onClick={this.handleConfirm}>Yup!</Button>
+            <Button size="sm" variant="secondary" onClick={handleHide}>Cancel</Button>
+            <Button size="sm" variant="danger" onClick={this.handleConfirm}>Yup!</Button>
           </Modal.Footer>
         </Modal>
       );

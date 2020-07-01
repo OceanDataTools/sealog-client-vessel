@@ -2,19 +2,16 @@ import React, { Component } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
-import { Button, Card, Form, Tooltip, OverlayTrigger} from 'react-bootstrap';
+import { Button, Card, Form } from 'react-bootstrap';
 import { renderAlert, renderDatePicker, renderMessage, renderTextField, renderTextArea, dateFormat } from './form_elements';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import FileDownload from 'js-file-download';
-
 import { FilePond } from 'react-filepond';
-import 'filepond/dist/filepond.min.css';
-
+import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 import { API_ROOT_URL } from '../client_config';
 import * as mapDispatchToProps from '../actions';
 
@@ -47,6 +44,11 @@ class UpdateCruise extends Component {
 
   componentWillUnmount() {
     this.props.leaveUpdateCruiseForm();
+  }
+
+  handleFileDeleteModal(file) {
+    console.log("delete", file)
+    this.props.showModal('deleteFile', { file: file, handleDelete: this.handleFileDelete });
   }
 
   handleFormSubmit(formProps) {
@@ -96,8 +98,8 @@ class UpdateCruise extends Component {
     this.props.handleFormSubmit()
   }
 
-  async handleFileDownload(cruiseID, filename) {
-    await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${cruiseID}/${filename}`,
+  async handleFileDownload(filename) {
+    await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
     {
       headers: {
         authorization: cookies.get('token')
@@ -112,58 +114,46 @@ class UpdateCruise extends Component {
     });
   }
 
-  async handleFileDelete(cruiseID, filename) {
-    await axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${cruiseID}/${filename}`,
+  async handleFileDelete(filename) {
+    await axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
     {
       headers: {
         authorization: cookies.get('token')
       }
     })
     .then(() => {
-        this.props.initCruise(cruiseID)
+        this.props.initCruise(this.props.cruise.id)
      })
     .catch(()=>{
       console.log("JWT is invalid, logging out");
     });
   }
 
-
-  copyToClipboard() {
-    if(this.props.cruise.cruise_id) {
-      return  (
-`Cruise:          ${this.props.cruise.cruise_id}
-Name:            ${(this.props.cruise.cruise_additional_meta.cruise_name) ? this.props.cruise.cruise_additional_meta.cruise_name : ""}
-Chief Scientist: ${this.props.cruise.cruise_additional_meta.cruise_pi}
-Vessel:          ${this.props.cruise.cruise_additional_meta.cruise_vessel}
-Location:        ${this.props.cruise.cruise_location}\n
-Description:     ${(this.props.cruise.cruise_additional_meta.cruise_description) ? this.props.cruise.cruise_additional_meta.cruise_description : ""}\n
-Departure Port:  ${this.props.cruise.cruise_additional_meta.cruise_departure_location}
-Start of Cruise: ${moment.utc(this.props.cruise.start_ts).format(dateFormat)}\n
-Arrival Port:    ${this.props.cruise.cruise_additional_meta.cruise_arrival_location}
-End of Cruise:   ${moment.utc(this.props.cruise.stop_ts).format(dateFormat)}\n`
-      )
-    }
-  }
-
   renderFiles() {
     if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files && this.props.cruise.cruise_additional_meta.cruise_files.length > 0) {
       let files = this.props.cruise.cruise_additional_meta.cruise_files.map((file, index) => {
-        return <li style={{ listStyleType: "none" }} key={`file_${index}`}><span onClick={() => this.handleFileDownload(this.props.cruise.id, file)}><FontAwesomeIcon className='text-primary' icon='download' fixedWidth /></span> <span onClick={() => this.handleFileDelete(this.props.cruise.id, file)}><FontAwesomeIcon className='text-danger' icon='trash' fixedWidth /></span><span> {file}</span></li>
+        return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => this.handleFileDownload(file)}>{file}</a> <FontAwesomeIcon onClick={() => this.handleFileDeleteModal(file)} className='text-danger' icon='trash' fixedWidth /></div>
       })
-      return <div>{files}<br/></div>
+
+      return (
+        <div className="mb-2">
+          {files}
+        </div>
+      )
     }
+      
     return null
   }
 
   render() {
 
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
-    const updateCruiseFormHeader = (<div>Update Cruise<span className="float-right"><OverlayTrigger placement="top" overlay={<Tooltip id="copyToClipboardTooltip">Copy Cruise to Clipboard</Tooltip>}><CopyToClipboard text={this.copyToClipboard()} ><FontAwesomeIcon icon='clipboard' fixedWidth /></CopyToClipboard></OverlayTrigger></span></div>);
+    const updateCruiseFormHeader = (<div>Update Cruise<span className="float-right"><CopyCruiseToClipboard cruise={this.props.cruise}/></span></div>);
 
     if (this.props.roles && (this.props.roles.includes("admin") || this.props.roles.includes('cruise_manager'))) {
 
       return (
-        <Card>
+        <Card className="border-secondary">
           <Card.Header>{updateCruiseFormHeader}</Card.Header>
           <Card.Body>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
@@ -282,8 +272,8 @@ End of Cruise:   ${moment.utc(this.props.cruise.stop_ts).format(dateFormat)}\n`
                 </FilePond>
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
-              <div className="float-right" style={{marginRight: "-20px", marginBottom: "-8px"}}>
-                <Button variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Values</Button>
+              <div className="float-right">
+                <Button className="mr-1" variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Values</Button>
                 <Button variant="primary" size="sm" type="submit" disabled={(submitting || !valid || pristine) && this.state.filepondPristine}>Update</Button>
               </div>
             </Form>

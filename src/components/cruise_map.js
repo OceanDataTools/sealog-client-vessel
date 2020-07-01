@@ -6,13 +6,11 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { Map, TileLayer, WMSTileLayer, Marker, Polyline, Popup, LayersControl, ScaleControl } from 'react-leaflet';
 import L from 'leaflet';
-import { Row, Col, Card, Tooltip, OverlayTrigger, ListGroup } from 'react-bootstrap';
-import 'rc-slider/assets/index.css';
+import { ButtonToolbar, Container, Row, Col, Card, Tooltip, OverlayTrigger, ListGroup, Form } from 'react-bootstrap';
 import Slider, { createSliderWithTooltip } from 'rc-slider';
 import EventShowDetailsModal from './event_show_details_modal';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
-import CruiseDropdown from './cruise_dropdown';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
@@ -30,7 +28,7 @@ const maxEventsPerPage = 10;
 
 const initCenterPosition = DEFAULT_LOCATION;
 
-const positionAuxDataSources = ['vesselRealtimeNavData'];
+const positionAuxDataSources = ['vehicleRealtimeNavData'];
 
 class CruiseMap extends Component {
 
@@ -62,8 +60,7 @@ class CruiseMap extends Component {
     this.handlePageSelect = this.handlePageSelect.bind(this);
     this.updateEventFilter = this.updateEventFilter.bind(this);
 
-    this.calcvesselPosition = this.calcvesselPosition.bind(this);
-    this.handleCruiseSelect = this.handleCruiseSelect.bind(this);
+    this.calcVehiclePosition = this.calcVehiclePosition.bind(this);
     this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this);
     this.handleMoveEnd = this.handleMoveEnd.bind(this);
     this.handleZoomEnd = this.handleZoomEnd.bind(this);
@@ -151,9 +148,16 @@ class CruiseMap extends Component {
           authorization: cookies.get('token')
         }
       }).then((response) => {
-        response.data.map((r_data) => {
-          tracklines[this.auxDatasourceFilters[index]].polyline.addLatLng([ parseFloat(r_data['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(r_data['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])]);
-          tracklines[this.auxDatasourceFilters[index]].eventIDs.push(r_data['event_id']);
+        response.data.forEach((r_data) => {
+          try {
+            const latLng = [ parseFloat(r_data['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(r_data['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])];
+            if(latLng[0] != 0 && latLng[1] != 0) {
+              tracklines[this.auxDatasourceFilters[index]].polyline.addLatLng(latLng);
+              tracklines[this.auxDatasourceFilters[index]].eventIDs.push(r_data['event_id']);
+            }
+          } catch(err) {
+            console.log("No nav found")
+          }
         });
 
       }).catch((error)=>{
@@ -168,9 +172,13 @@ class CruiseMap extends Component {
   }
 
   initMapView() {
-    if(this.state.tracklines.vesselRealtimeNavData && !this.state.tracklines.vesselRealtimeNavData.polyline.isEmpty()) {
-      this.map.leafletElement.panTo(this.state.tracklines.vesselRealtimeNavData.polyline.getBounds().getCenter());
-      this.map.leafletElement.fitBounds(this.state.tracklines.vesselRealtimeNavData.polyline.getBounds());
+    if(this.state.tracklines.vehicleReNavData && !this.state.tracklines.vehicleReNavData.polyline.isEmpty()) {
+      this.map.leafletElement.panTo(this.state.tracklines.vehicleReNavData.polyline.getBounds());
+      this.map.leafletElement.fitBounds(this.state.tracklines.vehicleReNavData.polyline.getBounds());
+    }
+    else if(this.state.tracklines.vehicleRealtimeNavData && !this.state.tracklines.vehicleRealtimeNavData.polyline.isEmpty()) {
+      this.map.leafletElement.panTo(this.state.tracklines.vehicleRealtimeNavData.polyline.getBounds().getCenter());
+      this.map.leafletElement.fitBounds(this.state.tracklines.vehicleRealtimeNavData.polyline.getBounds());
     }
   }
 
@@ -246,17 +254,22 @@ class CruiseMap extends Component {
     }
   }
 
-  calcvesselPosition(selected_event) {
+  calcVehiclePosition(selected_event) {
     if(selected_event && selected_event.aux_data) {
-      let vesselRealtimeNavData = selected_event.aux_data.find(aux_data => aux_data.data_source == "vesselRealtimeNavData");
-      if(vesselRealtimeNavData) {
-        let latObj = vesselRealtimeNavData.data_array.find(data => data.data_name == "latitude");
-        let lonObj = vesselRealtimeNavData.data_array.find(data => data.data_name == "longitude");
+      let vehicleRealtimeNavData = selected_event.aux_data.find(aux_data => aux_data.data_source == "vehicleRealtimeNavData");
+      if(vehicleRealtimeNavData) {
+        try {
+          let latObj = vehicleRealtimeNavData.data_array.find(data => data.data_name == "latitude");
+          let lonObj = vehicleRealtimeNavData.data_array.find(data => data.data_name == "longitude");
 
-        if(latObj && lonObj && latObj.data_value != this.state.position.lat && lonObj.data_value != this.state.position.lng) {
-          this.setState({ showMarker: true, position:{ lat:latObj.data_value, lng: lonObj.data_value}});
-        } else if(!latObj || !lonObj) {
-          this.setState({showMarker: false});
+          if(latObj && lonObj && latObj.data_value != this.state.position.lat && lonObj.data_value != this.state.position.lng) {
+            this.setState({ showMarker: true, position:{ lat:latObj.data_value, lng: lonObj.data_value}});
+          } else if(!latObj || !lonObj) {
+            this.setState({showMarker: false});
+          }
+        }
+        catch(err) {
+          console.log("unable to process nav");
         }
       }
     }
@@ -264,12 +277,6 @@ class CruiseMap extends Component {
 
   handleEventShowDetailsModal(index) {
     this.props.showModal('eventShowDetails', { event: this.props.event.events[index], handleUpdateEvent: this.props.updateEvent });
-  }
-
-  handleCruiseSelect(id) {
-    this.props.gotoCruiseMap(id);
-    this.props.initCruiseReplay(id);
-    this.initCruiseTrackline(id);
   }
 
   handleCruiseModeSelect(mode) {
@@ -292,19 +299,14 @@ class CruiseMap extends Component {
       const cruiseDuration = cruiseEndTime.diff(cruiseStartTime);
       
       return (
-        <Card style={{marginBottom: "8px"}}>
-          <Card.Body>
-            <Row>
-              <Col xs={4}>
-                <span className="text-primary">00:00:00</span>
-              </Col>
-              <Col xs={{span:4, offset:4}}>
-                <div className="float-right">
-                  <span className="text-primary">{moment.duration(cruiseDuration).format("d [days] hh:mm:ss")}</span>
-                </div>
-              </Col>
-            </Row>
+        <Card className="border-secondary" className="p-1">
+          <div className="d-flex align-items-center justify-content-between">
+              <span className="text-primary">00:00:00</span>
+              <span className="text-primary">{moment.duration(cruiseDuration).format("d [days] hh:mm:ss")}</span>
+          </div>
+          <div className="d-flex align-items-center justify-content-between">
             <SliderWithTooltip
+              className="mx-2"
               value={this.state.replayEventIndex}
               tipFormatter={this.sliderTooltipFormatter}
               trackStyle={{ opacity: 0.5 }}
@@ -312,7 +314,7 @@ class CruiseMap extends Component {
               onChange={this.handleSliderChange}
               max={this.props.event.events.length-1}
             />
-          </Card.Body>
+          </div>
         </Card>
       );
     }
@@ -321,9 +323,7 @@ class CruiseMap extends Component {
   renderEventListHeader() {
 
     const Label = "Filtered Events";
-
-    const ASNAPToggleIcon = (this.props.event.hideASNAP)? "Show ASNAP" : "Hide ASNAP";
-    const ASNAPToggle = (<span disabled={this.props.event.fetching} style={{ marginRight: "10px" }} onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</span>);
+    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.props.event.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.props.event.fetching} label='ASNAP'/>);
 
     return (
       <div>
@@ -337,10 +337,11 @@ class CruiseMap extends Component {
   }
 
   renderEventCard() {
+
     return (
-      <Card>
+      <Card className="mt-2 border-secondary">
         <Card.Header>{ this.renderEventListHeader() }</Card.Header>
-        <ListGroup>
+        <ListGroup className="eventList" tabIndex="-1" onKeyDown={this.handleKeyPress} ref={(div) => { this.divFocus = div }}>
           {this.renderEvents()}
         </ListGroup>
       </Card>
@@ -360,7 +361,7 @@ class CruiseMap extends Component {
             if(option.event_option_name === 'event_comment') {
               comment_exists = (option.event_option_value !== '')? true : false;
             } else {
-              filtered.push(`${option.event_option_name}: "${option.event_option_value}"`);
+              filtered.push(`${option.event_option_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}: "${option.event_option_value}"`);
             }
             return filtered;
           },[]);
@@ -373,13 +374,13 @@ class CruiseMap extends Component {
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
           
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } inverse={!active} icon='plus' fixedWidth transform="shrink-4"/></span>;
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
 
           let eventDetails = <OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>View Details</Tooltip>}><FontAwesomeIcon onClick={() => this.handleEventShowDetailsModal(index)} icon='window-maximize' fixedWidth/></OverlayTrigger>;
 
-          return (<ListGroup.Item className="event-list-item" key={event.id} active={active} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span><span className="float-right">{eventDetails} {eventComment}</span></ListGroup.Item>);
+          return (<ListGroup.Item className="py-1 event-list-item" key={event.id} active={active} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span><span className="float-right">{eventDetails} {eventComment}</span></ListGroup.Item>);
 
         }
       });
@@ -392,16 +393,22 @@ class CruiseMap extends Component {
 
   renderMarker() {
 
-    if(this.props.event.selected_event.aux_data && typeof this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vesselRealtimeNavData') !== 'undefined') {
+    if(this.props.event.selected_event.aux_data && typeof this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vehicleRealtimeNavData') !== 'undefined') {
 
-      const realtimeNavData = this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vesselRealtimeNavData');
-      return (
-        <Marker position={[ parseFloat(realtimeNavData['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(realtimeNavData['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])]}>
-          <Popup>
-            You are here! :-)
-          </Popup>
-        </Marker>
-      );
+      const realtimeNavData = this.props.event.selected_event.aux_data.find((data) => data['data_source'] === 'vehicleRealtimeNavData');
+      try {
+        const latLng = [ parseFloat(realtimeNavData['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(realtimeNavData['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])]
+        return (
+          <Marker position={latLng}>
+            <Popup>
+              You are here! :-)
+            </Popup>
+          </Marker>
+        );
+      }
+      catch(err) {
+        return null;
+      }
     }
   }
 
@@ -432,61 +439,62 @@ class CruiseMap extends Component {
       }
     });
 
-    const realtimeTrack = (this.state.tracklines.vesselRealtimeNavData && !this.state.tracklines.vesselRealtimeNavData.polyline.isEmpty()) ? 
-      <Polyline color="lime" positions={this.state.tracklines.vesselRealtimeNavData.polyline.getLatLngs()} />
+    const realtimeTrack = (this.state.tracklines.vehicleRealtimeNavData && !this.state.tracklines.vehicleRealtimeNavData.polyline.isEmpty()) ? 
+      <Polyline color="lime" positions={this.state.tracklines.vehicleRealtimeNavData.polyline.getLatLngs()} />
+      : null;
+
+    const reNavTrack = (this.state.tracklines.vehicleReNavData && !this.state.tracklines.vehicleReNavData.polyline.isEmpty()) ? 
+      <Polyline color="red" positions={this.state.tracklines.vehicleReNavData.polyline.getLatLngs()} />
       : null;
 
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading...";
     
     return (
-      <div tabIndex="-1" onKeyDown={this.handleKeyPress} ref={(div) => { this.divFocus = div }}>
+      <Container className="mt-2">
         <EventCommentModal />
         <EventShowDetailsModal />
         <Row>
-          <Col lg={12}>
-            <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
-              {' '}/{' '}
-              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
-              {' '}/{' '}
-              <span><CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Map"} modes={["Replay", "Review", "Gallery"]}/></span>
-            </span>
-          </Col>
-          <Col sm={12}>
-            <Card>
-              <Card.Body className="data-card-body">
-                <Map
-                  style={{ height: this.state.height }}
-                  center={this.state.center}
-                  zoom={this.state.zoom}
-                  onMoveEnd={this.handleMoveEnd}
-                  onZoomEnd={this.handleZoomEnd}
-                  ref={ (map) => this.map = map}
-                >
-                  <ScaleControl position="bottomleft" />
-                  <LayersControl position="topright">
-                    {baseLayers}
-                  </LayersControl>
-                  {realtimeTrack}
-                  {this.renderMarker()}
-                </Map>
-              </Card.Body>
+          <ButtonToolbar className="mb-2 ml-1 align-items-center">
+            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
+            <FontAwesomeIcon icon="chevron-right" fixedWidth/>
+            <span className="text-warning">{this.props.cruise.cruise_id}</span>
+            <FontAwesomeIcon icon="chevron-right" fixedWidth/>
+            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Map"} modes={["Replay", "Review", "Gallery"]}/>
+          </ButtonToolbar>
+        </Row>
+        <Row>
+          <Col className="px-1" sm={12}>
+            <Card className="border-secondary">
+              <Map
+                style={{ height: this.state.height }}
+                center={this.state.center}
+                zoom={this.state.zoom}
+                onMoveEnd={this.handleMoveEnd}
+                onZoomEnd={this.handleZoomEnd}
+                ref={ (map) => this.map = map}
+              >
+                <ScaleControl position="bottomleft" />
+                <LayersControl position="topright">
+                  {baseLayers}
+                </LayersControl>
+                {realtimeTrack}
+                {reNavTrack}
+                {this.renderMarker()}
+              </Map>
             </Card>
           </Col>
-          <Col sm={12}>
-            {this.renderControlsCard()}
-            <Row style={{paddingTop: "4px"}}>
-              <Col md={12} lg={9}>
-                {this.renderEventCard()}
-                <CustomPagination style={{marginTop: "8px"}} page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
-              </Col>          
-              <Col md={5} lg={3}>
-                <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
-              </Col>          
-            </Row>
-          </Col>
         </Row>
-      </div>
+        <Row className="mt-2">
+          <Col className="px-1 mb-1" md={9} lg={9}>
+            {this.renderControlsCard()}
+            {this.renderEventCard()}
+            <CustomPagination className="mt-2" page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
+          </Col>          
+          <Col className="px-1 mb-1" md={3} lg={3}>
+            <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
+          </Col>          
+        </Row>
+      </Container>
     );
   }
 }
@@ -494,7 +502,7 @@ class CruiseMap extends Component {
 function mapStateToProps(state) {
 
   return {
-    cruise: state.cruise.cruise,  
+    cruise: state.cruise.cruise,
     roles: state.user.profile.roles,
     event: state.event
   };

@@ -70,7 +70,7 @@ class EventCommentModal extends Component {
       return (
         <Modal show={show} onHide={handleHide}>
           <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-light" closeButton>
               <Modal.Title>Add/Update Comment</Modal.Title>
             </Modal.Header>
 

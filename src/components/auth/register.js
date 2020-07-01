@@ -14,23 +14,18 @@ class Register extends Component {
   constructor (props) {
     super(props);
 
-    this.state = { 
-      reCaptcha: null
-    };
+    this.recaptchaRef = React.createRef();
+
   }
 
   componentWillUnmount() {
     this.props.leaveRegisterForm();
   }
 
-  handleFormSubmit({username, fullname, email, password}) {
-    let reCaptcha = this.state.reCaptcha;
-
+  async handleFormSubmit({username, fullname, email, password}) {
+    let reCaptcha = ( RECAPTCHA_SITE_KEY !== "") ? await this.recaptchaRef.current.executeAsync() : null
+    username = username.toLowerCase();
     this.props.registerUser({username, fullname, email, password, reCaptcha});
-  }
-
-  onCaptchaChange(token) {
-    this.setState({reCaptcha: token});
   }
 
   renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
@@ -81,14 +76,15 @@ class Register extends Component {
 
     if (!this.props.message) {
 
-      const panelHeader = (<h5 className="form-signin-heading">New User Registration</h5>);
+      const panelHeader = (<h5 className="form-signin-heading">User Registration</h5>);
       const { handleSubmit, submitting, valid } = this.props;
       //console.log(this.props);
       const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
         <span>
           <ReCAPTCHA
+            ref={this.recaptchaRef}
             sitekey={RECAPTCHA_SITE_KEY}
-            size="normal"
+            size="invisible"
             onChange={this.onCaptchaChange.bind(this)}
           />
           <br/>
@@ -100,31 +96,25 @@ class Register extends Component {
           <Card.Body>
             {panelHeader}
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Form.Group>
+              <Form.Row>
                 <Field
                   name="username"
                   component={this.renderTextField}
                   label="Username"
                   required={true}
                 />
-              </Form.Group>
-              <Form.Group>
                 <Field
                   name="fullname"
                   component={this.renderTextField}
                   label="Full Name"
                   required={true}
                 />
-              </Form.Group>
-              <Form.Group>
                 <Field
                   name="email"
                   component={this.renderTextField}
                   label="Email"
                   required={true}
                 />
-              </Form.Group>
-              <Form.Group>
                 <Field
                   name="password"
                   component={this.renderTextField}
@@ -132,8 +122,6 @@ class Register extends Component {
                   label="Password"
                   required={true}
                 />
-              </Form.Group>
-              <Form.Group>
                 <Field
                   name="confirmPassword"
                   component={this.renderTextField}
@@ -141,14 +129,14 @@ class Register extends Component {
                   label="Confirm Password"
                   required={true}
                 />
-              </Form.Group>
+              </Form.Row>
               {recaptcha}
               {this.renderAlert()}
               <Button variant="primary" block type="submit" disabled={submitting || !valid}>Register</Button>
             </Form>
-            <br/>
             <div>
-              <Link to={ `/login` }>{<FontAwesomeIcon icon="arrow-left"/>} Back to Login</Link>
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
             </div>
           </Card.Body>
         </Card>
@@ -159,12 +147,14 @@ class Register extends Component {
   render() {
 
     return(
-      <Row>
-        <Col xs={12}>
-          {this.renderSuccess()}
-          {this.renderForm()}
-        </Col>
-      </Row>
+      <div className="mb-2">
+        <Row className="justify-content-center">
+          <Col sm={6} md={5} lg={4} xl={3}>
+            {this.renderSuccess()}
+            {this.renderForm()}
+          </Col>
+        </Row>
+      </div>
     );
   }
 }

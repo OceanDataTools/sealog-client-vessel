@@ -14,22 +14,17 @@ class ForgotPassword extends Component {
   constructor (props) {
     super(props);
 
-    this.state = { 
-      reCaptcha: null
-    };
+    this.recaptchaRef = React.createRef();
+
   }
 
   componentWillUnmount() {
     this.props.leaveLoginForm();
   }
 
-  handleFormSubmit({ email }) {
-    let reCaptcha = this.state.reCaptcha;
+  async handleFormSubmit({ email }) {
+    let reCaptcha = ( RECAPTCHA_SITE_KEY !== "") ? await this.recaptchaRef.current.executeAsync() : null
     this.props.forgotPassword({email, reCaptcha});
-  }
-
-  onCaptchaChange(token) {
-    this.setState({reCaptcha: token});
   }
 
   renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
@@ -92,12 +87,13 @@ class ForgotPassword extends Component {
       const panelHeader = (<h5 className="form-signin-heading">Forgot Password</h5>);
       const { handleSubmit, submitting, valid } = this.props;
 
-      const submitButton = (RECAPTCHA_SITE_KEY !== "")?  <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid}>Submit</Button>;
+      const submitButton = <Button variant="primary" type="submit" block disabled={submitting || !valid}>Submit</Button>;
       const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
         <span>
           <ReCAPTCHA
+            ref={this.recaptchaRef}
             sitekey={RECAPTCHA_SITE_KEY}
-            size="normal"
+            size="invisible"
             onChange={this.onCaptchaChange.bind(this)}
           />
           <br/>
@@ -105,24 +101,24 @@ class ForgotPassword extends Component {
       ): null;
 
       return (
-        <Card className="form-signin" >
+        <Card>
           <Card.Body>
             {panelHeader}
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Form.Group>
+              <Form.Row>
                 <Field
                   name="email"
                   component={this.renderTextField}
                   placeholder="Email Address"
                 />
-              </Form.Group>
+              </Form.Row>
               {recaptcha}
               {this.renderAlert()}
               {submitButton}
             </Form>
-            <br/>
-            <div className="float-right">
-              <Link to={ `/login` }>Back to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            <div className="text-center">
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
             </div>
           </Card.Body>
         </Card>
@@ -133,12 +129,14 @@ class ForgotPassword extends Component {
   render() {
 
     return(
-      <Row>
-        <Col>
-          {this.renderSuccess()}
-          {this.renderForm()}
-        </Col>
-      </Row>
+      <div className="mb-2">
+        <Row className="justify-content-center">
+          <Col sm={6} md={5} lg={4} xl={3}>
+            {this.renderSuccess()}
+            {this.renderForm()}
+          </Col>
+        </Row>
+      </div>
     );
   }
 }

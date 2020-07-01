@@ -16,22 +16,20 @@ class Login extends Component {
     super(props);
 
     this.state = {
-      reCaptcha: null,
       stdUsers: true
     };
+
+    this.recaptchaRef = React.createRef();
+
   }
 
   componentWillUnmount() {
     this.props.leaveLoginForm();
   }
 
-  onCaptchaChange(token) {
-    this.setState({reCaptcha: token});
-  }
-
-  handleFormSubmit({ username, password }) {
+  async handleFormSubmit({ username, password }) {
+    let reCaptcha = ( RECAPTCHA_SITE_KEY !== "") ? await this.recaptchaRef.current.executeAsync() : null
     username = username.toLowerCase();
-    let reCaptcha = this.state.reCaptcha;
     this.props.login({username, password, reCaptcha});
   }
 
@@ -58,32 +56,32 @@ class Login extends Component {
     const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
       <span>
         <ReCAPTCHA
+          ref={this.recaptchaRef}
           sitekey={RECAPTCHA_SITE_KEY}
-          size="normal"
-          onChange={this.onCaptchaChange.bind(this)}
+          size="invisible"
         />
         <br/>
       </span>
     ): null;
 
-    const loginButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Login</Button>;
-    const loginAsGuestButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="success" onClick={() => this.props.switch2Guest()} block>Login as Guest</Button> : <Button variant="success" onClick={() => this.props.switch2Guest(this.state.reCaptcha)} block disabled={!this.state.reCaptcha}>Login as Guest</Button>;
+    const loginButton = <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button>;
+    const loginAsGuestButton = <Button variant="success" onClick={() => this.props.switch2Guest()} block>Login as Guest</Button>;
 
     const loginImage = ( LOGIN_IMAGE !== "" )? 
-    <div className="d-flex justify-content-center" style={{marginBottom: "16px"}}>
-      <Image style={{width:"250px", margin: "0 auto"}} fluid src={`${ROOT_PATH}images/${LOGIN_IMAGE}`} />
+    <div className="d-flex justify-content-center">
+      <Image style={{width:"250px"}} fluid src={`${ROOT_PATH}images/${LOGIN_IMAGE}`} />
     </div> : null
 
 
     return (
-      <Container>
-        <Row>
-          <Col sm={12} md={6} lg={{span:5, offset:1}}>
-            <Card className="form-signin">
+      <div className="mb-2">
+        <Row className="justify-content-center">
+          <Col sm={6} md={4} lg={3}>
+            <Card>
               <Card.Body>
                 {loginCardHeader}
                 <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-                  <Form.Group>
+                  <Form.Row>
                     <Field
                       name="username"
                       component={renderTextField}
@@ -99,32 +97,26 @@ class Login extends Component {
                       lg={12}
                       sm={12}
                     />
-                  </Form.Group>
+                  </Form.Row>
                   {recaptcha}
                   {this.renderMessage(this.props.errorMessage, this.props.message)}
                   {loginButton}
                   {loginAsGuestButton}
                 </Form>
-                <br/>
-                <div>
-                  <span>
-                    <Link to={ `/forgotPassword` }>{<FontAwesomeIcon icon="arrow-left"/>} Forgot Password?</Link>
-                  </span>
-                  <span className="float-right">
-                    <Link to={ `/register` }>Register New User {<FontAwesomeIcon icon="arrow-right"/>}</Link>
-                  </span>
+                <div className="text-center">
+                  <hr className="border-secondary"/>
+                  <Link className="btn btn-outline-primary btn-block" to={ `/forgotPassword` }>Forgot Password?</Link>
+                  <Link className="btn btn-outline-primary btn-block" to={ `/register` }>Register New User</Link>
                 </div>
               </Card.Body>
             </Card>
           </Col>
-          <Col xs={12} sm={12} md={6} lg={5}>
-            <div className="form-signin">
-              { loginImage }
-              <div style={{padding: "0px 16px 0px 16px"}}>{LOGIN_SCREEN_TXT}</div>
-            </div>
+          <Col className="justify-content-center d-none d-md-inline" md={5} lg={4} xl={3}>
+            { loginImage }
+            <p className="text-justify">{LOGIN_SCREEN_TXT}</p>
           </Col>
         </Row>
-      </Container>
+      </div>
     );
   }
 }

@@ -122,7 +122,7 @@ class ImportEventsModal extends Component {
 
     return (
       <Modal show={show} onHide={this.handleHideCustom}>
-        <Modal.Header closeButton>
+        <Modal.Header className="bg-light" closeButton>
           <Modal.Title>Import Events</Modal.Title>
         </Modal.Header>
 
@@ -144,7 +144,7 @@ class ImportEventsModal extends Component {
         </Modal.Body>
 
         <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={this.handleHideCustom}>Close</Button>
+          <Button size="sm" variant="secondary" size="sm" onClick={this.handleHideCustom}>Close</Button>
         </Modal.Footer>
       </Modal>
     );

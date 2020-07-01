@@ -3,13 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import path from 'path';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { Row, Col, Card, ListGroup, Image, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import 'rc-slider/assets/index.css';
+import { ButtonToolbar, Container, Row, Col, Card, ListGroup, Image, OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
 import Slider, { createSliderWithTooltip } from 'rc-slider';
 import EventFilterForm from './event_filter_form';
 import ImagePreviewModal from './image_preview_modal';
 import EventCommentModal from './event_comment_modal';
-import CruiseDropdown from './cruise_dropdown';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
@@ -26,9 +24,11 @@ const FREV = 3;
 
 const maxEventsPerPage = 10;
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
+const excludeAuxDataSources = ['vehicleRealtimeFramegrabberData'];
 
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData']
+const imageAuxDataSources = ['vehicleRealtimeFramegrabberData'];
+
+const sortAuxDataSourceReference = ['vehicleRealtimeNavData','vesselRealtimeNavData'];
 
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
@@ -55,7 +55,6 @@ class CruiseReplay extends Component {
     this.handleCruiseReplayPause = this.handleCruiseReplayPause.bind(this);
     this.replayReverse = this.replayReverse.bind(this);
     this.updateEventFilter = this.updateEventFilter.bind(this);
-    this.handleCruiseSelect = this.handleCruiseSelect.bind(this);
     this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this);
 
   }
@@ -74,7 +73,6 @@ class CruiseReplay extends Component {
         }
       );
     }
-
     this.divFocus.focus();
   }
 
@@ -189,12 +187,6 @@ class CruiseReplay extends Component {
     }
   }
 
-  handleCruiseSelect(id) {
-    this.props.gotoCruiseReplay(id);
-    this.props.initCruiseReplay(id, this.props.event.hideASNAP);
-    this.setState({replayEventIndex: 0, activePage: 1});
-  }
-
   handleCruiseModeSelect(mode) {
     if(mode === "Review") {
       this.props.gotoCruiseReview(this.props.match.params.id);
@@ -209,11 +201,9 @@ class CruiseReplay extends Component {
 
   renderImage(source, filepath) {
     return (
-      <Card id={`image_${source}`}>
-        <Card.Body className="data-card-body">
-          <Image  fluid onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImageClick(source, filepath)} />
-          <div style={{marginTop: "5px"}}>{source}</div>
-        </Card.Body>
+      <Card  className="event-image-data-card" id={`image_${source}`}>
+        <Image fluid onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImageClick(source, filepath)} />
+        <span>{source}</span>
       </Card>
     );
   }
@@ -301,18 +291,14 @@ class CruiseReplay extends Component {
         }
 
         return (
-          <Row>
-            {
-              tmpData.map((camera) => {
-                return (
-                  <Col key={camera.source} xs={12} sm={6} md={3} lg={3}>
-                    {this.renderImage(camera.source, camera.filepath)}
-                  </Col>
-                );
-              })
-            }
-          </Row>
-        );
+          tmpData.map((camera) => {
+            return (
+              <Col className="px-1 mb-2" key={camera.source} xs={12} sm={6} md={4} lg={3}>
+                {this.renderImage(camera.source, camera.filepath)}
+              </Col>
+            );
+          })
+        )
       }
     }
   }
@@ -323,20 +309,18 @@ class CruiseReplay extends Component {
 
       let return_event_options = this.props.event.selected_event.event_options.reduce((filtered, event_option, index) => {
         if(event_option.event_option_name !== 'event_comment') {
-          filtered.push(<div key={`event_option_${index}`}><span>{event_option.event_option_name}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{event_option.event_option_value}</span><br/></div>);
+          filtered.push(<div key={`event_option_${index}`}><span className="data-name">{event_option.event_option_name}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{event_option.event_option_value}</span><br/></div>);
         }
 
         return filtered;
       },[]);
 
       return (return_event_options.length > 0)? (
-        <Col xs={12} sm={6} md={6} lg={3}>
-          <Card>
-            <Card.Header className="data-card-header">Event Options</Card.Header>
-            <Card.Body className="data-card-body">
-              <div style={{paddingLeft: "10px"}}>
-                {return_event_options}
-              </div>
+        <Col className="px-1 mb-2" xs={12} sm={6} md={4} lg={3}>
+          <Card className="event-data-card">
+            <Card.Header>Event Options</Card.Header>
+            <Card.Body>
+              {return_event_options}
             </Card.Body>
           </Card>
         </Col>
@@ -347,30 +331,29 @@ class CruiseReplay extends Component {
   renderAuxDataCard() {
 
     if(this.props.event.selected_event && this.props.event.selected_event.aux_data) {
-      let return_aux_data = this.props.event.selected_event.aux_data.reduce((filtered, aux_data, index) => {
-        if(!excludeAuxDataSources.includes(aux_data.data_source)) {
-          let aux_data_points = aux_data.data_array.map((data, index) => {
-            return(<div key={`${aux_data.data_source}_data_point_${index}`}><span>{data.data_name}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>);
-          });
 
-          if(aux_data_points.length > 0) {
-            filtered.push(
-              <Col key={`${aux_data.data_source}_col`}sm={4} md={3} lg={3}>
-                <Card key={`${aux_data.data_source}`}>
-                  <Card.Header className="data-card-header">{aux_data.data_source}</Card.Header>
-                  <Card.Body className="data-card-body">
-                    <div style={{paddingLeft: "10px"}}>
-                      {aux_data_points}
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            );
-          }
-        }
+      const aux_data = this.props.event.selected_event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
 
-        return filtered;
-      },[]);
+      aux_data.sort((a, b) => {
+        return (sortAuxDataSourceReference.indexOf(a.data_source) < sortAuxDataSourceReference.indexOf(b.data_source)) ? -1 : 1;
+      });
+
+      let return_aux_data = aux_data.map((aux_data, index) => {
+        const aux_data_points = aux_data.data_array.map((data, index) => {
+          return(<div key={`${aux_data.data_source}_data_point_${index}`}><span className="data-name">{data.data_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>);
+        });
+
+        return (
+          <Col className="px-1 pb-2" key={`${aux_data.data_source}_col`} sm={6} md={4} lg={3}>
+            <Card className="event-data-card" key={`${aux_data.data_source}`}>
+              <Card.Header>{aux_data.data_source.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</Card.Header>
+              <Card.Body>
+                {aux_data_points}
+              </Card.Body>
+            </Card>
+          </Col>
+        );
+      });
 
       return return_aux_data;
     }
@@ -388,40 +371,33 @@ class CruiseReplay extends Component {
       const playPause = (this.state.replayState !== 1)? <FontAwesomeIcon className="text-primary" key={`pause_${this.props.cruise.id}`} onClick={ () => this.handleCruiseReplayPause() } icon="pause"/> : <FontAwesomeIcon className="text-primary" key={`play_${this.props.cruise.id}`} onClick={ () => this.handleCruiseReplayPlay() } icon="play"/>;
 
       const buttons = (this.props.event.selected_event.ts && !this.props.event.fetching)? (
-        <div className="text-center">
+        <span className="w-100 text-center">
           <FontAwesomeIcon className="text-primary" key={`start_${this.props.cruise.id}`} onClick={ () => this.handleCruiseReplayStart() } icon="step-backward"/>{' '}
           <FontAwesomeIcon className="text-primary" key={`frev_${this.props.cruise.id}`} onClick={ () => this.handleCruiseReplayFRev() } icon="backward"/>{' '}
           {playPause}{' '}
           <FontAwesomeIcon className="text-primary" key={`ffwd_${this.props.cruise.id}`} onClick={ () => this.handleCruiseReplayFFwd() } icon="forward"/>{' '}
           <FontAwesomeIcon className="text-primary" key={`end_${this.props.cruise.id}`} onClick={ () => this.handleCruiseReplayEnd() } icon="step-forward"/>
-        </div>
+        </span>
       ):(
-        <div className="text-center">
+        <span className="text-center">
           <FontAwesomeIcon icon="step-backward"/>{' '}
           <FontAwesomeIcon icon="backward"/>{' '}
           <FontAwesomeIcon icon="play"/>{' '}
           <FontAwesomeIcon icon="forward"/>{' '}
           <FontAwesomeIcon icon="step-forward"/>
-        </div>
+        </span>
       );
 
       return (
-        <Card style={{marginBottom: "8px"}}>
-          <Card.Body>
-            <Row>
-              <Col xs={4}>
-                <span className="text-primary">00:00:00</span>
-              </Col>
-              <Col xs={4}>
-                {buttons}
-              </Col>
-              <Col xs={4}>
-                <div className="float-right">
-                  <span className="text-primary">{moment.duration(cruiseDuration).format("d [days] hh:mm:ss")}</span>
-                </div>
-              </Col>
-            </Row>
+        <Card className="border-secondary" className="p-1">
+          <div className="d-flex align-items-center justify-content-between">
+              <span className="text-primary">00:00:00</span>
+              {buttons}
+              <span className="text-primary">{moment.duration(cruiseDuration).format("d [days] hh:mm:ss")}</span>
+          </div>
+          <div className="d-flex align-items-center justify-content-between">
             <SliderWithTooltip
+              className="mx-2"
               value={this.state.replayEventIndex}
               tipFormatter={this.sliderTooltipFormatter}
               trackStyle={{ opacity: 0.5 }}
@@ -430,7 +406,7 @@ class CruiseReplay extends Component {
               onChange={this.handleSliderChange}
               max={this.props.event.events.length-1}
             />
-          </Card.Body>
+          </div>
         </Card>
       );
     }
@@ -439,8 +415,7 @@ class CruiseReplay extends Component {
   renderEventListHeader() {
 
     const Label = "Filtered Events";
-    const ASNAPToggleIcon = (this.props.event.hideASNAP)? "Show ASNAP" : "Hide ASNAP";
-    const ASNAPToggle = (<span disabled={this.props.event.fetching} style={{ marginRight: "10px" }} onClick={() => this.toggleASNAP()}>{ASNAPToggleIcon}</span>);
+    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.props.event.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.props.event.fetching} label='ASNAP'/>);
 
     return (
       <div>
@@ -466,7 +441,7 @@ class CruiseReplay extends Component {
             if(option.event_option_name === 'event_comment') {
               comment_exists = (option.event_option_value !== '')? true : false;
             } else {
-              filtered.push(`${option.event_option_name}: "${option.event_option_value}"`);
+              filtered.push(`${option.event_option_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}: "${option.event_option_value}"`);
             }
             return filtered;
           },[]);
@@ -479,11 +454,11 @@ class CruiseReplay extends Component {
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
           
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "" } inverse={!active} icon='plus' fixedWidth transform="shrink-4"/></span>;
+          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
 
-          return (<ListGroup.Item className="event-list-item" key={event.id} active={active} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span><span className="float-right">{eventComment}</span></ListGroup.Item>);
+          return (<ListGroup.Item className="event-list-item py-1" key={event.id} active={active} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span><span className="float-right">{eventComment}</span></ListGroup.Item>);
 
         }
       });
@@ -491,14 +466,14 @@ class CruiseReplay extends Component {
       return eventList;
     }
 
-    return (this.props.event.fetching)? (<ListGroup.Item className="event-list-item">Loading...</ListGroup.Item>) : (<ListGroup.Item>No events found</ListGroup.Item>);
+    return (this.props.event.fetching)? (<ListGroup.Item className="event-list-item py-1">Loading...</ListGroup.Item>) : (<ListGroup.Item className="event-list-item py-1">No events found</ListGroup.Item>);
   }
 
   renderEventCard() {
     return (
-      <Card>
+      <Card className="border-secondary mt-2">
         <Card.Header>{ this.renderEventListHeader() }</Card.Header>
-        <ListGroup>
+        <ListGroup className="eventList" tabIndex="-1" onKeyDown={this.handleKeyPress} ref={(div) => { this.divFocus = div }}>
           {this.renderEvents()}
         </ListGroup>
       </Card>
@@ -508,43 +483,36 @@ class CruiseReplay extends Component {
   render(){
 
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading...";
-    // console.log("cruise:", this.props.cruise);
 
     return (
-      <div tabIndex="-1" onKeyDown={this.handleKeyPress} ref={(div) => { this.divFocus = div }}>
+      <Container className="mt-2">
         <ImagePreviewModal />
         <EventCommentModal />
         <Row>
-          <Col lg={12}>
-            <span style={{paddingLeft: "8px"}}>
-              <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
-              {' '}/{' '}
-              <span><CruiseDropdown onClick={this.handleCruiseSelect} active_cruise={this.props.cruise} active_cruise={this.props.cruise}/></span>
-              {' '}/{' '}
-              <span><CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Replay"} modes={["Review", "Map", "Gallery"]}/></span>
-            </span>
-          </Col>
+          <ButtonToolbar className="mb-2 ml-1 align-items-center">
+            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
+            <FontAwesomeIcon icon="chevron-right" fixedWidth/>
+            <span className="text-warning">{this.props.cruise.cruise_id}</span>
+            <FontAwesomeIcon icon="chevron-right" fixedWidth/>
+            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Replay"} modes={["Review", "Map", "Gallery"]}/>
+          </ButtonToolbar>
         </Row>
         <Row>
-          <Col sm={12}>
-            {this.renderImageryCard()}
-          </Col>
-          {this.renderEventOptionsCard()}
+          {this.renderImageryCard()}
           {this.renderAuxDataCard()}
-          <Col sm={12}>
-            {this.renderControlsCard()}
-            <Row style={{paddingTop: "4px"}}>
-              <Col md={12} lg={9}>
-                {this.renderEventCard()}
-                <CustomPagination style={{marginTop: "8px"}} page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
-              </Col>          
-              <Col md={4} lg={3}>
-                <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
-              </Col>          
-            </Row>
-          </Col>
+          {this.renderEventOptionsCard()}
         </Row>
-      </div>
+        <Row>
+          <Col className="px-1 mb-1" md={9} lg={9}>
+            {this.renderControlsCard()}
+            {this.renderEventCard()}
+            <CustomPagination className="mt-2" page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
+          </Col>
+          <Col className="px-1 mb-1" md={3} lg={3}>
+            <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
+          </Col>          
+        </Row>
+      </Container>
     );
   }
 }
@@ -552,7 +520,7 @@ class CruiseReplay extends Component {
 function mapStateToProps(state) {
 
   return {
-    cruise: state.cruise.cruise,  
+    cruise: state.cruise.cruise,
     roles: state.user.profile.roles,
     event: state.event
   };

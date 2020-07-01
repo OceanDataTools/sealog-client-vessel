@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { connect } from 'react-redux';
 import { Client } from '@hapi/nes/lib/client';
+import { Link } from 'react-router-dom';
 import { WS_ROOT_URL, DISABLE_EVENT_LOGGING } from '../client_config';
 
 import * as mapDispatchToProps from '../actions';
@@ -26,19 +27,12 @@ class Footer extends Component {
     if ( !DISABLE_EVENT_LOGGING && this.props.authenticated ) {
       this.connectToWS();
     }
-    
-    // let intervalID = setInterval(this.handleASNAPNotification, 5000);
-    // this.setState({intervalID: intervalID});
-
   }
 
   componentWillUnmount() {
     if ( !DISABLE_EVENT_LOGGING && this.props.authenticated ) {
       this.client.disconnect();
     }
-
-    // clearInterval(this.state.intervalID);
-    // this.setState({intervalID: null});
   }
 
   async connectToWS() {
@@ -71,11 +65,6 @@ class Footer extends Component {
     if(this.props.authenticated) {
       this.props.fetchCustomVars();
     }
-
-    // if(this.props.asnapStatus && this.state.intervalID) {
-    //   clearInterval(this.state.intervalID);
-    //   this.setState({intervalID: null});
-    // }
   }
 
   render () {
@@ -106,13 +95,11 @@ class Footer extends Component {
     }
 
     return (
-      <div>
-        <div style={{marginTop: "4px"}}>
-          {asnapStatus}
-          <span className="float-right">
-            <a href={`/github`} target="_blank">Sealog</a> is licensed under the <a href={`/license`} target="_blank">MIT</a> public license
-          </span>
-        </div>
+      <div className="mt-2 justify-content-center bg-light p-2">
+        {asnapStatus}
+        <span className="float-right">
+          <Link to="/github" target="_blank">Sealog</Link> is licensed under the <Link to="/license" target="_blank">MIT</Link> public license
+        </span>
       </div>
     );
   }

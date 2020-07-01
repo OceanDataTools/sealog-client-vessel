@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import moment from 'moment';
 import Cookies from 'universal-cookie';
-import { Form, ListGroup, Modal } from 'react-bootstrap';
+import { Collapse, Form, ListGroup, Modal } from 'react-bootstrap';
 import { API_ROOT_URL } from '../client_config';
 
 const updateType = {
@@ -34,11 +34,14 @@ class RenderTableRow extends Component {
   }
 
   render () {
-    const { cruise } = this.props
+    const { cruise, lowerings } = this.props
 
     return (
-      <ListGroup.Item>
+      <ListGroup.Item onClick={this.toggleRowCollapse}>
         {cruise}
+        <Collapse in={this.state.open}>
+          {lowerings}
+        </Collapse>
       </ListGroup.Item> 
     );
   }
@@ -51,10 +54,12 @@ class UserPermissionsModal extends Component {
 
     this.state = {
       cruises: null,
+      lowerings: null,
       Permissions: {}
     }
 
     this.fetchCruises = this.fetchCruises.bind(this);
+    this.fetchLowerings = this.fetchLowerings.bind(this);
   }
 
   static propTypes = {
@@ -64,11 +69,12 @@ class UserPermissionsModal extends Component {
 
   componentDidMount() {
     this.fetchCruises();
+    this.fetchLowerings();
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.user_id && this.state.cruises && prevState.cruises !== this.state.cruises) {
-      let permissions = { cruises: [] };
+    if (this.props.user_id && this.state.cruises && this.state.lowerings && (prevState.cruises !== this.state.cruises || prevState.lowerings !== this.state.lowerings)) {
+      let permissions = { cruises: [], lowerings: [] };
 
       permissions = this.state.cruises.reduce((cruise_permissions, cruise) => {
         if(cruise.cruise_access_list && cruise.cruise_access_list.includes(this.props.user_id)) {
@@ -78,6 +84,16 @@ class UserPermissionsModal extends Component {
         return cruise_permissions;
 
       }, permissions);
+
+      permissions = this.state.lowerings.reduce((lowering_permissions, lowering) => {
+        if(lowering.lowering_access_list && lowering.lowering_access_list.includes(this.props.user_id)) {
+          lowering_permissions.lowerings.push(lowering.id);
+        }
+
+        return lowering_permissions;
+
+      }, permissions);
+
     }
   }
 
@@ -104,6 +120,38 @@ class UserPermissionsModal extends Component {
         }
       }).then(async (response) => {
         await this.fetchCruises();
+        await this.fetchLowerings();
+        return response.data;
+      }).catch((err) => {
+        console.error(err);
+        return null;
+      });
+
+    } catch(error) {
+      console.log(error);
+    }
+  }
+
+  async updateLoweringPermissions(lowering_id, user_id, type) {
+    try {
+
+      const payload = {};
+      if (type === updateType.ADD) {
+        payload.add = [user_id];
+      }
+      else if (type === updateType.REMOVE) {
+        payload.remove = [user_id];
+      }
+
+      const result = await axios.patch(`${API_ROOT_URL}/api/v1/lowerings/${lowering_id}/permissions`,
+      payload,
+      {
+        headers: {
+          authorization: cookies.get('token'),
+          'content-type': 'application/json'
+        }
+      }).then(async (response) => {
+        await this.fetchLowerings();
         return response.data;
       }).catch((err) => {
         console.error(err);
@@ -138,11 +186,34 @@ class UserPermissionsModal extends Component {
     }
   }
 
+  async fetchLowerings() {
+    try {
+
+      const lowerings = await axios.get(`${API_ROOT_URL}/api/v1/lowerings`,
+      {
+        headers: {
+          authorization: cookies.get('token'),
+          'content-type': 'application/json'
+        }
+      }).then((response) => {
+        return response.data;
+      }).catch((err) => {
+        console.error(err);
+        return [];
+      });
+
+      this.setState({ lowerings: lowerings.reverse() });
+
+    } catch(error) {
+      console.log(error);
+    }
+  }
+
   render() {
 
     const { show, user_id, submitting, valid, handleHide } = this.props
 
-    const body = ( this.props.user_id && this.state.cruises) ?
+    const body = ( this.props.user_id && this.state.cruises && this.state.lowerings) ?
       this.state.cruises.map((cruise) => {
 
         const cruiseCheckbox = <Form.Check 
@@ -153,7 +224,25 @@ class UserPermissionsModal extends Component {
           onChange={ (e) => { this.updateCruisePermissions(cruise.id, user_id, e.target.checked) }}
         />
 
-        return <RenderTableRow key={cruise.id} cruise={cruiseCheckbox}/>;
+        let startOfCruise = new Date(cruise.start_ts);
+        let endOfCruise = new Date(cruise.stop_ts);
+
+        const cruiseLoweringsTemp = this.state.lowerings.filter(lowering => moment.utc(lowering.start_ts).isBetween(moment.utc(startOfCruise), moment.utc(endOfCruise)));
+        const loweringCheckboxes = <ul>Lowerings:<br/>{
+          cruiseLoweringsTemp.map((lowering) => { 
+            return (<Form.Check
+              type="switch"
+              key={`lowering_${lowering.id}`}
+              id={`lowering_${lowering.id}`}
+              label={`${lowering.lowering_id}${(lowering.lowering_location) ? ': ' + lowering.lowering_location : ''}`}
+              checked={(lowering.lowering_access_list && lowering.lowering_access_list.includes(user_id))}
+              disabled={!(cruise.cruise_access_list && cruise.cruise_access_list.includes(user_id))}
+              onChange={ (e) => { this.updateLoweringPermissions(lowering.id, user_id, e.target.checked) }}
+            />);
+          })
+        } </ul>
+
+        return <RenderTableRow key={cruise.id} cruise={cruiseCheckbox} lowerings={loweringCheckboxes}/>;
       }) :
       null;
       
@@ -161,7 +250,7 @@ class UserPermissionsModal extends Component {
       return (
         <Modal show={show} onHide={this.props.handleHide}>
           <form>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-light" closeButton>
               <Modal.Title>User Permissions</Modal.Title>
             </Modal.Header>
             { body }

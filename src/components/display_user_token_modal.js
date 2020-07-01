@@ -58,7 +58,7 @@ class DisplayUserTokenModal extends Component {
     if (id) {
       return (
         <Modal show={show} onHide={handleHide}>
-          <Modal.Header closeButton>
+          <Modal.Header className="bg-light" closeButton>
             <Modal.Title>User&#39;s Java Web Token</Modal.Title>
           </Modal.Header>
 

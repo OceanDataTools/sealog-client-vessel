@@ -2,19 +2,19 @@
 
 ### Prerequisites
 
- - [sealog-server v1.0.8+](https://github.com/oceandatatools/sealog-server)
- - [nodeJS v8.11.0+](https://nodejs.org)
+ - [sealog-server v2.0.0+](https://github.com/oceandatatools/sealog-server)
+ - [nodeJS v12.x+](https://nodejs.org)
  - [npm](https://www.npmjs.com)
  - [git](https://git-scm.com)
  
-#### Installing NodeJS/npm on Ubuntu 16.04LTS
-The standard Ubuntu repositories for Ubuntu 16.04 only provide install packages for NodeJS v4.  Sealog-client-vessel (and Sealog-Server) require nodeJS >= v8.11
+#### Installing NodeJS/npm on Ubuntu 18.04LTS
+The standard Ubuntu repositories for Ubuntu 18.04 only provide install packages for NodeJS v10.  Sealog-client-vehicle (and Sealog-Server) require nodeJS >= v12.x
  
-To install nodeJS v8.11 on Ubuntu 16.04LTS run the following commands:
+To install nodeJS v12.x on Ubuntu 18.04LTS run the following commands:
  ```
 sudo apt-get install curl build-essential
 cd ~
-curl -sL https://deb.nodesource.com/setup_8.x -o nodesource_setup.sh
+curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
 sudo bash nodesource_setup.sh
 sudo apt-get install nodejs
 
@@ -23,35 +23,35 @@ sudo apt-get install nodejs
 ### Clone the repository
 
 ```
-git clone https://github.com/oceandatatools/sealog-client-vessel.git
+git clone https://github.com/oceandatatools/sealog-client-vehicle.git
 ```
 
-This should clone the repo to a directory called `sealog-client-vessel`
+This should clone the repo to a directory called `sealog-client-vehicle`
 
 ### Create a new configuration file
 
 ```
-cd ~/sealog-client-vessel
+cd ~/sealog-client-vehicle
 cp ./src/client_config.js.dist ./src/client_config.js
 ```
 
 ### Modify the configuration file
 
-Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, and `IMAGES_PATH` values in the `./sealog-client-vessel/src/client_config.js` file to meet your specific installation requirements.
+Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, and `IMAGES_PATH` values in the `./sealog-client-vehicle/src/client_config.js` file to meet your specific installation requirements.
 
 By default the file assumes the sealog-server is available on port 8000 on the same server that is hosting the sealog-server.  The default configuration file also assumes the client will be available from the /sealog directory of the webserver; i.e. `http://<serverIP>/sealog`.  If you want the webclient available at the root directory of the webserver or some custom location :  you need to set `ROOT_PATH` variable appropriately; i.e. `/`, `/custom_path/`. ***NOTICE the starting `/` **AND** trailing `/`.
 
 ### Create a deployment file
 
 ```
-cd ~/sealog-client-vessel
+cd ~/sealog-client-vehicle
 cp ./webpack.config.js.dist ./webpack.config.js
 ```
 
 ### Create a new map tiles file
 
 ```
-cd ~/sealog-client-vessel
+cd ~/sealog-client-vehicle
 cp ./src/map_tilelayers.js.dist ./src/map_tilelayers.js
 ```
 
@@ -59,7 +59,7 @@ cp ./src/map_tilelayers.js.dist ./src/map_tilelayers.js
 
 From a terminal run:
 ```
-cd ~/sealog-client-vessel
+cd ~/sealog-client-vehicle
 npm install
 ```
 
@@ -67,7 +67,7 @@ npm install
 
 From a terminal run:
 ```
-cd ~/sealog-client-vessel
+cd ~/sealog-client-vehicle
 npm run build
 ```
 
@@ -75,9 +75,9 @@ This will create the `dist` directory containing the required html, js, css, ima
 
 ### Install the client
 
-Create a symbolic link from the dist directory to the directory where Apache will server the client.  Modify the paths appropriately for your installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/sealog/sealog-client-vessel`:
+Create a symbolic link from the dist directory to the directory where Apache will server the client.  Modify the paths appropriately for your installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/sealog/sealog-client-vehicle`:
 
-`sudo ln -s /home/sealog/sealog-client-vessel/dist /var/www/html/sealog`
+`sudo ln -s /home/sealog/sealog-client-vehicle/dist /var/www/html/sealog`
 
 ### Configure Apache to host the client
 
@@ -105,6 +105,6 @@ Optionally you can run the client using node's development web-server.  This rem
 
 To run the client using development mode run the following commands in terminal:
 ```
-cd /home/sealog/sealog-client-vessel
+cd /home/sealog/sealog-client-vehicle
 npm start
 ```

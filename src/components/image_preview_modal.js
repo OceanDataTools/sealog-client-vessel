@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Path from 'path';
 import { Modal, Image } from 'react-bootstrap';
 import { connectModal } from 'redux-modal';
 
@@ -32,8 +33,8 @@ class ImagePreviewModal extends Component {
     if (name) {
       return (
         <Modal size="lg" show={show} onHide={handleHide}>
-          <Modal.Header closeButton>
-            <Modal.Title as="h5">Image Preview - {this.props.name}</Modal.Title>
+          <Modal.Header className="bg-light" closeButton>
+            <Modal.Title as="h5">Image Preview - {Path.basename(this.props.filepath)}</Modal.Title>
           </Modal.Header>
 
           <Modal.Body>

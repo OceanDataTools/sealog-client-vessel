@@ -144,7 +144,7 @@ class CruisePermissionsModal extends Component {
       return (
         <Modal show={show} onHide={this.props.handleHide}>
           <form>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-light" closeButton>
               <Modal.Title>Cruise Permissions</Modal.Title>
             </Modal.Header>
               <ListGroup>
