@@ -7,7 +7,6 @@ import momentDurationFormatSetup from 'moment-duration-format';
 import { connect } from 'react-redux';
 import { Accordion, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import FileDownload from 'js-file-download';
-import CopyLoweringToClipboard from './copy_lowering_to_clipboard';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 
 import { API_ROOT_URL, MAIN_SCREEN_TXT, DEFAULT_VESSEL } from '../client_config';

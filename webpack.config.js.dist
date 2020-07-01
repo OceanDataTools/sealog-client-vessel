@@ -30,7 +30,7 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: path.resolve(__dirname, 'node_modules/typeface-roboto/files/'), to: 'style/fonts' },
+        { from: path.resolve(__dirname, 'node_modules/typeface-open-sans/files/'), to: 'style/fonts' },
         { from: path.resolve(__dirname, 'node_modules/leaflet/dist/images/'), to: 'style/images' },
         { from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' },
       ]
