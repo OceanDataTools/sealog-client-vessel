@@ -251,13 +251,16 @@ class UpdateCruise extends Component {
               </Form.Row>
                 <Form.Label>Cruise Files</Form.Label>
                 {this.renderFiles()}
-                <FilePond ref={ref => this.pond = ref} allowMultiple={true} 
+                <FilePond
+                  ref={ref => this.pond = ref}
                   maxFiles={5}
                   server={{
                     url: API_ROOT_URL,
                     process: {
                       url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
                       headers: { authorization: cookies.get('token') },
+                      onload: (response) => console.log(response.key),
+                      onerror: (response) => console.log(response),
                     },
                     revert: {
                       url: CRUISE_ROUTE + '/filepond/revert',
