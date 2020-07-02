@@ -47,11 +47,11 @@ class UpdateCruise extends Component {
   }
 
   handleFileDeleteModal(file) {
-    console.log("delete", file)
+    // console.log("delete", file)
     this.props.showModal('deleteFile', { file: file, handleDelete: this.handleFileDelete });
   }
 
-  handleFormSubmit(formProps) {
+  async handleFormSubmit(formProps) {
     formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
 
     // formProps.cruise_additional_meta = {}
@@ -93,9 +93,9 @@ class UpdateCruise extends Component {
 
     formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
 
-    this.props.updateCruise({...formProps });
-    this.pond.removeFiles();
+    await this.props.updateCruise({...formProps });
     this.props.handleFormSubmit()
+    this.pond.removeFiles();
   }
 
   async handleFileDownload(filename) {
@@ -251,16 +251,13 @@ class UpdateCruise extends Component {
               </Form.Row>
                 <Form.Label>Cruise Files</Form.Label>
                 {this.renderFiles()}
-                <FilePond
-                  ref={ref => this.pond = ref}
+                <FilePond ref={ref => this.pond = ref} allowMultiple={true} 
                   maxFiles={5}
                   server={{
                     url: API_ROOT_URL,
                     process: {
                       url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
                       headers: { authorization: cookies.get('token') },
-                      onload: (response) => console.log(response.key),
-                      onerror: (response) => console.log(response),
                     },
                     revert: {
                       url: CRUISE_ROUTE + '/filepond/revert',
