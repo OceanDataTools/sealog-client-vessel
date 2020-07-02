@@ -94,8 +94,8 @@ class UpdateCruise extends Component {
     formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
 
     await this.props.updateCruise({...formProps });
-    this.props.handleFormSubmit()
     this.pond.removeFiles();
+    this.props.handleFormSubmit()
   }
 
   async handleFileDownload(filename) {
