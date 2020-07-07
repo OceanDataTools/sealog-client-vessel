@@ -20,6 +20,9 @@ class ExportDropdown extends Component {
 
     this.state = {
       id: (this.props.id)? this.props.id : "dropdown-download",
+      disabled: (this.props.disabled != undefined )? this.props.disabled : false,
+      hideASNAP: (this.props.hideASNAP != undefined )? this.props.hideASNAP : false,
+      eventFilter: (this.props.eventFilter)? this.props.eventFilter : {},
       prefix: (this.props.prefix)? this.props.prefix : null,
     };
   }
@@ -27,15 +30,28 @@ class ExportDropdown extends Component {
   static propTypes = {
     id: PropTypes.string,
     prefix: PropTypes.string,
-    cruiseID: PropTypes.string,
-    disabled: PropTypes.bool.isRequired,
-    hideASNAP: PropTypes.bool.isRequired,
-    eventFilter: PropTypes.object.isRequired
+    disabled: PropTypes.bool,
+    hideASNAP: PropTypes.bool,
+    eventFilter: PropTypes.object,
+    cruiseID: PropTypes.string.isRequired
   };
 
   componentDidUpdate(prevProps) {
+
     if (this.props.prefix !== prevProps.prefix) {
       this.setState({prefix: this.props.prefix});
+    }
+
+    if (this.props.disabled !== prevProps.disabled) {
+      this.setState({disabled: this.props.disabled});
+    }
+
+    if (this.props.hideASNAP !== prevProps.hideASNAP) {
+      this.setState({hideASNAP: this.props.hideASNAP});
+    }
+
+    if (this.props.eventFilter !== prevProps.eventFilter) {
+      this.setState({eventFilter: this.props.eventFilter});
     }
   }
 
@@ -129,7 +145,7 @@ class ExportDropdown extends Component {
   }
 
   exportEventsWithAuxData(format='json') {
-    this.fetchEventsWithAuxData(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
+    this.fetchEventsWithAuxData(format, this.state.eventFilter, this.state.hideASNAP).then((results) => {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_export.${format}`);
     }).catch((error) => {
@@ -138,7 +154,7 @@ class ExportDropdown extends Component {
   }
 
   exportEvents(format='json') {
-    this.fetchEvents(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
+    this.fetchEvents(format, this.state.eventFilter, this.state.hideASNAP).then((results) => {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_eventExport.${format}`);
     }).catch((error) => {
@@ -147,7 +163,7 @@ class ExportDropdown extends Component {
   }
 
   exportAuxData() {
-    this.fetchEventAuxData(this.props.eventFilter, this.props.hideASNAP).then((results) => {
+    this.fetchEventAuxData(this.state.eventFilter, this.state.hideASNAP).then((results) => {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(JSON.stringify(results), `${prefix}_sealog_auxDataExport.json`);
     }).catch((error) => {
@@ -156,10 +172,10 @@ class ExportDropdown extends Component {
   }
 
   render() {
-    const exportTooltip = (<Tooltip id="exportTooltip">Export these events</Tooltip>);
+    const exportTooltip = (<Tooltip id="exportTooltip">Export events</Tooltip>);
 
     return (
-      <Dropdown as={'span'} disabled={this.props.disabled} id={this.state.id}>
+      <Dropdown as={'span'} disabled={this.state.disabled} id={this.state.id}>
         <Dropdown.Toggle as={'span'}><OverlayTrigger placement="top" overlay={exportTooltip}><FontAwesomeIcon icon='download' fixedWidth/></OverlayTrigger></Dropdown.Toggle>
         <Dropdown.Menu>
           <Dropdown.Header className="text-warning" key="toJSONHeader">JSON format</Dropdown.Header>

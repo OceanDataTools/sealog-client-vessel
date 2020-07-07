@@ -7,6 +7,7 @@ import momentDurationFormatSetup from 'moment-duration-format';
 import { connect } from 'react-redux';
 import { Accordion, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import FileDownload from 'js-file-download';
+import ExportDropdown from './export_dropdown';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 
 import { API_ROOT_URL, MAIN_SCREEN_TXT, DEFAULT_VESSEL } from '../client_config';
@@ -160,7 +161,7 @@ class CruiseMenu extends Component {
 
       return (          
         <Card className="border-secondary" key={`cruise_${this.state.activeCruise.cruise_id}`}>
-          <Card.Header>Cruise: <span className="text-warning">{this.state.activeCruise.cruise_id}</span><span className="float-right"><CopyCruiseToClipboard cruise={this.state.activeCruise} /></span></Card.Header>
+          <Card.Header>Cruise: <span className="text-warning">{this.state.activeCruise.cruise_id}</span><span className="float-right"><CopyCruiseToClipboard cruise={this.state.activeCruise} /> <ExportDropdown cruiseID={this.state.activeCruise.id} prefix={this.state.activeCruise.cruise_id}/></span></Card.Header>
           <Card.Body>
             {cruiseName}
             {cruisePi}

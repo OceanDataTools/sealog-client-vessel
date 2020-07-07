@@ -60,7 +60,7 @@ class CopyCruiseToClipboard extends Component {
   }
 
   render() {
-    return (<OverlayTrigger placement="top" overlay={<Tooltip id="copyToClipboardTooltip">Copy to clipboard</Tooltip>}><CopyToClipboard text={this.state.text} ><FontAwesomeIcon icon='clipboard' fixedWidth /></CopyToClipboard></OverlayTrigger>);
+    return (<OverlayTrigger placement="top" overlay={<Tooltip id="copyToClipboardTooltip">Copy stats to clipboard</Tooltip>}><CopyToClipboard text={this.state.text} ><FontAwesomeIcon icon='clipboard' fixedWidth /></CopyToClipboard></OverlayTrigger>);
   }
 }
 
