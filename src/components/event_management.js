@@ -101,10 +101,11 @@ class EventManagement extends Component {
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
     let offset = `&offset=${(activePage-1)*maxEventsPerPage}`;
+    let sort = `&sort=newest`;
     let limit = `&limit=${maxEventsPerPage}`;
 
 
-    await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}${offset}${limit}`,
+    await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}${offset}${limit}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -245,7 +246,7 @@ class EventManagement extends Component {
             <CustomPagination className="mt-2" page={this.state.activePage} count={this.state.eventCount} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
           </Col>
           <Col className="px-1 pb-2" sm={12} md={3} lg={3}>
-            <EventFilterForm disabled={this.state.fetching} hideASNAP={this.state.hideASNAP} handlePostSubmit={ this.updateEventFilter }/>
+            <EventFilterForm disabled={this.state.fetching} hideASNAP={this.state.hideASNAP} handlePostSubmit={ this.updateEventFilter } sort="newest"/>
           </Col>
         </Row>
       </Container>

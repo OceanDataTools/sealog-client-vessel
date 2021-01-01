@@ -33,7 +33,8 @@ class ExportDropdown extends Component {
     disabled: PropTypes.bool,
     hideASNAP: PropTypes.bool,
     eventFilter: PropTypes.object,
-    cruiseID: PropTypes.string.isRequired
+    cruiseID: PropTypes.string,
+    sort: PropTypes.string
   };
 
   componentDidUpdate(prevProps) {
@@ -59,6 +60,7 @@ class ExportDropdown extends Component {
 
     const cookies = new Cookies();
     format = `format=${format}`;
+    let apiRoute = (this.state.cruiseID)? `/api/v1/events/bycruise/${this.props.cruiseID}` : `/api/v1/events/`;
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -66,8 +68,9 @@ class ExportDropdown extends Component {
     let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
+    let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
 
-    return await axios.get(`${API_ROOT_URL}/api/v1/events/bycruise/${this.props.cruiseID}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+    return await axios.get(`${API_ROOT_URL}${apiRoute}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -88,6 +91,7 @@ class ExportDropdown extends Component {
   async fetchEventAuxData(eventFilter, hideASNAP) {
 
     const cookies = new Cookies();
+    let apiRoute = (this.state.cruiseID)? `/api/v1/event_aux_data/bycruise/${this.props.cruiseID}` : `/api/v1/event_aux_data/`
     let startTS = (eventFilter.startTS)? `startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -95,8 +99,9 @@ class ExportDropdown extends Component {
     let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
+    let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
 
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${this.props.cruiseID}?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+    return await axios.get(`${API_ROOT_URL}${apiRoute}?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -118,6 +123,7 @@ class ExportDropdown extends Component {
 
     const cookies = new Cookies();
     format = `format=${format}`;
+    let apiRoute = (this.state.cruiseID)? `/api/v1/event_exports/bycruise/${this.props.cruiseID}` : `/api/v1/event_exports/`;
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -125,8 +131,9 @@ class ExportDropdown extends Component {
     let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
+    let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
 
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports/bycruise/${this.props.cruiseID}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
+    return await axios.get(`${API_ROOT_URL}${apiRoute}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
         headers: {
           authorization: cookies.get('token')
