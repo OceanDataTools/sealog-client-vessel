@@ -20,10 +20,12 @@ class ExportDropdown extends Component {
 
     this.state = {
       id: (this.props.id)? this.props.id : "dropdown-download",
+      prefix: (this.props.prefix)? this.props.prefix : null,
       disabled: (this.props.disabled != undefined )? this.props.disabled : false,
       hideASNAP: (this.props.hideASNAP != undefined )? this.props.hideASNAP : false,
       eventFilter: (this.props.eventFilter)? this.props.eventFilter : {},
-      prefix: (this.props.prefix)? this.props.prefix : null,
+      cruiseID: (this.props.cruiseID)? this.props.cruiseID : undefined,
+      sort: (this.props.sort)? this.props.sort : undefined
     };
   }
 
