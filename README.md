@@ -1,6 +1,15 @@
 # sealog-client-vessel
 React-Redux based client for the Sealog Eventlogging Server
 
+This variant is tailored towards cruise-level event-logging for a research vessel.
+
+![Main Page](/docs/sealog_main.png)
+![Event Template](/docs/sealog_event_template.png)
+![Cruise Selection](/docs/sealog_cruise_select.png)
+![Cruise Map](/docs/sealog_cruise_map.png)
+![Edit Cruise Metadata](/docs/sealog_edit_cruise.png)
+![Edit Event Template](/docs/sealog_edit_template.png)
+
 For installation instruction please look at [INSTALL.md](./INSTALL.md)
 
 [Live Demo](https://sealog-vessel.oceandatatools.org)
@@ -8,9 +17,8 @@ For installation instruction please look at [INSTALL.md](./INSTALL.md)
 - admin account for demo: admin:demo
 
 # Current Users
-Sealog-Vessel is currently looking for its first user.
+- R/V Falkor operated by the Schmidt Ocean Institute
+- R/V OceanXplorer1 operated by OceanX
 
 # Thanks and acknowledgments
-Sealog is in ongoing development thanks to the generosity of the Schmidt Ocean Institute (SOI) who have supported the project since 2018. Thanks also to the Woods Hole Oceanographic Institution (WHOI) who provided the initial inspiration for the project and are it's first users.
-
-Lastly I want to thank the UNOLS community who have helped me since the beginning by sharing their wealth of experience and technical ability.
+Sealog exists thanks to financial support from all of it's users and continues to evolve thanks to the UNOLS community who have helped me since the beginning by sharing their wealth of experience and technical ability.
