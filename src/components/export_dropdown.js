@@ -18,51 +18,53 @@ class ExportDropdown extends Component {
   constructor (props) {
     super(props);
 
+    let cruiseOrLowering = "";
+    if(this.props.cruiseID) {
+      cruiseOrLowering = `/bycruise/${this.props.cruiseID}`
+    }
+    else if(this.props.loweringID) {
+      cruiseOrLowering = `/bylowering/${this.props.loweringID}`
+    }
+
     this.state = {
       id: (this.props.id)? this.props.id : "dropdown-download",
       prefix: (this.props.prefix)? this.props.prefix : null,
-      disabled: (this.props.disabled != undefined )? this.props.disabled : false,
-      hideASNAP: (this.props.hideASNAP != undefined )? this.props.hideASNAP : false,
-      eventFilter: (this.props.eventFilter)? this.props.eventFilter : {},
-      cruiseID: (this.props.cruiseID)? this.props.cruiseID : undefined,
-      sort: (this.props.sort)? this.props.sort : undefined
+      cruiseOrLowering: cruiseOrLowering
     };
   }
 
   static propTypes = {
     id: PropTypes.string,
     prefix: PropTypes.string,
-    disabled: PropTypes.bool,
-    hideASNAP: PropTypes.bool,
-    eventFilter: PropTypes.object,
+    disabled: PropTypes.bool.isRequired,
+    hideASNAP: PropTypes.bool.isRequired,
+    eventFilter: PropTypes.object.isRequired,
     cruiseID: PropTypes.string,
+    loweringID: PropTypes.string,
     sort: PropTypes.string
   };
 
   componentDidUpdate(prevProps) {
+    // Typical usage (don't forget to compare props):
+    if (this.props.cruiseID !== prevProps.cruiseID) {
+      const cruiseOrLowering = `/bycruise/${this.props.cruiseID}`
+      this.setState({cruiseOrLowering: cruiseOrLowering});
+    }
+    else if (this.props.loweringID !== prevProps.loweringID) {
+      const cruiseOrLowering = `/bylowering/${this.props.loweringID}`
+      this.setState({cruiseOrLowering: cruiseOrLowering});
+    }
 
     if (this.props.prefix !== prevProps.prefix) {
       this.setState({prefix: this.props.prefix});
     }
 
-    if (this.props.disabled !== prevProps.disabled) {
-      this.setState({disabled: this.props.disabled});
-    }
-
-    if (this.props.hideASNAP !== prevProps.hideASNAP) {
-      this.setState({hideASNAP: this.props.hideASNAP});
-    }
-
-    if (this.props.eventFilter !== prevProps.eventFilter) {
-      this.setState({eventFilter: this.props.eventFilter});
-    }
   }
 
   async fetchEvents(format, eventFilter, hideASNAP) {
 
     const cookies = new Cookies();
     format = `format=${format}`;
-    let apiRoute = (this.state.cruiseID)? `/api/v1/events/bycruise/${this.props.cruiseID}` : `/api/v1/events/`;
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -72,7 +74,7 @@ class ExportDropdown extends Component {
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
     let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
 
-    return await axios.get(`${API_ROOT_URL}${apiRoute}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
+    return await axios.get(`${API_ROOT_URL}/api/v1/events${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -93,7 +95,6 @@ class ExportDropdown extends Component {
   async fetchEventAuxData(eventFilter, hideASNAP) {
 
     const cookies = new Cookies();
-    let apiRoute = (this.state.cruiseID)? `/api/v1/event_aux_data/bycruise/${this.props.cruiseID}` : `/api/v1/event_aux_data/`
     let startTS = (eventFilter.startTS)? `startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -103,7 +104,7 @@ class ExportDropdown extends Component {
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
     let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
 
-    return await axios.get(`${API_ROOT_URL}${apiRoute}?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
+    return await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data${this.state.cruiseOrLowering}?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -125,7 +126,6 @@ class ExportDropdown extends Component {
 
     const cookies = new Cookies();
     format = `format=${format}`;
-    let apiRoute = (this.state.cruiseID)? `/api/v1/event_exports/bycruise/${this.props.cruiseID}` : `/api/v1/event_exports/`;
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -135,7 +135,7 @@ class ExportDropdown extends Component {
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
     let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
 
-    return await axios.get(`${API_ROOT_URL}${apiRoute}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
+    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
         headers: {
           authorization: cookies.get('token')
@@ -154,7 +154,7 @@ class ExportDropdown extends Component {
   }
 
   exportEventsWithAuxData(format='json') {
-    this.fetchEventsWithAuxData(format, this.state.eventFilter, this.state.hideASNAP).then((results) => {
+    this.fetchEventsWithAuxData(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_export.${format}`);
     }).catch((error) => {
@@ -163,7 +163,7 @@ class ExportDropdown extends Component {
   }
 
   exportEvents(format='json') {
-    this.fetchEvents(format, this.state.eventFilter, this.state.hideASNAP).then((results) => {
+    this.fetchEvents(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_eventExport.${format}`);
     }).catch((error) => {
@@ -172,7 +172,7 @@ class ExportDropdown extends Component {
   }
 
   exportAuxData() {
-    this.fetchEventAuxData(this.state.eventFilter, this.state.hideASNAP).then((results) => {
+    this.fetchEventAuxData(this.props.eventFilter, this.props.hideASNAP).then((results) => {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(JSON.stringify(results), `${prefix}_sealog_auxDataExport.json`);
     }).catch((error) => {
@@ -181,10 +181,10 @@ class ExportDropdown extends Component {
   }
 
   render() {
-    const exportTooltip = (<Tooltip id="exportTooltip">Export events</Tooltip>);
+    const exportTooltip = (<Tooltip id="exportTooltip">Export these events</Tooltip>);
 
     return (
-      <Dropdown as={'span'} disabled={this.state.disabled} id={this.state.id}>
+      <Dropdown as={'span'} disabled={this.props.disabled} id={this.state.id}>
         <Dropdown.Toggle as={'span'}><OverlayTrigger placement="top" overlay={exportTooltip}><FontAwesomeIcon icon='download' fixedWidth/></OverlayTrigger></Dropdown.Toggle>
         <Dropdown.Menu>
           <Dropdown.Header className="text-warning" key="toJSONHeader">JSON format</Dropdown.Header>
@@ -200,9 +200,5 @@ class ExportDropdown extends Component {
     );
   }
 }
-
-// function mapStateToProps(state) {
-//   return {};
-// }
 
 export default connect(null, null)(ExportDropdown);

@@ -9,9 +9,7 @@ import { Accordion, Button, Container, Row, Col, Card, OverlayTrigger, Tooltip }
 import FileDownload from 'js-file-download';
 import ExportDropdown from './export_dropdown';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
-
-import { API_ROOT_URL, MAIN_SCREEN_TXT, DEFAULT_VESSEL } from '../client_config';
-
+import { API_ROOT_URL, MAIN_SCREEN_TXT, DEFAULT_VESSEL, CUSTOM_CRUISE_NAME } from '../client_config';
 import * as mapDispatchToProps from '../actions';
 
 const CRUISE_ROUTE = "/files/cruises";
@@ -28,6 +26,8 @@ class CruiseMenu extends Component {
       activeYear: (this.props.cruise.start_ts) ? moment.utc(this.props.cruise.start_ts).format("YYYY") : null,
       yearCruises: null,
       activeCruise: (this.props.cruise.id) ? this.props.cruise : null,
+      cruise_name: (CUSTOM_CRUISE_NAME)? CUSTOM_CRUISE_NAME[0].charAt(0).toUpperCase() + CUSTOM_CRUISE_NAME[0].slice(1) : "Cruise",
+      cruises_name: (CUSTOM_CRUISE_NAME)? CUSTOM_CRUISE_NAME[1].charAt(0).toUpperCase() + CUSTOM_CRUISE_NAME[1].slice(1) : "Cruises",
     };
 
     this.handleYearSelect = this.handleYearSelect.bind(this);
@@ -40,16 +40,13 @@ class CruiseMenu extends Component {
     this.props.fetchCruises();
   }
 
-
   componentDidUpdate(prevProps, prevState) {
 
     if(this.state.years !== prevState.years && this.state.years.size > 0) {
-      // console.log("year list changed");
       this.buildCruiseList();
     }
 
     if(this.props.cruises !== prevProps.cruises && this.props.cruises.length > 0 ) {
-      // console.log("cruise list changed");
       this.buildYearList();
       const currentCruise = (this.props.cruises) ? this.props.cruises.find((cruise) => {
         const now = moment.utc();
@@ -61,12 +58,10 @@ class CruiseMenu extends Component {
     }
 
     if(this.state.activeYear !== prevState.activeYear && prevState.activeYear !== null ) {
-      // console.log("selected year changed");
       this.setState({ activeCruise: null })
     }
 
     if(this.props.cruise !== prevProps.cruise && this.props.cruise.id){
-      // console.log("selected cruise changed");
       this.setState({activeYear: moment.utc(this.props.cruise.start_ts).format("YYYY"), activeCruise: this.props.cruise})
     }
   }
@@ -82,7 +77,6 @@ class CruiseMenu extends Component {
     if(this.state.activeCruise === null || this.state.activeCruise && this.state.activeCruise.id !== id) {
       window.scrollTo(0, 0);
       const activeCruise = this.props.cruises.find(cruise => cruise.id === id);
-      // console.log("activeCruise:", activeCruise);
       this.setState({ activeCruise });
     }
   }
@@ -148,20 +142,19 @@ class CruiseMenu extends Component {
 
       let cruiseFiles = (this.state.activeCruise.cruise_additional_meta.cruise_files && this.state.activeCruise.cruise_additional_meta.cruise_files.length > 0)? <div><strong>Files:</strong>{this.renderCruiseFiles(this.state.activeCruise.cruise_additional_meta.cruise_files)}</div>: null;
 
-      let cruiseName = (this.state.activeCruise.cruise_additional_meta.cruise_name)? <span><strong>Cruise Name:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_name}<br/></span> : null;
+      let cruiseName = (this.state.activeCruise.cruise_additional_meta.cruise_name)? <span><strong>{this.state.cruise_name} Name:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_name}<br/></span> : null;
       let cruiseDescription = (this.state.activeCruise.cruise_additional_meta.cruise_description)? <p className="text-justify"><strong>Description:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_description}<br/></p> : null;
       let cruiseVessel = <span><strong>Vessel:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_vessel}<br/></span>;
       let cruiseLocation = (this.state.activeCruise.cruise_location)? <span><strong>Location:</strong> {this.state.activeCruise.cruise_location}<br/></span> : null;
       let cruisePorts = (this.state.activeCruise.cruise_additional_meta.cruise_departure_location)? <span><strong>Ports:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_departure_location} <FontAwesomeIcon icon='arrow-right' fixedWidth /> {this.state.activeCruise.cruise_additional_meta.cruise_arrival_location}<br/></span> : null;
       let cruiseDates = <span><strong>Dates:</strong> {cruiseStartTime.format("YYYY/MM/DD")} <FontAwesomeIcon icon='arrow-right' fixedWidth /> {cruiseStopTime.format("YYYY/MM/DD")}<br/></span>;
       let cruisePi = <span><strong>Chief Scientist:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_pi}<br/></span>;
-      // let cruiseLinkToR2R = (this.state.activeCruise.cruise_additional_meta.cruise_linkToR2R)? <span><strong>R2R Cruise Link :</strong> <a href={`${this.state.activeCruise.cruise_additional_meta.cruise_linkToR2R}`} target="_blank"><FontAwesomeIcon icon='link' fixedWidth/></a><br/></span> : null
 
       let cruiseDuration = <span><strong>Duration:</strong> {moment.duration(cruiseDurationValue).format("d [days] h [hours] m [minutes]")}<br/></span>;
 
       return (          
         <Card className="border-secondary" key={`cruise_${this.state.activeCruise.cruise_id}`}>
-          <Card.Header>Cruise: <span className="text-warning">{this.state.activeCruise.cruise_id}</span><span className="float-right"><CopyCruiseToClipboard cruise={this.state.activeCruise} /> <ExportDropdown cruiseID={this.state.activeCruise.id} prefix={this.state.activeCruise.cruise_id}/></span></Card.Header>
+          <Card.Header>{this.state.cruise_name}: <span className="text-warning">{this.state.activeCruise.cruise_id}</span><span className="float-right"><CopyCruiseToClipboard cruise={this.state.activeCruise} /> <ExportDropdown id="dropdown-download" disabled={false} hideASNAP={false} eventFilter={{}} cruiseID={this.state.activeCruise.id} prefix={this.state.activeCruise.cruise_id}/></span></Card.Header>
           <Card.Body>
             {cruiseName}
             {cruisePi}
@@ -204,17 +197,12 @@ class CruiseMenu extends Component {
       this.state.years.forEach((year) => {
 
         let startOfYear = new Date(year);
-        // console.log("startOfYear:", startOfYear);
         let endOfYear = new Date(startOfYear.getFullYear()+1, startOfYear.getMonth(), startOfYear.getDate());
-        // console.log("endOfYear:", endOfYear);
-
-        // let yearCruises = this.props.cruises.filter(cruise => moment.utc(cruise.start_ts).isBetween(startOfYear, endOfYear));
         const yearCruisesTemp = this.props.cruises.filter(cruise => moment.utc(cruise.start_ts).isBetween(moment.utc(startOfYear), moment.utc(endOfYear)))
-        // console.log("yearCruisesTemp:",yearCruisesTemp);
+
         yearCruises[year] = yearCruisesTemp.map((cruise) => { return { id: cruise.id, cruise_id: cruise.cruise_id } } );
       });
 
-      // console.log('yearCruises:', yearCruises)
       this.setState({ yearCruises });
     }
   }
@@ -225,7 +213,6 @@ class CruiseMenu extends Component {
 
     if (this.state.yearCruises) {
       Object.entries(this.state.yearCruises).forEach(([year,cruises])=>{
-        // console.log(`${year}:${cruises.join(", ")}`)
 
         let yearTxt = <span className={(year == this.state.activeYear || this.state.years.size == 1) ? "text-warning" : "text-primary"}>{year}</span> 
 
@@ -270,7 +257,7 @@ class CruiseMenu extends Component {
 
     return this.props.cruises.map((cruise) => {
 
-      let cruiseName = (cruise.cruise_additional_meta.cruise_name)? <span><strong>Cruise Name:</strong> {cruise.cruise_additional_meta.cruise_name}<br/></span> : null;
+      let cruiseName = (cruise.cruise_additional_meta.cruise_name)? <span><strong>{this.state.cruise_name} Name:</strong> {cruise.cruise_additional_meta.cruise_name}<br/></span> : null;
       let cruiseDescription = (cruise.cruise_additional_meta.cruise_description)? <p className="text-justify"><strong>Description:</strong> {cruise.cruise_additional_meta.cruise_description}</p> : null;
       let cruiseLocation = (cruise.cruise_location)? <span><strong>Location:</strong> {cruise.cruise_location}<br/></span> : null;
       let cruiseDates = <span><strong>Dates:</strong> {moment.utc(cruise.start_ts).format("YYYY/MM/DD")} - {moment.utc(cruise.stop_ts).format("YYYY/MM/DD")}<br/></span>;
@@ -281,7 +268,7 @@ class CruiseMenu extends Component {
       return (          
         <Card className="border-secondary" key={cruise.id} >
           <Accordion.Toggle as={Card.Header} eventKey={cruise.id}>
-            <h6>Cruise: <span className="text-primary">{cruise.cruise_id}</span></h6>
+            <h6>{this.state.cruise_name}: <span className="text-primary">{cruise.cruise_id}</span></h6>
           </Accordion.Toggle>
           <Accordion.Collapse eventKey={cruise.id}>
             <Card.Body>
@@ -315,7 +302,7 @@ class CruiseMenu extends Component {
 
     return (
       <Card className="border-secondary" >
-        <Card.Body>No cruises found!</Card.Body>
+        <Card.Body>No {this.state.cruises_name.toLowerCase()} found!</Card.Body>
       </Card>
     );
   } 
@@ -333,16 +320,15 @@ class CruiseMenu extends Component {
 
     return (
       <Card className="border-secondary" >
-        <Card.Body>No cruises found!</Card.Body>
+        <Card.Body>No {this.state.cruises_name.toLowerCase()} found!</Card.Body>
       </Card>
     );
   }
 
-
   render(){
     return (
-      <Container >
-        <Row className="mt-2" >
+      <Container className="mt-2">
+        <Row>
             <h4>Welcome to Sealog</h4>
             <p className="text-justify">{MAIN_SCREEN_TXT}</p>
         </Row>

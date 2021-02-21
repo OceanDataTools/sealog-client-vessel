@@ -2,11 +2,16 @@
 @import "variables.scss";
 
 // Import Bootstrap
-@import "../../../node_modules/bootstrap/scss/bootstrap.scss";
+@import "~bootstrap/scss/bootstrap.scss";
+
+// Import fonts
+@import "~@fontsource/open-sans/300.css"; // Weight 400.
+@import "~@fontsource/open-sans/index.css"; // Weight 400.
+@import "~@fontsource/open-sans/700.css"; // Weight 700.
 
 // Import FontAwesome
-@import "../../../node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss";
-@import "../../../node_modules/@fortawesome/fontawesome-free/scss/solid.scss";
+//@import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
+//@import "~@fortawesome/fontawesome-free/scss/solid.scss";
 
 .nav-tabs,
 .nav-pills,
@@ -32,8 +37,6 @@
     }
   }
 }
-
-@import "../../../node_modules/react-datetime/css/react-datetime.css";
 
 .btn-template {
   font-size: .85rem;
@@ -86,6 +89,9 @@
     display: none;
   }
 }
+
+// react-datetime styles
+@import "~react-datetime/css/react-datetime.css";
 
 // react-datetime customizations
 

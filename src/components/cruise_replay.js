@@ -12,7 +12,7 @@ import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
 import * as mapDispatchToProps from '../actions';
-import { ROOT_PATH, API_ROOT_URL, IMAGE_PATH } from '../client_config';
+import { ROOT_PATH, API_ROOT_URL, IMAGE_PATH, CUSTOM_CRUISE_NAME } from '../client_config';
 
 const playTimer = 3000;
 const ffwdTimer = 1000;
@@ -44,6 +44,7 @@ class CruiseReplay extends Component {
       replayState: PAUSE,
       replayEventIndex: 0,
       activePage: 1,
+      cruises_name: (CUSTOM_CRUISE_NAME)? CUSTOM_CRUISE_NAME[1].charAt(0).toUpperCase() + CUSTOM_CRUISE_NAME[1].slice(1) : "Cruises"
     };
 
     this.handleKeyPress = this.handleKeyPress.bind(this);
@@ -490,7 +491,7 @@ class CruiseReplay extends Component {
         <EventCommentModal />
         <Row>
           <ButtonToolbar className="mb-2 ml-1 align-items-center">
-            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
+            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <span className="text-warning">{this.props.cruise.cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>

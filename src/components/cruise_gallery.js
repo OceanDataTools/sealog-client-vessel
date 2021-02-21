@@ -9,7 +9,7 @@ import EventShowDetailsModal from './event_show_details_modal';
 import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL, IMAGE_PATH } from '../client_config';
+import { API_ROOT_URL, IMAGE_PATH, CUSTOM_CRUISE_NAME } from '../client_config';
 
 const cookies = new Cookies();
 
@@ -21,7 +21,8 @@ class CruiseGallery extends Component {
     this.state = {
       fetching: false,
       aux_data: [],
-      maxImagesPerPage: 16
+      maxImagesPerPage: 16,
+      cruises_name: (CUSTOM_CRUISE_NAME)? CUSTOM_CRUISE_NAME[1].charAt(0).toUpperCase() + CUSTOM_CRUISE_NAME[1].slice(1) : "Cruises"
     };
 
     this.handleImageCountChange = this.handleImageCountChange.bind(this);
@@ -116,7 +117,7 @@ class CruiseGallery extends Component {
 
     let galleries = [];
     for (const [key, value] of Object.entries(this.state.aux_data)) {
-      galleries.unshift((
+      galleries.push((
         <Tab key={`tab_${key}`} eventKey={`tab_${key}`} title={key}>
           <CruiseGalleryTab imagesSource={key} imagesData={value} maxImagesPerPage={this.state.maxImagesPerPage} />
         </Tab>
@@ -125,7 +126,7 @@ class CruiseGallery extends Component {
 
     return (galleries.length > 0 )?
       (
-        <Tabs className="category-tab" variant="pills" id="galleries">
+        <Tabs className="category-tab" variant="pills" id="galleries" mountOnEnter={true} unmountOnExit={true}>
           { galleries }
         </Tabs>
       ) :  (<div><hr className="border-secondary"/><span className="pl-2">No images found</span></div>);
@@ -143,7 +144,7 @@ class CruiseGallery extends Component {
         <EventShowDetailsModal />
         <Row className="d-flex align-items-center justify-content-between">
           <ButtonToolbar className="align-items-center">
-            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">Cruises</span>
+            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <span  className="text-warning">{this.props.cruise.cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>

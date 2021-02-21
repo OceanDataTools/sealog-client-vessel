@@ -1,7 +1,7 @@
 export const standardUserRoleOptions = [
-  { value: 'cruise_manager', label: 'Cruise Manager', description: 'Ability to edit cruises and lowerings.' },
+  { value: 'cruise_manager', label: 'Cruise Manager', description: 'Ability to edit cruises.' },
   { value: 'template_manager', label: 'Template Manager', description: 'Ability to edit event templates.' },
-  { value: 'event_manager', label: 'Event Manager', description: 'Ability to review events independent of lowerings.' },
+  { value: 'event_manager', label: 'Event Manager', description: 'Ability to review events independent of cruises.' },
   { value: 'event_logger', label: 'Event Logger', description: 'Abiltiy to submit new events.' },
   { value: 'event_watcher', label: 'Event Watcher', description: 'Abilty to view events.' }
 ];
