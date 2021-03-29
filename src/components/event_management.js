@@ -100,10 +100,9 @@ class EventManagement extends Component {
     let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
     let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
     let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
-    let offset = `&offset=${(activePage-1)*maxEventsPerPage}`;
     let sort = `&sort=newest`;
+    let offset = `&offset=${(activePage-1)*maxEventsPerPage}`;
     let limit = `&limit=${maxEventsPerPage}`;
-
 
     await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}${offset}${limit}`,
       {

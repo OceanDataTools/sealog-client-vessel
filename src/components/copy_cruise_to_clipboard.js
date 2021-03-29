@@ -66,9 +66,6 @@ class CopyCruiseToClipboard extends Component {
   }
 }
 
-function mapStateToProps(state) {
-}
-
 export default compose(
   connect(null, mapDispatchToProps)
 )(CopyCruiseToClipboard);

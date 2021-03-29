@@ -339,7 +339,7 @@ class CruiseReplay extends Component {
         return (sortAuxDataSourceReference.indexOf(a.data_source) < sortAuxDataSourceReference.indexOf(b.data_source)) ? -1 : 1;
       });
 
-      let return_aux_data = aux_data.map((aux_data, index) => {
+      let return_aux_data = aux_data.map((aux_data) => {
         const aux_data_points = aux_data.data_array.map((data, index) => {
           return(<div key={`${aux_data.data_source}_data_point_${index}`}><span className="data-name">{data.data_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>);
         });
@@ -390,7 +390,7 @@ class CruiseReplay extends Component {
       );
 
       return (
-        <Card className="border-secondary" className="p-1">
+        <Card className="border-secondar p-1">
           <div className="d-flex align-items-center justify-content-between">
               <span className="text-primary">00:00:00</span>
               {buttons}
@@ -493,7 +493,7 @@ class CruiseReplay extends Component {
           <ButtonToolbar className="mb-2 ml-1 align-items-center">
             <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
-            <span className="text-warning">{this.props.cruise.cruise_id}</span>
+            <span className="text-warning">{cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Replay"} modes={["Review", "Map", "Gallery"]}/>
           </ButtonToolbar>

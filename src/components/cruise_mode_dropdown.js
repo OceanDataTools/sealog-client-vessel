@@ -2,6 +2,7 @@ import React, { Component, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 
+// eslint-disable-next-line react/display-name
 const CruiseModeDropdownToggle = React.forwardRef(
   ({ children, onClick }, ref) => {
 
@@ -20,8 +21,11 @@ const CruiseModeDropdownToggle = React.forwardRef(
   }
 );
 
+// eslint-disable-next-line react/display-name
 const CruiseModeDropdownMenu = React.forwardRef(
   ({ children, style, className, 'aria-labelledby': labeledBy }, ref) => {
+
+    // eslint-disable-next-line no-unused-vars
     const [value, setValue] = useState('');
 
     return (

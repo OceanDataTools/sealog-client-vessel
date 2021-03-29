@@ -284,7 +284,7 @@ class CruiseMap extends Component {
       const cruiseDuration = cruiseEndTime.diff(cruiseStartTime);
       
       return (
-        <Card className="border-secondary" className="p-1">
+        <Card className="border-secondary p-1">
           <div className="d-flex align-items-center justify-content-between">
               <span className="text-primary">00:00:00</span>
               <span className="text-primary">{moment.duration(cruiseDuration).format("d [days] hh:mm:ss")}</span>
@@ -444,7 +444,7 @@ class CruiseMap extends Component {
           <ButtonToolbar className="mb-2 ml-1 align-items-center">
             <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
-            <span className="text-warning">{this.props.cruise.cruise_id}</span>
+            <span className="text-warning">{cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Map"} modes={["Replay", "Review", "Gallery"]}/>
           </ButtonToolbar>

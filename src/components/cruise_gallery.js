@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { ButtonToolbar, Container, Row, Col, Tabs, Tab, Form, FormGroup } from 'react-bootstrap';
+import { ButtonToolbar, Container, Row, Col, Tabs, Tab, Form } from 'react-bootstrap';
 import EventShowDetailsModal from './event_show_details_modal';
 import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
@@ -38,7 +38,7 @@ class CruiseGallery extends Component {
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps) {
 
     if(prevProps.event.hideASNAP !== this.props.event.hideASNAP) {
       this.initCruiseImages(this.props.match.params.id, this.props.event.hideASNAP);
@@ -146,7 +146,7 @@ class CruiseGallery extends Component {
           <ButtonToolbar className="align-items-center">
             <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
-            <span  className="text-warning">{this.props.cruise.cruise_id}</span>
+            <span  className="text-warning">{cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Gallery"} modes={["Replay", "Review", "Map"]}/>
           </ButtonToolbar>
