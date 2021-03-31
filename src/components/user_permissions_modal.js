@@ -1,11 +1,10 @@
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
 import { compose } from 'redux';
 import { connectModal } from 'redux-modal';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import moment from 'moment';
 import Cookies from 'universal-cookie';
-import { Collapse, Form, ListGroup, Modal } from 'react-bootstrap';
+import { Form, ListGroup, Modal } from 'react-bootstrap';
 import { API_ROOT_URL } from '../client_config';
 
 const updateType = {
@@ -95,7 +94,7 @@ class UserPermissionsModal extends Component {
         payload.remove = [user_id];
       }
 
-      const result = await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${cruise_id}/permissions`,
+      await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${cruise_id}/permissions`,
       payload,
       {
         headers: {
@@ -140,7 +139,7 @@ class UserPermissionsModal extends Component {
 
   render() {
 
-    const { show, user_id, submitting, valid, handleHide } = this.props
+    const { show, user_id, handleHide } = this.props
 
     const body = ( this.props.user_id && this.state.cruises) ?
       this.state.cruises.map((cruise) => {
@@ -153,16 +152,13 @@ class UserPermissionsModal extends Component {
           onChange={ (e) => { this.updateCruisePermissions(cruise.id, user_id, e.target.checked) }}
         />
 
-        let startOfCruise = new Date(cruise.start_ts);
-        let endOfCruise = new Date(cruise.stop_ts);
-
         return <RenderTableRow key={cruise.id} cruise={cruiseCheckbox}/>;
       }) :
       null;
       
     if (body) {
       return (
-        <Modal show={show} onHide={this.props.handleHide}>
+        <Modal show={show} onHide={handleHide}>
           <form>
             <Modal.Header className="bg-light" closeButton>
               <Modal.Title>User Permissions</Modal.Title>
