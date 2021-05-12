@@ -1,6 +1,5 @@
 const Pkg = require('../package.json');
 
-
 // Use https:// and wss:// for secure servers
 const API_ROOT_URL = (typeof window !== 'undefined') &&
   `http://${window.location.hostname}:8000/sealog-server`;
