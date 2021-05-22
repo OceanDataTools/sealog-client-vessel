@@ -14,5 +14,5 @@ export function getImageUrl(image_path) {
 }
 
 export function handleMissingImage(ev) {
-	ev.target.src = API_ROOT_URL + ROOT_PATH + 'images/noimage.jpeg';
+  ev.target.src = `${window.location.protocol}//${window.location.hostname}:${window.location.port}${ROOT_PATH}images/noimage.jpeg`;
 }
