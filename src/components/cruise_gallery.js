@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import path from 'path';
 import { connect } from 'react-redux';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
@@ -9,7 +8,8 @@ import EventShowDetailsModal from './event_show_details_modal';
 import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL, IMAGE_PATH, CUSTOM_CRUISE_NAME } from '../client_config';
+import { API_ROOT_URL, CUSTOM_CRUISE_NAME } from '../client_config';
+import { get_image_url } from '../utils';
 
 const cookies = new Cookies();
 
@@ -82,7 +82,10 @@ class CruiseGallery extends Component {
             image_data[data.data_array[i].data_value] = { images: [] };
           }
 
-          image_data[data.data_array[i].data_value].images.push({ event_id: data.event_id, filepath: API_ROOT_URL + IMAGE_PATH + '/' + path.basename(data.data_array[i+1].data_value) });
+          image_data[data.data_array[i].data_value].images.push({
+            event_id: data.event_id,
+            filepath: get_image_url(data.data_array[i+1].data_value)
+          });
         }
       });
 
