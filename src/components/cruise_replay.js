@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import path from 'path';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { ButtonToolbar, Container, Row, Col, Card, ListGroup, Image, OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
@@ -12,7 +11,8 @@ import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
 import * as mapDispatchToProps from '../actions';
-import { ROOT_PATH, API_ROOT_URL, IMAGE_PATH, CUSTOM_CRUISE_NAME } from '../client_config';
+import { CUSTOM_CRUISE_NAME } from '../client_config';
+import { getImageUrl, handleMissingImage } from '../utils';
 
 const playTimer = 3000;
 const ffwdTimer = 1000;
@@ -203,14 +203,10 @@ class CruiseReplay extends Component {
   renderImage(source, filepath) {
     return (
       <Card  className="event-image-data-card" id={`image_${source}`}>
-        <Image fluid onError={this.handleMissingImage} src={filepath} onClick={ () => this.handleImageClick(source, filepath)} />
+        <Image fluid onError={handleMissingImage} src={filepath} onClick={ () => this.handleImageClick(source, filepath)} />
         <span>{source}</span>
       </Card>
     );
-  }
-
-  handleMissingImage(ev) {
-    ev.target.src = `${ROOT_PATH}images/noimage.jpeg`;
   }
 
   handleCruiseReplayStart() {
@@ -288,7 +284,10 @@ class CruiseReplay extends Component {
       if(frameGrabberData.length > 0) {
         for (let i = 0; i < frameGrabberData[0].data_array.length; i+=2) {
     
-          tmpData.push({source: frameGrabberData[0].data_array[i].data_value, filepath: API_ROOT_URL + IMAGE_PATH + '/' + path.basename(frameGrabberData[0].data_array[i+1].data_value)} );
+          tmpData.push({
+            source: frameGrabberData[0].data_array[i].data_value,
+            filepath: getImageUrl(frameGrabberData[0].data_array[i+1].data_value)
+          });
         }
 
         return (
