@@ -9,7 +9,7 @@ import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import * as mapDispatchToProps from '../actions';
 import { API_ROOT_URL, CUSTOM_CRUISE_NAME } from '../client_config';
-import { get_image_url } from '../utils';
+import { getImageUrl } from '../utils';
 
 const cookies = new Cookies();
 
@@ -84,7 +84,7 @@ class CruiseGallery extends Component {
 
           image_data[data.data_array[i].data_value].images.push({
             event_id: data.event_id,
-            filepath: get_image_url(data.data_array[i+1].data_value)
+            filepath: getImageUrl(data.data_array[i+1].data_value)
           });
         }
       });

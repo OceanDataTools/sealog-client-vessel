@@ -9,13 +9,13 @@ import axios from 'axios';
 import Cookies from 'universal-cookie';
 
 import { WS_ROOT_URL, API_ROOT_URL } from '../client_config';
-import { getImageUrl, handleMissingImage } from '../utils'
+import { getImageUrl, handleMissingImage } from '../utils';
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData']
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
 
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData']
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
 
 const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
@@ -320,8 +320,8 @@ class EventHistory extends Component {
     
           tmpData.push({
             source: frameGrabberData[0].data_array[i].data_value,
-            filepath: getImageUrl(frameGrabberData[0].data_array[i+1].data_value
-          )})
+            filepath: getImageUrl(frameGrabberData[0].data_array[i+1].data_value)
+          })
         }
 
         return (

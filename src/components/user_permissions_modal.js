@@ -77,6 +77,8 @@ class UserPermissionsModal extends Component {
         return cruise_permissions;
 
       }, permissions);
+
+      this.setState({ permissions })
     }
   }
 

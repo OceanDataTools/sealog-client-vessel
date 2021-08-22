@@ -11,13 +11,13 @@ import ImagePreviewModal from './image_preview_modal';
 import * as mapDispatchToProps from '../actions';
 
 import { API_ROOT_URL } from '../client_config';
-import { getImageUrl, handleMissingImage } from '../utils'
+import { getImageUrl, handleMissingImage } from '../utils';
 
 const cookies = new Cookies();
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData']
+const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
 
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData']
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
 
 const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
@@ -72,17 +72,6 @@ class EventShowDetailsModal extends Component {
       </Card>
     );
   }
-
-  // renderImage(source, filepath) {
-  //   return (
-  //     <Card id={`image_${source}`}>
-  //       <Card.Body className="data-card-body">
-  //         <Image  fluid onError={handleMissingImage} src={filepath} onClick={ () => this.handleImagePreviewModal(source, filepath)} />
-  //         <div>{source}</div>
-  //       </Card.Body>
-  //     </Card>
-  //   )
-  // }
 
   renderImageryCard() {
     if(this.props.event && this.state.event.aux_data) { 
