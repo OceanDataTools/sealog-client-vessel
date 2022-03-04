@@ -13,6 +13,8 @@ import { getImageUrl } from '../utils';
 
 const cookies = new Cookies();
 
+const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
+
 class CruiseGallery extends Component {
 
   constructor (props) {
@@ -59,10 +61,10 @@ class CruiseGallery extends Component {
   componentWillUnmount(){
   }
 
-  async initCruiseImages(id, hideASNAP=false, auxDatasourceFilter='vesselRealtimeFramegrabberData') {
+  async initCruiseImages(id, hideASNAP=false, auxDatasourceFilter=imageAuxDataSources) {
     this.setState({ fetching: true});
 
-    let url = `${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${auxDatasourceFilter}`
+    let url = `${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${auxDatasourceFilter.join('&datasource=')}`
 
     if(hideASNAP) {
       url += '&value=!ASNAP'
