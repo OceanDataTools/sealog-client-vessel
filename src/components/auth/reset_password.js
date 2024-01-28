@@ -68,7 +68,7 @@ class ResetPassword extends Component {
       const loginCardHeader = (<h5 className="form-signin-heading">Reset Password</h5>);
       const { handleSubmit, submitting, valid } = this.props;
 
-      const loginButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Login</Button>;
+      const loginButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button>;
       const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
         <span>
           <ReCAPTCHA
@@ -81,40 +81,46 @@ class ResetPassword extends Component {
       ): null;
 
       return (
-        <Card className="form-signin" >
-          <Card.Body>
-            {loginCardHeader}
-            <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Form.Group>
-                <Field
-                  name="password"
-                  component={this.renderTextField}
-                  type="password"
-                  placeholder="Password"
-                  required={true}
-                />
-              </Form.Group>
-              <Form.Group>
-                <Field
-                  name="confirmPassword"
-                  component={this.renderTextField}
-                  type="password"
-                  placeholder="Confirm Password"
-                  required={true}
-                />
-              </Form.Group>
-              {recaptcha}
-              {this.renderAlert()}
-              <div>
-                {loginButton}
-              </div>
-            </Form>
-            <br/>
-            <div className="text-right">
-              <Link to={ `/login` }>Go to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
-            </div>
-          </Card.Body>
-        </Card>
+        <div className="mb-2">
+          <Row className="justify-content-center">
+            <Col sm={6} md={4} lg={3}>
+              <Card className="form-signin" >
+                <Card.Body>
+                  {loginCardHeader}
+                  <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+                    <Form.Group>
+                      <Field
+                        name="password"
+                        component={this.renderTextField}
+                        type="password"
+                        placeholder="Password"
+                        required={true}
+                      />
+                    </Form.Group>
+                    <Form.Group>
+                      <Field
+                        name="confirmPassword"
+                        component={this.renderTextField}
+                        type="password"
+                        placeholder="Confirm Password"
+                        required={true}
+                      />
+                    </Form.Group>
+                    {recaptcha}
+                    {this.renderAlert()}
+                    <div>
+                      {loginButton}
+                    </div>
+                  </Form>
+                  <br/>
+                  <div className="text-right">
+                    <Link to={ `/login` }>Back to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </div>
       );
     }
   }

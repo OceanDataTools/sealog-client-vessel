@@ -84,7 +84,6 @@ class ForgotPassword extends Component {
 
     if(!this.props.successMessage) {
 
-      const panelHeader = (<h5 className="form-signin-heading">Forgot Password</h5>);
       const { handleSubmit, submitting, valid } = this.props;
 
       const submitButton = <Button variant="primary" type="submit" block disabled={submitting || !valid}>Submit</Button>;
@@ -102,7 +101,7 @@ class ForgotPassword extends Component {
       return (
         <Card>
           <Card.Body>
-            {panelHeader}
+            <h5 className="form-signin-heading">Forgot Password</h5>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
               <Form.Row>
                 <Field
