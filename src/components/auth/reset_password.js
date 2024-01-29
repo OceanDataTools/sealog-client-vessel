@@ -44,7 +44,28 @@ class ResetPassword extends Component {
     );
   }
 
-  renderAlert() {
+  renderSuccess() {
+
+    if (this.props.successMessage) {
+      const panelHeader = (<h4 className="form-signin-heading">Forgot Password</h4>);
+
+      return (
+        <Card className="form-signin" >
+          <Card.Body>
+            {panelHeader}
+            <div className="alert alert-success">
+              <strong>Success!</strong> {this.props.successMessage}
+            </div>
+            <div className="float-right">
+              <Link to={ `/login` }>Proceed to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            </div>
+          </Card.Body>
+        </Card>
+      );
+    }
+  }
+
+  renderAlert(){
 
     if(this.props.errorMessage) {
       return (
@@ -59,16 +80,14 @@ class ResetPassword extends Component {
         </Alert>
       );
     }
-  }
- 
+  } 
   renderForm() {
 
     if(!this.props.successMessage) {
 
-      const loginCardHeader = (<h5 className="form-signin-heading">Reset Password</h5>);
       const { handleSubmit, submitting, valid } = this.props;
 
-      const submitButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button>;
+      const submitButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Submit</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button>;
       const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
         <span>
           <ReCAPTCHA
@@ -81,55 +100,51 @@ class ResetPassword extends Component {
       ): null;
 
       return (
-        <div className="mb-2">
-          <Row className="justify-content-center">
-            <Col sm={6} md={4} lg={3}>
-              <Card className="form-signin" >
-                <Card.Body>
-                  {loginCardHeader}
-                  <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-                    <Form.Group>
-                      <Field
-                        name="password"
-                        component={this.renderTextField}
-                        type="password"
-                        placeholder="Password"
-                        required={true}
-                      />
-                    </Form.Group>
-                    <Form.Group>
-                      <Field
-                        name="confirmPassword"
-                        component={this.renderTextField}
-                        type="password"
-                        placeholder="Confirm Password"
-                        required={true}
-                      />
-                    </Form.Group>
-                    {recaptcha}
-                    {this.renderAlert()}
-                    <div>
-                      {submitButton}
-                    </div>
-                  </Form>
-                  <br/>
-                  <div className="text-right">
-                    <Link to={ `/login` }>Back to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
-                  </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </div>
+        <Card className="form-signin" >
+          <Card.Body>
+            <h5 className="form-signin-heading">Reset Password</h5>
+            <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+              <Form.Row>
+                <Field
+                  name="password"
+                  component={this.renderTextField}
+                  type="password"
+                  placeholder="Password"
+                  required={true}
+                />
+              </Form.Row>
+              <Form.Row>
+                <Field
+                  name="confirmPassword"
+                  component={this.renderTextField}
+                  type="password"
+                  placeholder="Confirm Password"
+                  required={true}
+                />
+              </Form.Row>
+              {recaptcha}
+              {this.renderAlert()}
+              <div>
+                {submitButton}
+              </div>
+            </Form>
+            <div className="text-center">
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
+            </div>
+          </Card.Body>
+        </Card>
       );
     }
   }
 
   render() {
+
     return(
       <div className="my-4">
-        <Row>
-          <Col>
+        <Row className="justify-content-center">
+          <Col sm={6} md={5} lg={4} xl={3}>
+            {this.renderSuccess()}
             {this.renderForm()}
           </Col>
         </Row>
