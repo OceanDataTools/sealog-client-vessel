@@ -44,7 +44,28 @@ class ResetPassword extends Component {
     );
   }
 
-  renderAlert() {
+  renderSuccess() {
+
+    if (this.props.successMessage) {
+      const panelHeader = (<h4 className="form-signin-heading">Forgot Password</h4>);
+
+      return (
+        <Card className="form-signin" >
+          <Card.Body>
+            {panelHeader}
+            <div className="alert alert-success">
+              <strong>Success!</strong> {this.props.successMessage}
+            </div>
+            <div className="float-right">
+              <Link to={ `/login` }>Proceed to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            </div>
+          </Card.Body>
+        </Card>
+      );
+    }
+  }
+
+  renderAlert(){
 
     if(this.props.errorMessage) {
       return (
@@ -59,16 +80,14 @@ class ResetPassword extends Component {
         </Alert>
       );
     }
-  }
- 
+  } 
   renderForm() {
 
     if(!this.props.successMessage) {
 
-      const loginCardHeader = (<h5 className="form-signin-heading">Reset Password</h5>);
       const { handleSubmit, submitting, valid } = this.props;
 
-      const loginButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Login</Button>;
+      const submitButton = ( RECAPTCHA_SITE_KEY === "")? <Button variant="primary" type="submit" block disabled={submitting || !valid}>Submit</Button> : <Button variant="primary" type="submit" block disabled={submitting || !valid || !this.state.reCaptcha}>Submit</Button>;
       const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
         <span>
           <ReCAPTCHA
@@ -83,9 +102,9 @@ class ResetPassword extends Component {
       return (
         <Card className="form-signin" >
           <Card.Body>
-            {loginCardHeader}
+            <h5 className="form-signin-heading">Reset Password</h5>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Form.Group>
+              <Form.Row>
                 <Field
                   name="password"
                   component={this.renderTextField}
@@ -93,8 +112,8 @@ class ResetPassword extends Component {
                   placeholder="Password"
                   required={true}
                 />
-              </Form.Group>
-              <Form.Group>
+              </Form.Row>
+              <Form.Row>
                 <Field
                   name="confirmPassword"
                   component={this.renderTextField}
@@ -102,16 +121,16 @@ class ResetPassword extends Component {
                   placeholder="Confirm Password"
                   required={true}
                 />
-              </Form.Group>
+              </Form.Row>
               {recaptcha}
               {this.renderAlert()}
               <div>
-                {loginButton}
+                {submitButton}
               </div>
             </Form>
-            <br/>
-            <div className="text-right">
-              <Link to={ `/login` }>Go to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            <div className="text-center">
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
             </div>
           </Card.Body>
         </Card>
@@ -120,10 +139,12 @@ class ResetPassword extends Component {
   }
 
   render() {
+
     return(
       <div className="my-4">
-        <Row>
-          <Col>
+        <Row className="justify-content-center">
+          <Col sm={6} md={5} lg={4} xl={3}>
+            {this.renderSuccess()}
             {this.renderForm()}
           </Col>
         </Row>
