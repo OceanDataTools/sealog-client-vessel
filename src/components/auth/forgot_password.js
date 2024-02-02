@@ -31,12 +31,11 @@ class ForgotPassword extends Component {
   renderSuccess() {
 
     if (this.props.successMessage) {
-      const panelHeader = (<h4 className="form-signin-heading">Forgot Password</h4>);
 
       return (
         <Card className="form-signin" >
           <Card.Body>
-            {panelHeader}
+            <h5 className="form-signin-heading">Forgot Password</h5>
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.successMessage}
             </div>

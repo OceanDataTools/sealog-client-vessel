@@ -31,12 +31,11 @@ class Register extends Component {
 
   renderSuccess() {
     if (this.props.message) {
-      const panelHeader = (<h4>New User Registration</h4>);
 
       return (
         <Card className="form-signin" >
           <Card.Body>
-            {panelHeader}
+            <h5 className="form-signin-heading">New User Registration</h5>
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.message}
             </div>
@@ -63,9 +62,7 @@ class Register extends Component {
 
     if (!this.props.message) {
 
-      const panelHeader = (<h5 className="form-signin-heading">User Registration</h5>);
       const { handleSubmit, submitting, valid } = this.props;
-      //console.log(this.props);
       const recaptcha = ( RECAPTCHA_SITE_KEY !== "")? (
         <span>
           <ReCAPTCHA
@@ -80,7 +77,7 @@ class Register extends Component {
       return (
         <Card className="form-signin" >
           <Card.Body>
-            {panelHeader}
+            <h5 className="form-signin-heading">User Registration</h5>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
               <Form.Row>
                 <Field
