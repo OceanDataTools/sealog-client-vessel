@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Row, Col, Form, Card, Button, Alert } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
 import * as mapDispatchToProps from '../../actions';
+import { renderTextField } from '../form_elements';
 import { RECAPTCHA_SITE_KEY } from '../../client_config';
 
 class ResetPassword extends Component {
@@ -29,30 +30,14 @@ class ResetPassword extends Component {
     this.props.resetPassword({token, password, reCaptcha});
   }
 
-  renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
-    let requiredField = (required)? <span className='text-danger'> *</span> : '';
-    let placeholder_txt = (placeholder)? placeholder: label;
-
-    const labelComponent = (label)? <Form.Label>{label}{requiredField}</Form.Label> : null;
-
-    return (
-      <Form.Group as={Col} lg="12">
-        {labelComponent}
-        <Form.Control type={type} {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    );
-  }
-
   renderSuccess() {
 
     if (this.props.successMessage) {
-      const panelHeader = (<h4 className="form-signin-heading">Forgot Password</h4>);
 
       return (
         <Card className="form-signin" >
           <Card.Body>
-            {panelHeader}
+            <h4 className="form-signin-heading">Forgot Password</h4>
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.successMessage}
             </div>
@@ -81,6 +66,7 @@ class ResetPassword extends Component {
       );
     }
   } 
+
   renderForm() {
 
     if(!this.props.successMessage) {
@@ -107,19 +93,23 @@ class ResetPassword extends Component {
               <Form.Row>
                 <Field
                   name="password"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   type="password"
                   placeholder="Password"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
               </Form.Row>
               <Form.Row>
                 <Field
                   name="confirmPassword"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   type="password"
                   placeholder="Confirm Password"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
               </Form.Row>
               {recaptcha}

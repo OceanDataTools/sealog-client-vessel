@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { Form, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
 import * as mapDispatchToProps from '../../actions';
+import { renderTextField } from '../form_elements';
 import { RECAPTCHA_SITE_KEY } from '../../client_config';
 
 class ForgotPassword extends Component {
@@ -25,21 +26,6 @@ class ForgotPassword extends Component {
   async handleFormSubmit({ email }) {
     let reCaptcha = ( RECAPTCHA_SITE_KEY !== "") ? await this.recaptchaRef.current.executeAsync() : null
     this.props.forgotPassword({email, reCaptcha});
-  }
-
-  renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
-    let requiredField = (required)? <span className='text-danger'> *</span> : '';
-    let placeholder_txt = (placeholder)? placeholder: label;
-
-    const labelComponent = (label)? <Form.Label>{label}{requiredField}</Form.Label> : null;
-
-    return (
-      <Form.Group as={Col} lg="12">
-        {labelComponent}
-        <Form.Control type={type} {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    );
   }
 
   renderSuccess() {
@@ -106,8 +92,10 @@ class ForgotPassword extends Component {
               <Form.Row>
                 <Field
                   name="email"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   placeholder="Email Address"
+                  sm={12}
+                  lg={12}
                 />
               </Form.Row>
               {recaptcha}

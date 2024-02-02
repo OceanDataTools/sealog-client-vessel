@@ -6,6 +6,7 @@ import { reduxForm, Field } from 'redux-form';
 import { Link } from 'react-router-dom';
 import { Row, Col, Card, Form, Button } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
+import { renderTextField} from '../form_elements';
 import { RECAPTCHA_SITE_KEY } from '../../client_config';
 import * as mapDispatchToProps from '../../actions';
 
@@ -27,20 +28,6 @@ class Register extends Component {
     username = username.toLowerCase();
     this.props.registerUser({username, fullname, email, password, reCaptcha});
   }
-
-  renderTextField({ input, label, placeholder, type="text", required, meta: { touched, error } }) {
-    let requiredField = (required)? <span className='text-danger'> *</span> : '';
-    let placeholder_txt = (placeholder)? placeholder: label;
-
-    return (
-      <Form.Group as={Col} lg="12">
-        <Form.Label>{label}{requiredField}</Form.Label>
-        <Form.Control type={type} {...input} placeholder={placeholder_txt} isInvalid={touched && error}/>
-        <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
-      </Form.Group>
-    );
-  }
-
 
   renderSuccess() {
     if (this.props.message) {
@@ -98,35 +85,45 @@ class Register extends Component {
               <Form.Row>
                 <Field
                   name="username"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   label="Username"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
                 <Field
                   name="fullname"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   label="Full Name"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
                 <Field
                   name="email"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   label="Email"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
                 <Field
                   name="password"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   type="password"
                   label="Password"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
                 <Field
                   name="confirmPassword"
-                  component={this.renderTextField}
+                  component={renderTextField}
                   type="password"
                   label="Confirm Password"
                   required={true}
+                  sm={12}
+                  lg={12}
                 />
               </Form.Row>
               {recaptcha}
