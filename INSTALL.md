@@ -3,23 +3,22 @@
 ### Prerequisites
 
  - [sealog-server v2.0.0+](https://github.com/oceandatatools/sealog-server)
- - [nodeJS v12.x+](https://nodejs.org)
- - [npm](https://www.npmjs.com)
+ - [nodeJS v20.x+](https://nodejs.org)
  - [git](https://git-scm.com)
+ - Apache2 Webserver (alternatively NGINX can be used)
  
-#### Installing NodeJS/npm on Ubuntu 18.04LTS
-The standard Ubuntu repositories for Ubuntu 18.04 only provide install packages for NodeJS v10.  Sealog-client-vessel (and Sealog-Server) require nodeJS >= v12.x
- 
-To install nodeJS v12.x on Ubuntu 18.04LTS run the following commands:
- ```
-sudo apt-get install curl build-essential
-cd ~
-curl -sL https://deb.nodesource.com/setup_12.x -o nodesource_setup.sh
-sudo bash nodesource_setup.sh
-sudo apt-get install nodejs
+#### Installing NodeJS/npm on Ubuntu 22.04 LTS
 
- ```
-
+Download the nvm install script:
+```
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+Install the LTS version of NodeJS using `nvm`
+```
+nvm install --lts
+sudo ln -s $HOME/.nvm/versions/node/v20.11.0/bin/npm /usr/local/bin/
+sudo ln -s $HOME/.nvm/versions/node/v20.11.0/bin/node /usr/local/bin/
+```
 ### Clone the repository
 
 ```
@@ -42,45 +41,39 @@ Set the `API_ROOT_URL`, `WS_ROOT_URL`, `ROOT_PATH`, and `IMAGES_PATH` values in 
 By default the file assumes the sealog-server is available on port 8000 on the same server that is hosting the sealog-server.  The default configuration file also assumes the client will be available from the /sealog directory of the webserver; i.e. `http://<serverIP>/sealog`.  If you want the webclient available at the root directory of the webserver or some custom location :  you need to set `ROOT_PATH` variable appropriately; i.e. `/`, `/custom_path/`. ***NOTICE the starting `/` **AND** trailing `/`.
 
 ### Create a deployment file
-
 ```
 cd ~/sealog-client-vessel
 cp ./webpack.config.js.dist ./webpack.config.js
 ```
 
 ### Create a new map tiles file
-
 ```
 cd ~/sealog-client-vessel
 cp ./src/map_tilelayers.js.dist ./src/map_tilelayers.js
 ```
 
-### Install the nodeJS modules
+### Move the repo to the installation directory (/opt)
+```
+sudo mv ~/sealog-client-vessel /opt
+```
 
+### Install the nodeJS modules
 From a terminal run:
 ```
-cd ~/sealog-client-vessel
+cd /opt/sealog-client-vessel
 npm install
 ```
 
 ### Build the client
-
 From a terminal run:
 ```
-cd ~/sealog-client-vessel
+cd /opt/sealog-client-vessel
 npm run build
 ```
 
 This will create the `dist` directory containing the required html, js, css, images, and fonts.
 
-### Install the client
-
-Create a symbolic link from the dist directory to the directory where Apache will server the client.  Modify the paths appropriately for your installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/home/sealog/sealog-client-vessel`:
-
-`sudo ln -s /home/sealog/sealog-client-vessel/dist /var/www/html/sealog`
-
 ### Configure Apache to host the client
-
 Add the following to your Apache vhosts file (i.e. `/etc/apache2/sites-available/000-default.conf`).  Modify the path appropriately for your installation. This example assumes the client will live at `http://<serverIP>/sealog`:
 ```
   <Directory "/var/www/html/sealog">
@@ -97,6 +90,11 @@ Add the following to your Apache vhosts file (i.e. `/etc/apache2/sites-available
   </Directory>
 ```
 
+Create a symbolic link from the dist directory to the directory where Apache will server the client.  Modify the paths appropriately for your installation.  This example assumes the client will live at `http://<serverIP>/sealog` and the git repo is located at: `/opt/sealog-client-vessel`:
+```
+sudo ln -s /opt/sealog-client-vessel/dist /var/www/html/sealog`
+```
+
 **Be sure to reload Apache for these changes to take affect.**
 `sudo service apache2 reload`
 
@@ -105,6 +103,7 @@ Optionally you can run the client using node's development web-server.  This rem
 
 To run the client using development mode run the following commands in terminal:
 ```
-cd /home/sealog/sealog-client-vessel
+cd /opt/sealog-client-vessel
 npm start
 ```
+The client should now be accessible from http://localhost:8080/sealog
