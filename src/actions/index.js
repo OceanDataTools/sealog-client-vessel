@@ -405,7 +405,8 @@ export function deleteEvent(event_id) {
 
 export function forgotPassword({email, reCaptcha = null}) {
 
-  const resetURL = window.location.protocol + '://' + window.location.hostname + (window.location.port) ? ':' + window.location.port : '' + '/resetPassword/'
+  const port = (window.location.port) ? ':' + window.location.port : '';
+  const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/';
 
   const payload = (reCaptcha)? {email, resetURL, reCaptcha}: {email, resetURL};
 
