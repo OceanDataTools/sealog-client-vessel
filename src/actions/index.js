@@ -405,7 +405,9 @@ export function deleteEvent(event_id) {
 
 export function forgotPassword({email, reCaptcha = null}) {
 
-  const payload = (reCaptcha)? {email, reCaptcha}: {email};
+  const resetURL = window.location.protocol + '://' + window.location.hostname + (window.location.port) ? ':' + window.location.port : '' + '/resetPassword/'
+
+  const payload = (reCaptcha)? {email, resetURL, reCaptcha}: {email, resetURL};
 
   return async function (dispatch) {
     return await axios.post(`${API_ROOT_URL}/api/v1/auth/forgotPassword`, payload
