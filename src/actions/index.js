@@ -464,7 +464,11 @@ export function registerUser({username, fullname, password, email, reCaptcha = n
 
 export function createUser({username, fullname, password = '', email, roles, system_user = false, disabled = false}) {
   return async function (dispatch) {
-    return await axios.post(`${API_ROOT_URL}/api/v1/users`, {username, fullname, password, email, roles, system_user, disabled}, { headers: { authorization: cookies.get('token') } }
+
+    const port = (window.location.port) ? ':' + window.location.port : '';
+    const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/';
+
+    return await axios.post(`${API_ROOT_URL}/api/v1/users`, {username, fullname, password, email, roles, system_user, disabled, resetURL}, { headers: { authorization: cookies.get('token') } }
       ).then(() => {
         dispatch(createUserSuccess('Account created'));
         return dispatch(fetchUsers());
