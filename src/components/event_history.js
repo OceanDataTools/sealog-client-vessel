@@ -88,7 +88,7 @@ class EventHistory extends Component {
       // {
       //   auth: {
       //     headers: {
-      //       authorization: cookies.get('token')
+      //       Authorization: 'Bearer ' + cookies.get('token')
       //     }
       //   }
       // })
@@ -148,9 +148,7 @@ class EventHistory extends Component {
     if(!event_id) {
       let url = `${API_ROOT_URL}/api/v1/events?sort=newest&limit=1`
       const event = await axios.get(url, {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
         return response.data;
 
@@ -169,9 +167,7 @@ class EventHistory extends Component {
 
     let url = `${API_ROOT_URL}/api/v1/event_exports/${event_id}`
     const event_export = await axios.get(url, {
-      headers: {
-        authorization: cookies.get('token')
-      }
+      headers: { Authorization: 'Bearer ' + cookies.get('token') }
     }).then((response) => {
       return response.data;
 

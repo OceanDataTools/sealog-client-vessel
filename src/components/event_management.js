@@ -106,9 +106,7 @@ class EventManagement extends Component {
 
     await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}${offset}${limit}`,
       {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
       this.setState({fetching: false});
       this.setState({events: response.data});
@@ -138,9 +136,7 @@ class EventManagement extends Component {
 
     await axios.get(`${API_ROOT_URL}/api/v1/events/count?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
       {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
       this.setState({eventCount: response.data.events});
     }).catch((error)=>{

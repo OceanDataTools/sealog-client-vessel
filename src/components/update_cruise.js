@@ -112,9 +112,7 @@ class UpdateCruise extends Component {
   async handleFileDownload(filename) {
     await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
     {
-      headers: {
-        authorization: cookies.get('token')
-      },
+      headers: { Authorization: 'Bearer ' + cookies.get('token') },
       responseType: 'arraybuffer'
     })
     .then((response) => {
@@ -128,9 +126,7 @@ class UpdateCruise extends Component {
   async handleFileDelete(filename) {
     await axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
     {
-      headers: {
-        authorization: cookies.get('token')
-      }
+      headers: { Authorization: 'Bearer ' + cookies.get('token') }
     })
     .then(() => {
         this.props.initCruise(this.props.cruise.id)
@@ -270,11 +266,11 @@ class UpdateCruise extends Component {
                     url: API_ROOT_URL,
                     process: {
                       url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
-                      headers: { authorization: cookies.get('token') },
+                      headers: { Authorization: 'Bearer ' + cookies.get('token') },
                     },
                     revert: {
                       url: CRUISE_ROUTE + '/filepond/revert',
-                      headers: { authorization: cookies.get('token') },
+                      headers: { Authorization: 'Bearer ' + cookies.get('token') },
                     }
                   }}
                   onupdatefiles={() => {

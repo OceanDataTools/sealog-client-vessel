@@ -100,7 +100,7 @@ class UserPermissionsModal extends Component {
       payload,
       {
         headers: {
-          authorization: cookies.get('token'),
+          Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
       }).then(async (response) => {
@@ -122,7 +122,7 @@ class UserPermissionsModal extends Component {
       const cruises = await axios.get(`${API_ROOT_URL}/api/v1/cruises`,
       {
         headers: {
-          authorization: cookies.get('token'),
+          Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
       }).then((response) => {

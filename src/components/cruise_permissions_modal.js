@@ -56,8 +56,8 @@ class CruisePermissionsModal extends Component {
       await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${this.props.cruise_id}/permissions`,
       payload,
       {
-        headers: {
-          authorization: cookies.get('token'),
+        headers: { 
+          Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
       }).then(async (response) => {
@@ -79,7 +79,7 @@ class CruisePermissionsModal extends Component {
       const cruise = await axios.get(`${API_ROOT_URL}/api/v1/cruises/${this.props.cruise_id}`,
       {
         headers: {
-          authorization: cookies.get('token'),
+          Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
       }).then((response) => {
@@ -102,7 +102,7 @@ class CruisePermissionsModal extends Component {
       const users = await axios.get(`${API_ROOT_URL}/api/v1/users`,
       {
         headers: {
-          authorization: cookies.get('token'),
+          Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
       }).then((response) => {

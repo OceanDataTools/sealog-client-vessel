@@ -80,9 +80,7 @@ class ExportDropdown extends Component {
 
     return await axios.get(`${API_ROOT_URL}/api/v1/events${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
       return response.data;
     }).catch((error)=>{
@@ -110,9 +108,7 @@ class ExportDropdown extends Component {
 
     return await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data${this.state.cruiseOrLowering}?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
       return response.data;
     }).catch((error)=>{
@@ -141,9 +137,7 @@ class ExportDropdown extends Component {
 
     return await axios.get(`${API_ROOT_URL}/api/v1/event_exports${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
       {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
       return response.data;
     }).catch((error)=>{
