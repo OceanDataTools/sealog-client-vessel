@@ -64,6 +64,9 @@ import {
 
 const cookies = new Cookies();
 
+const port = (window.location.port) ? ':' + window.location.port : '';
+const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/';
+
 export const authorizationHeader = { 
   headers: {
     authorization: cookies.get('token')
@@ -405,9 +408,6 @@ export function deleteEvent(event_id) {
 
 export function forgotPassword({email, reCaptcha = null}) {
 
-  const port = (window.location.port) ? ':' + window.location.port : '';
-  const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/';
-
   const payload = (reCaptcha)? {email, resetURL, reCaptcha}: {email, resetURL};
 
   return async function (dispatch) {
@@ -464,9 +464,6 @@ export function registerUser({username, fullname, password, email, reCaptcha = n
 
 export function createUser({username, fullname, password = '', email, roles, system_user = false, disabled = false}) {
   return async function (dispatch) {
-
-    const port = (window.location.port) ? ':' + window.location.port : '';
-    const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/';
 
     return await axios.post(`${API_ROOT_URL}/api/v1/users`, {username, fullname, password, email, roles, system_user, disabled, resetURL}, { headers: { authorization: cookies.get('token') } }
       ).then(() => {
