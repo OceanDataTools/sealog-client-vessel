@@ -72,9 +72,7 @@ class CruiseGallery extends Component {
 
     const image_data = await axios.get(url,
       {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
 
       let image_data = {};

@@ -148,9 +148,7 @@ class CruiseMap extends Component {
 
       let url = `${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${this.auxDatasourceFilters[index]}`;
       await axios.get(url, {
-        headers: {
-          authorization: cookies.get('token')
-        }
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
         response.data.forEach((r_data) => {
           const latLng = [ parseFloat(r_data['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(r_data['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])];
