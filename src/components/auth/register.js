@@ -85,24 +85,18 @@ class Register extends Component {
                   component={renderTextField}
                   label="Username"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
                 <Field
                   name="fullname"
                   component={renderTextField}
                   label="Full Name"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
                 <Field
                   name="email"
                   component={renderTextField}
                   label="Email"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
                 <Field
                   name="password"
@@ -110,8 +104,6 @@ class Register extends Component {
                   type="password"
                   label="Password"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
                 <Field
                   name="confirmPassword"
@@ -119,8 +111,6 @@ class Register extends Component {
                   type="password"
                   label="Confirm Password"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
               </Form.Row>
               {recaptcha}

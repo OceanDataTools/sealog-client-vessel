@@ -136,11 +136,10 @@ class EventHistory extends Component {
       this.client.subscribe('/ws/status/updateEventAuxData', updateAuxDataHandler);
 
     } catch(error) {
-      console.log(error);
-      throw(error);
+      console.error("Problem connecting to websocket subscriptions")
+      console.debug(error);
     }
   }
-
 
   async fetchEventExport(event_id=null) {
 
@@ -153,7 +152,7 @@ class EventHistory extends Component {
 
       }).catch((error)=>{
         if(error.response && error.response.data.statusCode !== 404) {
-          console.log(error);
+          console.debug(error);
         }
         return null;
       });
@@ -172,7 +171,7 @@ class EventHistory extends Component {
 
     }).catch((error)=>{
       if(error.response && error.response.data.statusCode !== 404) {
-        console.log(error);
+        console.debug(error);
       }
       return null;
     });

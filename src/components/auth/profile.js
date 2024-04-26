@@ -85,40 +85,30 @@ class UserProfile extends Component {
                       component={renderTextField}
                       label="Username"
                       required={true}
-                      sm={12}
-                      lg={12}
                     />
                     <Field
                       name="fullname"
                       component={renderTextField}
                       label="Full Name"
                       required={true}
-                      sm={12}
-                      lg={12}
                     />
                     <Field
                       name="email"
                       component={renderTextField}
                       label="Email"
                       disabled={true}
-                      sm={12}
-                      lg={12}
                     />
                     <Field
                       name="password"
                       component={renderTextField}
                       type="password"
                       label="Password"
-                      sm={12}
-                      lg={12}
                     />
                     <Field
                       name="confirmPassword"
                       component={renderTextField}
                       type="password"
                       label="Confirm Password"
-                      sm={12}
-                      lg={12}
                     />
                   </Form.Row>
                   {this.renderAlert()}

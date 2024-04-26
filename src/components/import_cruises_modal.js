@@ -80,9 +80,10 @@ class ImportCruisesModal extends Component {
         } catch(error) {
           
           if(error.response.data.statusCode !== 400) {
-            console.log(error);  
-          // } else {
-            // console.log("Cruise Data malformed or incomplete");
+            console.debug(error);  
+          } else {
+            console.error('Problem connecting to API');
+            console.debug(error);
           }
           
           this.setState( prevState => (
@@ -95,7 +96,7 @@ class ImportCruisesModal extends Component {
       } else {
 
         if(error.response.data.statusCode !== 400) {
-          console.log(error.response);
+          console.debug(error.response);
         }
         this.setState( prevState => (
           {
@@ -110,7 +111,6 @@ class ImportCruisesModal extends Component {
   importCruisesFromFile = async (e) => {
     try {
 
-      // console.log("processing file")
       let json = JSON.parse(e.target.result);
 
       if(Array.isArray(json)) {
@@ -125,7 +125,6 @@ class ImportCruisesModal extends Component {
 
         for(let i = 0; i < json.length; i++) {
           if (this.state.quit) {
-            console.log("quiting")
             break;
           }
           currentCruise = json[i];
@@ -144,8 +143,9 @@ class ImportCruisesModal extends Component {
           this.setState({pending: "Complete!"})
         }
       }
-    } catch (err) {
-      console.log('error when trying to parse json = ' + err);
+    } catch (error) {
+      console.error('Error when trying to parse json')
+      console.debug(error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }

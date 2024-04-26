@@ -59,8 +59,8 @@ class EventTemplateList extends Component {
       this.client.subscribe('/ws/status/deleteEventTemplates', deleteHandler);
 
     } catch(error) {
-      console.log(error);
-      throw(error);
+      console.error('Problem connecting to websocket subscriptions');
+      console.debug(error);
     }
   }
 

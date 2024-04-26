@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { Row, Button, Col, Container, Card, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import CreateUser from './create_user';
-import UpdateUser from './update_user';
+import UserForm from './user_form';
 import DisplayUserTokenModal from './display_user_token_modal';
 import NonSystemUsersWipeModal from './non_system_users_wipe_modal';
 import ImportUsersModal from './import_users_modal';
@@ -72,7 +71,7 @@ class Users extends Component {
   }
 
   handleUserCreate() {
-    this.props.leaveUpdateUserForm();
+    this.props.leaveUserForm();
   }
 
   handleUserImportModal() {
@@ -159,8 +158,10 @@ class Users extends Component {
     users = users.slice((this.state.activePage - 1) * maxUsersPerPage, this.state.activePage * maxUsersPerPage);
 
     return users.map((user) => {
+
       const style = (user.disabled)? {"textDecoration": "line-through"}: {};
       const className = (this.props.userid === user.id)? "text-warning" : "";
+
       return (
         <tr key={user.id}>
           <td style={style} className={className}>{user.username}</td>
@@ -207,6 +208,7 @@ class Users extends Component {
   }
 
   renderUserTable() {
+
     if(this.props.users.filter(user => user.system_user === false).length > 0){
       return (
         <Table responsive bordered striped size="sm">
@@ -305,8 +307,6 @@ class Users extends Component {
 
     if (this.props.roles.includes("admin") || this.props.roles.includes("cruise_manager")) {
 
-      const  userForm = (this.props.userid) ? <UpdateUser /> : <CreateUser />;
-
       return (
         <Container className="mt-2">
           <DisplayUserTokenModal />
@@ -332,11 +332,12 @@ class Users extends Component {
               </div>
             </Col>
             <Col className="px-1" sm={12} md={5} lg={4} xl={3}>
-              { userForm }
+              <UserForm handleFormSubmit={ this.props.fetchUsers }/>
             </Col>
           </Row>
         </Container>
       );
+
     } else {
       return (
         <div>

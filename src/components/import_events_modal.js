@@ -60,7 +60,6 @@ class ImportEventsModal extends Component {
 
     } catch(error) {
       if(error.response.data.statusCode === 400) {
-        console.log("Duplicate ID, skipping");
         this.setState( prevState => (
           {
             skipped: prevState.skipped + 1,
@@ -69,7 +68,7 @@ class ImportEventsModal extends Component {
         ))
 
       } else {
-        console.log(error.response.data.message);
+        console.debug(error.response.data.message);
         this.setState( prevState => (
           {
             errors: prevState.errors + 1,
@@ -83,7 +82,6 @@ class ImportEventsModal extends Component {
   importEventsFromFile = async (e) => {
     try {
 
-      // console.log("processing file")
       let json = JSON.parse(e.target.result);
       this.setState({
         pending: json.length,
@@ -103,8 +101,9 @@ class ImportEventsModal extends Component {
         await this.insertEvent(currentEvent);
       }
 
-    } catch (err) {
-      console.log('error when trying to parse json = ' + err);
+    } catch (error) {
+      console.error('Error when trying to parse json');
+      console.debug(error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete!"})
   }

@@ -106,13 +106,13 @@ class UserPermissionsModal extends Component {
       }).then(async (response) => {
         await this.fetchCruises();
         return response.data;
-      }).catch((err) => {
-        console.error(err);
+      }).catch((error) => {
+        console.debug(error);
         return null;
       });
 
     } catch(error) {
-      console.log(error);
+      console.debug(error);
     }
   }
 
@@ -127,15 +127,16 @@ class UserPermissionsModal extends Component {
         }
       }).then((response) => {
         return response.data;
-      }).catch((err) => {
-        console.error(err);
+      }).catch((error) => {
+        console.error('Problem connecting to API');
+        console.debug(error);
         return [];
       });
 
       this.setState({ cruises })
 
     } catch(error) {
-      console.log(error);
+      console.debug(error);
     }
   }
 

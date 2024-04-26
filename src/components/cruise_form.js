@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { reduxForm, Field } from 'redux-form';
+import { reduxForm, Field, change } from 'redux-form';
 import { Button, Card, Form } from 'react-bootstrap';
-import { renderAlert, renderDatePicker, renderMessage, renderTextField, renderTextArea, dateFormat } from './form_elements';
+import { renderAlert, renderDatePicker, renderHidden, renderMessage, renderTextField, renderTextArea, dateFormat } from './form_elements';
 import axios from 'axios';
 import Cookies from 'universal-cookie';
 import moment from 'moment';
@@ -12,14 +12,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import FileDownload from 'js-file-download';
 import { FilePond } from 'react-filepond';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
-import { API_ROOT_URL, CRUISE_ID_PLACEHOLDER, CRUISE_ID_REGEX, CUSTOM_CRUISE_NAME } from '../client_config';
+import { API_ROOT_URL, CRUISE_ID_PLACEHOLDER, CRUISE_ID_REGEX, CUSTOM_CRUISE_NAME, DEFAULT_VESSEL } from '../client_config';
 import * as mapDispatchToProps from '../actions';
 
 const CRUISE_ROUTE = "/files/cruises";
 
 const cookies = new Cookies();
 
-class UpdateCruise extends Component {
+class CruiseForm extends Component {
 
   constructor (props) {
     super(props);
@@ -38,73 +38,56 @@ class UpdateCruise extends Component {
   };
 
   componentDidMount() {
-    if(this.props.cruiseID) {
-      this.props.initCruise(this.props.cruiseID);
-    }
   }
 
   componentWillUnmount() {
-    this.props.leaveUpdateCruiseForm();
+    this.props.leaveCruiseForm();
   }
 
   handleFileDeleteModal(file) {
     this.props.showModal('deleteFile', { file: file, handleDelete: this.handleFileDelete });
   }
 
-  async handleFormSubmit(formProps) {
-    formProps.cruise_tags = (formProps.cruise_tags)? formProps.cruise_tags.map(tag => tag.trim()): [];
+  handleFormSubmit(formProps) {
 
-    // formProps.cruise_additional_meta = {}
+    formProps.cruise_additional_meta.cruise_name = formProps.cruise_additional_meta.cruise_name || '';
+    formProps.cruise_location = formProps.cruise_location || '';
+    formProps.cruise_additional_meta.cruise_description = formProps.cruise_additional_meta.cruise_description || '';
+    formProps.cruise_hidden = formProps.cruise_hidden || false;
 
-    if (formProps.stop_ts) {
-      const end_of_stop_ts = moment(formProps.stop_ts);
-      end_of_stop_ts.set({
-        hour:   23,
-        minute: 59,
-        second: 59
+    formProps.cruise_tags = formProps.cruise_tags || [];
+    if(typeof formProps.cruise_tags === 'string') {
+      formProps.cruise_tags = formProps.cruise_tags.split(',');
+      formProps.cruise_tags = formProps.cruise_tags.map(string => {
+        return string.trim();
       });
-
-      formProps.stop_ts = end_of_stop_ts.toISOString();
     }
+    
+    const end_of_stop_ts = moment.utc(formProps.stop_ts);
+    end_of_stop_ts.set({
+      hour:   23,
+      minute: 59,
+      second: 59
+    });
+    formProps.stop_ts = end_of_stop_ts.toISOString();
 
-    if(formProps.cruise_participants) {
-      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_participants.map(participant => participant.trim())
-      delete formProps.cruise_participants
-    }
-
-    if(formProps.cruise_name) {
-      formProps.cruise_additional_meta.cruise_name = formProps.cruise_name
-      delete formProps.cruise_name
-    }
-
-    if(formProps.cruise_vessel) {
-      formProps.cruise_additional_meta.cruise_vessel = formProps.cruise_vessel
-      delete formProps.cruise_vessel
-    }
-
-    if(formProps.cruise_pi) {
-      formProps.cruise_additional_meta.cruise_pi = formProps.cruise_pi
-      delete formProps.cruise_pi
-    }
-
-    if(formProps.cruise_description) {
-      formProps.cruise_additional_meta.cruise_description = formProps.cruise_description
-      delete formProps.cruise_description
-    }
-
-    if(formProps.cruise_departure_location) {
-      formProps.cruise_additional_meta.cruise_departure_location = formProps.cruise_departure_location;
-      delete formProps.cruise_departure_location;
-    }
-
-    if(formProps.cruise_arrival_location) {
-      formProps.cruise_additional_meta.cruise_arrival_location = formProps.cruise_arrival_location;
-      delete formProps.cruise_arrival_location;
+    formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants  || [];
+    if(typeof formProps.cruise_additional_meta.cruise_participants === 'string') {
+      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants.split(',');
+      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants.map(string => {
+        return string.trim();
+      });
     }
 
     formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
 
-    await this.props.updateCruise({...formProps });
+    if (formProps.id) {
+      this.props.updateCruise(formProps);
+    }
+    else {
+      this.props.createCruise(formProps);
+    }
+
     this.pond.removeFiles();
     this.props.handleFormSubmit()
   }
@@ -118,8 +101,9 @@ class UpdateCruise extends Component {
     .then((response) => {
         FileDownload(response.data, filename);
      })
-    .catch(()=>{
-      console.log("JWT is invalid, logging out");
+    .catch((error)=>{
+      console.error("JWT is invalid, logging out");
+      console.debug(error);
     });
   }
 
@@ -131,13 +115,14 @@ class UpdateCruise extends Component {
     .then(() => {
         this.props.initCruise(this.props.cruise.id)
      })
-    .catch(()=>{
-      console.log("JWT is invalid, logging out");
+    .catch((error)=>{
+      console.error("JWT is invalid, logging out");
+      console.debug(error);
     });
   }
 
   renderFiles() {
-    if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files && this.props.cruise.cruise_additional_meta.cruise_files.length > 0) {
+    if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files) {
       let files = this.props.cruise.cruise_additional_meta.cruise_files.map((file, index) => {
         return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => this.handleFileDownload(file)}>{file}</a> <FontAwesomeIcon onClick={() => this.handleFileDeleteModal(file)} className='text-danger' icon='trash' fixedWidth /></div>
       })
@@ -155,15 +140,23 @@ class UpdateCruise extends Component {
   render() {
 
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
-    const updateCruiseFormHeader = (<div>Update {this.state.cruise_name}<span className="float-right"><CopyCruiseToClipboard cruise={this.props.cruise}/></span></div>);
+    const formHeader = (<div>{(this.props.cruise.id) ? "Update" : "Add"} {this.state.cruise_name}<span className="float-right">{(this.props.cruise.id) ? <CopyCruiseToClipboard cruise={this.props.cruise}/> : null }</span></div>);
 
     if (this.props.roles && (this.props.roles.includes("admin") || this.props.roles.includes('cruise_manager'))) {
 
       return (
         <Card className="border-secondary">
-          <Card.Header>{updateCruiseFormHeader}</Card.Header>
+          <Card.Header>{formHeader}</Card.Header>
           <Card.Body>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
+              <Field
+                name="id"
+                component={renderHidden}
+              />
+              <Field
+                name="cruise_hidden"
+                component={renderHidden}
+              />
               <Form.Row>
                 <Field
                   name="cruise_id"
@@ -171,39 +164,45 @@ class UpdateCruise extends Component {
                   label={`${this.state.cruise_name} ID`}
                   placeholder={(CRUISE_ID_PLACEHOLDER) ? CRUISE_ID_PLACEHOLDER : "i.e. CS2001"}
                   required={true}
+                  sm={6}
+                  lg={6}
                 />
                 <Field
-                  name="cruise_name"
+                  name="cruise_additional_meta.cruise_name"
                   component={renderTextField}
                   label={`${this.state.cruise_name} Name`}
                   placeholder="i.e. Lost City 2018"
+                  sm={6}
+                  lg={6}
                 />
                 <Field
-                  name="cruise_vessel"
+                  name="cruise_additional_meta.cruise_vessel"
                   component={renderTextField}
                   label="Vessel Name"
                   placeholder="i.e. R/V Discovery"
                   required={true}
+                  sm={6}
+                  lg={6}
                 />
                 <Field
-                  name="cruise_pi"
+                  name="cruise_additional_meta.cruise_pi"
                   component={renderTextField}
                   label="Primary Investigator"
                   placeholder="i.e. Dr. Susan Lang"
                   required={true}
+                  sm={6}
+                  lg={6}
                 />
                 <Field
                   name="cruise_location"
                   component={renderTextField}
                   label={`${this.state.cruise_name} Location`}
                   placeholder="i.e. Lost City, Mid Atlantic Ridge"
-                  lg={12}
-                  sm={12}
                 />
               </Form.Row>
               <Form.Row>
                 <Field
-                  name="cruise_description"
+                  name="cruise_additional_meta.cruise_description"
                   component={renderTextArea}
                   label={`${this.state.cruise_name} Description`}
                   placeholder={`i.e. A brief description of the ${this.state.cruise_name.toLowerCase()}`}
@@ -216,33 +215,41 @@ class UpdateCruise extends Component {
                   component={renderDatePicker}
                   label="Start Date (UTC)"
                   required={true}
+                  sm={6}
+                  lg={6}
                 />
                 <Field
                   name="stop_ts"
                   component={renderDatePicker}
                   label="Stop Date (UTC)"
                   required={true}
+                  sm={6}
+                  lg={6}
                 />
               </Form.Row>
               <Form.Row>
                   <Field
-                    name="cruise_departure_location"
+                    name="cruise_additional_meta.cruise_departure_location"
                     component={renderTextField}
                     label="Departure Port"
                     placeholder="i.e. Norfolk, VA"
                     required={true}
+                    sm={6}
+                    lg={6}
                   />
                   <Field
-                    name="cruise_arrival_location"
+                    name="cruise_additional_meta.cruise_arrival_location"
                     component={renderTextField}
                     label="Arrival Port"
                     placeholder="i.e. St. George's, Bermuda"
                     required={true}
+                    sm={6}
+                    lg={6}
                   />
               </Form.Row>
               <Form.Row>
                 <Field
-                  name="cruise_participants"
+                  name="cruise_additional_meta.cruise_participants"
                   component={renderTextArea}
                   label={`${this.state.cruise_name} Participants, comma delimited`}
                   placeholder="i.e. Dave Butterfield,Sharon Walker"
@@ -274,9 +281,9 @@ class UpdateCruise extends Component {
                     }
                   }}
                   onupdatefiles={() => {
-                    // Set currently active file objects to this.state
-                    this.setState({ filepondPristine: false });
+                    this.props.dispatch(change('editCruise', 'cruise_additional_meta.cruise_files', true));
                   }}
+                  disabled={(this.props.cruise.id) ? false : true }
                 >
                 </FilePond>
               {renderAlert(this.props.errorMessage)}
@@ -301,7 +308,7 @@ class UpdateCruise extends Component {
 
 function validate(formProps) {
 
-  const errors = {};
+  const errors = {cruise_additional_meta: {}};
 
   if (!formProps.cruise_id) {
     errors.cruise_id = 'Required'
@@ -309,12 +316,12 @@ function validate(formProps) {
     errors.cruise_id = 'Must be 15 characters or less'
   }
 
-  if (!formProps.cruise_vessel) {
-    errors.cruise_vessel = 'Required'
+  if (!formProps.cruise_additional_meta.cruise_vessel) {
+    errors.cruise_additional_meta.cruise_vessel = 'Required'
   }
 
-  if (!formProps.cruise_pi) {
-    errors.cruise_pi = 'Required'
+  if (!formProps.cruise_additional_meta.cruise_pi) {
+    errors.cruise_additional_meta.cruise_pi = 'Required'
   }
 
   if (formProps.start_ts === '') {
@@ -335,12 +342,12 @@ function validate(formProps) {
     }
   }
 
-  if (!formProps.cruise_departure_location) {
-    errors.cruise_departure_location = 'Required';
+  if (!formProps.cruise_additional_meta.cruise_departure_location) {
+    errors.cruise_additional_meta.cruise_departure_location = 'Required';
   }
 
-  if (!formProps.cruise_arrival_location) {
-    errors.cruise_arrival_location = 'Required';
+  if (!formProps.cruise_additional_meta.cruise_arrival_location) {
+    errors.cruise_additional_meta.cruise_arrival_location = 'Required';
   }
 
   if (typeof formProps.cruise_tags === "string") {
@@ -351,16 +358,15 @@ function validate(formProps) {
     }
   }
 
-  if (typeof formProps.cruise_participants === "string") {
-    if (formProps.cruise_participants === '') {
-      formProps.cruise_participants = []
+  if (typeof formProps.cruise_additional_meta.cruise_participants === "string") {
+    if (formProps.cruise_additional_meta.cruise_participants === '') {
+      formProps.cruise_additional_meta.cruise_participants = []
     } else {
-      formProps.cruise_participants = formProps.cruise_participants.split(',');
+      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants.split(',');
     }
   }
 
   return errors;
-
 }
 
 function warn(formProps) {
@@ -376,38 +382,7 @@ function warn(formProps) {
 
 function mapStateToProps(state) {
 
-  let initialValues = { ...state.cruise.cruise }
-
-  if (initialValues.cruise_additional_meta) {
-    if (initialValues.cruise_additional_meta.cruise_name) {
-      initialValues.cruise_name = initialValues.cruise_additional_meta.cruise_name
-    }
-
-    if (initialValues.cruise_additional_meta.cruise_vessel) {
-      initialValues.cruise_vessel = initialValues.cruise_additional_meta.cruise_vessel
-    }
-
-    if (initialValues.cruise_additional_meta.cruise_pi) {
-      initialValues.cruise_pi = initialValues.cruise_additional_meta.cruise_pi
-    }
-
-    if (initialValues.cruise_additional_meta.cruise_description) {
-      initialValues.cruise_description = initialValues.cruise_additional_meta.cruise_description
-    }
-
-    if (initialValues.cruise_additional_meta.cruise_participants) {
-      initialValues.cruise_participants = initialValues.cruise_additional_meta.cruise_participants
-    }
-
-    if (initialValues.cruise_additional_meta.cruise_departure_location) {
-      initialValues.cruise_departure_location = initialValues.cruise_additional_meta.cruise_departure_location
-    }
-
-    if (initialValues.cruise_additional_meta.cruise_arrival_location) {
-      initialValues.cruise_arrival_location = initialValues.cruise_additional_meta.cruise_arrival_location
-    }
-    // delete initialValues.cruise_additional_meta
-  }
+  let initialValues = { cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL }, ...state.cruise.cruise }
 
   return {
     errorMessage: state.cruise.cruise_error,
@@ -426,4 +401,4 @@ export default compose(
     validate: validate,
     warn: warn
   })
-)(UpdateCruise);
+)(CruiseForm);

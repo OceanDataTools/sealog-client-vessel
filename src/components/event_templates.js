@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { Row, Button, Col, Container, Card, Table, OverlayTrigger, Tooltip, Form, FormControl } from 'react-bootstrap';
-import CreateEventTemplate from './create_event_template';
-import UpdateEventTemplate from './update_event_template';
+import EventTemplateForm from './event_template_form';
 import NonSystemEventTemplatesWipeModal from './non_system_event_templates_wipe_modal';
 import DeleteEventTemplateModal from './delete_event_template_modal';
 import ImportEventTemplatesModal from './import_event_templates_modal';
@@ -58,13 +57,13 @@ class EventTemplates extends Component {
 
   handleEventTemplateSelect(id) {
 
-    this.props.leaveUpdateEventTemplateForm();
+    this.props.leaveEventTemplateForm();
     this.props.initEventTemplate(id);
   }
 
   handleEventTemplateCreate() {
 
-    this.props.leaveUpdateEventTemplateForm();
+    this.props.leaveEventTemplateForm();
   }
 
   handleEventTemplateImport() {
@@ -322,8 +321,6 @@ class EventTemplates extends Component {
 
     if (this.props.roles.includes("admin") || this.props.roles.includes("event_manager")) {
 
-      let eventTemplatesForm = (this.props.event_templateid)? <UpdateEventTemplate /> : <CreateEventTemplate />;
-
       return (
         <Container className="mt-2">
           <DeleteEventTemplateModal />
@@ -348,7 +345,7 @@ class EventTemplates extends Component {
               </div>
             </Col>
             <Col className="px-1" sm={12} md={4} lg={4} xl={3}>
-              { eventTemplatesForm }
+              <EventTemplateForm handleFormSubmit={ this.props.fetchEventTemplates }/>
             </Col>
           </Row>
         </Container>

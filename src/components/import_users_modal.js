@@ -58,7 +58,6 @@ class ImportUsersModal extends Component {
     } catch(error) {
 
       if(error.response.data.statusCode === 404) {
-        // console.log("Attempting to add user")
 
         try {
           const result = await axios.post(`${API_ROOT_URL}/api/v1/users`,
@@ -81,9 +80,8 @@ class ImportUsersModal extends Component {
         } catch(error) {
           
           if(error.response.data.statusCode === 400) {
-            // console.log("User Data malformed or incomplete");
           } else {
-            console.log(error);  
+            console.debug(error);  
           }
           
           this.setState( prevState => (
@@ -96,7 +94,7 @@ class ImportUsersModal extends Component {
       } else {
 
         if(error.response.data.statusCode !== 400) {
-          console.log(error.response);
+          console.debug(error.response);
         }
         this.setState( prevState => (
           {
@@ -111,7 +109,6 @@ class ImportUsersModal extends Component {
   importUsersFromFile = async (e) => {
     try {
 
-      // console.log("processing file")
       let json = JSON.parse(e.target.result);
       this.setState({
         pending: json.length,
@@ -120,21 +117,19 @@ class ImportUsersModal extends Component {
         skipped: 0
       })
 
-      // console.log("done")
       let currentUser;
 
       for(let i = 0; i < json.length; i++) {
         if(this.state.quit) {
-          // console.log("quiting")
           break;
         }
         currentUser = json[i];
-        // console.log("adding user")
         await this.insertUser(currentUser);
       }
 
-    } catch (err) {
-      console.log('error when trying to parse json = ' + err);
+    } catch (error) {
+      console.error('Error when trying to parse json');
+      console.debug(error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }

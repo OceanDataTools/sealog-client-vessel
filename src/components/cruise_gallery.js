@@ -92,7 +92,7 @@ class CruiseGallery extends Component {
       return image_data;
     }).catch((error)=>{
       if(error.response.data.statusCode !== 404) {
-        console.error(error);
+        console.debug(error);
       }
       return [];
     });

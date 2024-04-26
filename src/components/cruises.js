@@ -3,8 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { Row, Button, Col, Card, Container, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import moment from 'moment';
-import CreateCruise from './create_cruise';
-import UpdateCruise from './update_cruise';
+import CruiseForm from './cruise_form';
 import DeleteCruiseModal from './delete_cruise_modal';
 import DeleteFileModal from './delete_file_modal';
 import ImportCruisesModal from './import_cruises_modal';
@@ -67,7 +66,7 @@ class Cruises extends Component {
   }
 
   handleCruiseCreate() {
-    this.props.leaveUpdateCruiseForm();
+    this.props.leaveCruiseForm();
   }
 
   handleCruiseImportModal() {
@@ -148,7 +147,7 @@ class Cruises extends Component {
 
         let cruiseName = (cruise.cruise_additional_meta.cruise_name)? <span>Name: {cruise.cruise_additional_meta.cruise_name}<br/></span> : null;
         let cruiseLocation = (cruise.cruise_location)? <span>Location: {cruise.cruise_location}<br/></span> : null;
-        let cruiseVessel = (DEFAULT_VESSEL !== cruise.cruise_additional_meta.cruise_vessel)? <span>Vessel: {cruise.cruise_additional_meta.cruise_vessel}<br/></span> : null;
+        let cruiseVessel = (cruise.cruise_additional_meta.cruise_vessel)? <span>Vessel: {cruise.cruise_additional_meta.cruise_vessel}<br/></span> : null;
         let cruisePi = (cruise.cruise_additional_meta.cruise_pi)? <span>PI: {cruise.cruise_additional_meta.cruise_pi}<br/></span> : null;
 
         return (
@@ -217,14 +216,6 @@ class Cruises extends Component {
 
     if(this.props.roles.includes("admin") || this.props.roles.includes('cruise_manager')) {
 
-      let cruiseForm = null;
-  
-      if(this.props.cruiseid) {
-        cruiseForm = <UpdateCruise handleFormSubmit={ this.props.fetchCruises } />;
-      } else {
-        cruiseForm = <CreateCruise handleFormSubmit={ this.props.fetchCruises } />;
-      }
-
       return (
         <Container className="mt-2">
           <DeleteCruiseModal />
@@ -244,7 +235,7 @@ class Cruises extends Component {
               </div>
             </Col>
             <Col className="px-1" sm={12} md={5} lg={6} xl={5}>
-              { cruiseForm }
+              <CruiseForm handleFormSubmit={ this.props.fetchCruises } />
             </Col>
           </Row>
         </Container>

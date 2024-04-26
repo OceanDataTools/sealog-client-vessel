@@ -6,7 +6,7 @@ import moment from 'moment';
 export const dateFormat = "YYYY-MM-DD";
 export const timeFormat = "HH:mm:ss";
 
-export function renderStaticTextField({ input, label, xs=12, sm=6, md=12, lg=6}) {
+export function renderStaticTextField({ input, label, xs=12, sm=12, md=12, lg=12}) {
   
   const labelComponent = (label)? <Form.Label>{label}</Form.Label> : null;
 
@@ -18,7 +18,7 @@ export function renderStaticTextField({ input, label, xs=12, sm=6, md=12, lg=6})
   );
 }
 
-export function renderTextField({ input, label, placeholder, required, meta: { touched, error, warning }, type="text", disabled=false, xs=12, sm=6, md=12, lg=6}) {
+export function renderTextField({ input, label, placeholder, required, meta: { touched, error, warning }, type="text", disabled=false, xs=12, sm=12, md=12, lg=12}) {
   const requiredField = (required)? <span className='text-danger'> *</span> : '';
   const labelComponent = (label)? <Form.Label>{label}{requiredField}</Form.Label> : null;
 
@@ -43,7 +43,7 @@ export function renderTextArea({ input, label, placeholder, required, meta: { to
   );
 }
 
-export function renderSelectField({ input, label, placeholder, required, options, meta: { touched, error }, disabled=false, xs=12, sm=6, md=12, lg=6 }) {
+export function renderSelectField({ input, label, placeholder, required, options, meta: { touched, error }, disabled=false, xs=12, sm=12, md=12, lg=12 }) {
 
   let requiredField = (required)? <span className='text-danger'> *</span> : '';
   let defaultOption = ( <option key={`${input.name}.empty`} value=""></option> );
@@ -65,34 +65,42 @@ export function renderSelectField({ input, label, placeholder, required, options
   );
 }
 
-export function renderDatePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', disabled=false, xs=12, sm=6, md=12, lg=6 }) {
+export function renderDatePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', disabled=false, xs=12, sm=12, md=12, lg=12 }) {
   let requiredField = (required)? <span className='text-danger'> *</span> : '';
   
-  const inputProps = {
-    disabled: disabled
-  } 
-
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
       <Form.Label>{label}{requiredField}</Form.Label>
-      <Datetime className="rdtPicker-sealog" {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat) : null} dateFormat={dateFormat} timeFormat={false} selected={input.value ? moment.utc(input.value, dateFormat) : null } inputProps={inputProps} />
-      {touched && (error && <div className={"w-100 mt-1 text-danger"} style={{fontSize: ".7rem"}}>{error}</div>)}
+      <Datetime className="rdtPicker-sealog" {...input}
+        utc={true}
+        value={input.value ? moment.utc(input.value).format(dateFormat) : null}
+        dateFormat={dateFormat}
+        timeFormat={false}
+        selected={input.value ? moment.utc(input.value, dateFormat) : null }
+        inputProps={{disabled}}
+        renderInput={(props) => {
+          return <input {...props} value={(input.value) ? props.value : ''} />
+        }}
+      />
+      {(error) ? <div className={"w-100 mt-1 text-danger"} style={{fontSize: ".7rem"}}>{error}</div> : ''}
     </Form.Group>
   );
 }
 
-export function renderDateTimePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', timeFormat='HH:mm:ss', disabled=false, xs=12, sm=6, md=12, lg=6 }) {
+export function renderDateTimePicker({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', timeFormat='HH:mm:ss', disabled=false, xs=12, sm=12, md=12, lg=12 }) {
   let requiredField = (required)? <span className='text-danger'> *</span> : ''
-
-  const inputProps = {
-    disabled: disabled
-  } 
 
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
       <Form.Label>{label}{requiredField}</Form.Label>
-      <Datetime className="rdtPicker-sealog" {...input} utc={true} value={input.value ? moment.utc(input.value).format(dateFormat + ' ' + timeFormat) : null} dateFormat={dateFormat} timeFormat={timeFormat} selected={input.value ? moment.utc(input.value) : null } inputProps={inputProps} />
-      {touched && (error && <div className={"w-100 mt-1 text-danger"} style={{fontSize: ".7rem"}}>{error}</div>)}
+      <Datetime className="rdtPicker-sealog" {...input}
+        utc={true}
+        value={input.value ? moment.utc(input.value).format(dateFormat + ' ' + timeFormat) : null}
+        dateFormat={dateFormat}
+        timeFormat={timeFormat}
+        selected={input.value ? moment.utc(input.value) : null }
+        inputProps={{disabled}} />
+      {(error) ? <div className={"w-100 mt-1 text-danger"} style={{fontSize: ".7rem"}}>{error}</div> : ''}
     </Form.Group>
   )
 }
@@ -134,7 +142,7 @@ export function renderCheckboxGroup({ label, options, input, required, meta: { d
   );
 }
 
-export function renderCheckbox({ input, label, meta: { dirty, error }, disabled=false, xs=12, sm=6, md=12, lg=6 }) {    
+export function renderCheckbox({ input, label, meta: { dirty, error }, disabled=false, xs=12, sm=12, md=12, lg=12 }) {    
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
       <Form.Check
@@ -155,7 +163,6 @@ export function renderCheckbox({ input, label, meta: { dirty, error }, disabled=
 export function renderRadioGroup({ label, options, input, required, meta: { dirty, error }, disabled=false, inline=false, indication=false }) {
 
   const requiredField = (required)? (<span className='text-danger'> *</span>) : '';
-  // console.log(options);
   const radioList = options.map((option, index) => {
 
     const tooltip = (option.description)? (<Tooltip id={`${option.value}_Tooltip`}>{option.description}</Tooltip>) : null
@@ -201,6 +208,12 @@ export function renderSwitch({ input, label, meta: { dirty, error }, disabled=fa
       </Form.Switch>
       <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>
     </Form.Group>
+  );
+}
+
+export function renderHidden({ input }) {    
+  return (
+    <input type="hidden" {...input} id={input.name}/>
   );
 }
 
