@@ -87,7 +87,8 @@ class ExportDropdown extends Component {
       if(error.response.data.statusCode === 404){
         return [];
       } else {
-        console.log(error.response);
+        console.error('Problem connecting to API');
+        console.debug(error.response);
         return [];
       }
     }
@@ -115,7 +116,8 @@ class ExportDropdown extends Component {
       if(error.response.data.statusCode === 404){
         return [];
       } else {
-        console.log(error.response);
+        console.error('Problem connecting to API');
+        console.debug(error.response);
         return [];
       }
     }
@@ -144,7 +146,8 @@ class ExportDropdown extends Component {
       if(error.response.data.statusCode === 404){
         return [];
       } else {
-        console.log(error.response);
+        console.error('Problem connecting to API');
+        console.debug(error.response);
         return [];
       }
     }
@@ -156,7 +159,7 @@ class ExportDropdown extends Component {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_export.${format}`);
     }).catch((error) => {
-      console.log(error);
+      console.debug(error);
     });
   }
 
@@ -165,7 +168,7 @@ class ExportDropdown extends Component {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_eventExport.${format}`);
     }).catch((error) => {
-      console.log(error);
+      console.debug(error);
     });
   }
 
@@ -174,7 +177,7 @@ class ExportDropdown extends Component {
       let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload(JSON.stringify(results), `${prefix}_sealog_auxDataExport.json`);
     }).catch((error) => {
-      console.log(error);
+      console.debug(error);
     });
   }
 

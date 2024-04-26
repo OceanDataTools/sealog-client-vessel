@@ -66,7 +66,8 @@ class ImportAuxDataModal extends Component {
       }
 
     } catch(error) {
-      console.log(error)
+      console.error('Problem connection to API');
+      console.debug(error)
       this.setState( prevState => (
         {
           errors: prevState.errors + 1,
@@ -91,15 +92,14 @@ class ImportAuxDataModal extends Component {
 
       for(let i = 0; i < json.length; i++) {
         if (this.state.quit) {
-          console.log("quiting")
           break;
         }
         currentAuxData = json[i];
         await this.insertAuxData(currentAuxData);
       }
 
-    } catch (err) {
-      console.log('error when trying to parse json = ' + err);
+    } catch (error) {
+      console.debug('Error when trying to parse json = ' + error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})    
   }

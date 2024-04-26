@@ -117,8 +117,9 @@ class CruiseMenu extends Component {
       .then((response) => {
         FileDownload(response.data, filename);
       })
-      .catch(()=>{
-        console.log("JWT is invalid, logging out");
+      .catch((error)=>{
+        console.error("JWT is invalid, logging out");
+        console.debug(error);
       });
   }
 

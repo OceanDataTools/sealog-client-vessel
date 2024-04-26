@@ -122,8 +122,6 @@ class EventTemplateOptionsModal extends Component {
               validate={ option.event_option_required ? required : undefined }
               options={option.event_option_values}
               defaultValue={option.event_option_default_value}
-              lg={12}
-              sm={12}
             />
           </div>
         )
@@ -144,8 +142,6 @@ class EventTemplateOptionsModal extends Component {
               inline={true}
               required={ option.event_option_required }
               validate={ option.event_option_required ? requiredArray : undefined }
-              lg={12}
-              sm={12}
             />
           </div>
         )
@@ -166,8 +162,6 @@ class EventTemplateOptionsModal extends Component {
               inline={true}
               required={ option.event_option_required }
               validate={ option.event_option_required ? requiredArray : undefined }
-              lg={12}
-              sm={12}
             />
           </div>
         )
@@ -180,8 +174,6 @@ class EventTemplateOptionsModal extends Component {
               label={option.event_option_name}
               required={ option.event_option_required }
               validate={ option.event_option_required ? required : undefined }
-              lg={12}
-              sm={12}
             />
           </div>
         )
@@ -192,8 +184,6 @@ class EventTemplateOptionsModal extends Component {
               name={`option_${index}`}
               component={renderStaticTextField}
               label={option.event_option_name}
-              lg={12}
-              sm={12}
             />
           </div>
         )
@@ -238,8 +228,6 @@ class EventTemplateOptionsModal extends Component {
                 component={renderDateTimePicker}
                 disabled={this.props.disabled}
                 required={true}
-                lg={12}
-                sm={12}
               />
             </Modal.Body>
             <Modal.Footer>

@@ -97,8 +97,6 @@ class ResetPassword extends Component {
                   type="password"
                   placeholder="Password"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
               </Form.Row>
               <Form.Row>
@@ -108,8 +106,6 @@ class ResetPassword extends Component {
                   type="password"
                   placeholder="Confirm Password"
                   required={true}
-                  sm={12}
-                  lg={12}
                 />
               </Form.Row>
               {recaptcha}

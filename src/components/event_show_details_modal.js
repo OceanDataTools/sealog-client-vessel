@@ -54,7 +54,8 @@ class EventShowDetailsModal extends Component {
       this.setState({event: response.data});
     }
     catch(error) {
-      console.log(error);
+      console.error('Problem connecting to API');
+      console.debug(error);
     }    
   }
 

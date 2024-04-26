@@ -57,7 +57,8 @@ class Footer extends Component {
       this.client.subscribe('/ws/status/updateCustomVars', updateHandler);
 
     } catch(error) {
-      console.log(error);
+      console.error('Problem connecting to websocket subscriptions');
+      console.debug(error);
       throw(error);
     }
   }

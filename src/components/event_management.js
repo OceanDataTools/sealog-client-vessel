@@ -115,7 +115,7 @@ class EventManagement extends Component {
         this.setState({fetching: false});
         this.setState({events: []});
       } else {
-        console.log(error.response);
+        console.debug(error.response);
         this.setState({fetching: false});
         this.setState({events: []});
       }
@@ -143,7 +143,7 @@ class EventManagement extends Component {
       if(error.response.data.statusCode === 404){
         this.setState({eventCount: 0});
       } else {
-        console.log(error.response);
+        console.debug(error.response);
         this.setState({eventCount: 0});
       }
     }

@@ -63,13 +63,13 @@ class CruisePermissionsModal extends Component {
       }).then(async (response) => {
         await this.fetchCruise();
         return response.data;
-      }).catch((err) => {
-        console.error(err);
+      }).catch((error) => {
+        console.debug(error);
         return null;
       });
 
     } catch(error) {
-      console.error(error);
+      console.debug(error);
     }
   }
 
@@ -84,15 +84,15 @@ class CruisePermissionsModal extends Component {
         }
       }).then((response) => {
         return response.data;
-      }).catch((err) => {
-        console.error(err);
+      }).catch((error) => {
+        console.debug(error);
         return null;
       });
 
       this.setState({ cruise })
 
     } catch(error) {
-      console.error(error);
+      console.debug(error);
     }
   }
 
@@ -108,14 +108,14 @@ class CruisePermissionsModal extends Component {
       }).then((response) => {
         return response.data;
       }).catch((err) => {
-        console.error(err);
+        console.debug(error);
         return [];
       });
 
       this.setState({ users })
 
     } catch(error) {
-      console.error(error);
+      console.debug(error);
     }
   }
 

@@ -93,8 +93,6 @@ class ForgotPassword extends Component {
                   name="email"
                   component={renderTextField}
                   placeholder="Email Address"
-                  sm={12}
-                  lg={12}
                 />
               </Form.Row>
               {recaptcha}
@@ -128,7 +126,6 @@ class ForgotPassword extends Component {
 
 const validate = values => {
 
-  // console.log(values)
   const errors = {};
   if (!values.email) {
     errors.email = 'Required';

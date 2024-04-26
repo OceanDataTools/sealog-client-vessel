@@ -39,8 +39,8 @@ class Login extends Component {
           this.handleAutologin(event.data);
         }
       }
-      catch(err) {
-        console.error(err);
+      catch(error) {
+        console.debug(error);
       }
     }
   }
@@ -114,16 +114,12 @@ class Login extends Component {
                       name="username"
                       component={renderTextField}
                       placeholder="Username"
-                      lg={12}
-                      sm={12}
                     />
                     <Field
                       name="password"
                       component={renderTextField}
                       type="password"
                       placeholder="Password"
-                      lg={12}
-                      sm={12}
                     />
                   </Form.Row>
                   {recaptcha}

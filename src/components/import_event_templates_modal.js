@@ -48,7 +48,6 @@ class ImportEventTemplatesModal extends Component {
       })
 
       if(result) {
-        // console.log("Event Template Already Exists");
         this.setState( prevState => (
           {
             skipped: prevState.skipped + 1,
@@ -59,7 +58,6 @@ class ImportEventTemplatesModal extends Component {
     } catch(error) {
 
       if(error.response.data.statusCode === 404) {
-      // console.log("Attempting to add event template")
 
         try {
           const result = await axios.post(`${API_ROOT_URL}/api/v1/event_templates`,
@@ -71,7 +69,6 @@ class ImportEventTemplatesModal extends Component {
             }
           })
           if(result) {
-            // console.log("Event Template Imported");
             this.setState( prevState => (
               {
                 imported: prevState.imported + 1,
@@ -81,10 +78,9 @@ class ImportEventTemplatesModal extends Component {
           }
         } catch(error) {
           
-          if(error.response.data.statusCode === 400) {
-            // console.log("Event Template Data malformed or incomplete");
-          } else {
-            console.log(error);  
+          if(error.response.data.statusCode !== 400) {
+            console.error('Problem connecting to API');
+            console.debug(error);  
           }
           
           this.setState( prevState => (
@@ -97,7 +93,7 @@ class ImportEventTemplatesModal extends Component {
       } else {
 
         if(error.response.data.statusCode !== 400) {
-          console.log(error.response);
+          console.debug(error.response);
         }
 
         this.setState( prevState => (
@@ -113,7 +109,6 @@ class ImportEventTemplatesModal extends Component {
   importEventTemplatesFromFile = async (e) => {
     try {
 
-      // console.log("processing file")
       let json = JSON.parse(e.target.result);
       this.setState({
         pending: json.length,
@@ -126,16 +121,15 @@ class ImportEventTemplatesModal extends Component {
 
       for(let i = 0; i < json.length; i++) {
         if(this.state.quit) {
-          // console.log("quiting")
           break;
         }
         currentTemplate = json[i];
-        // console.log("adding template")
         await this.insertEventTemplate(currentTemplate);
       }
 
-    } catch (err) {
-      console.log('error when trying to parse json = ' + err);
+    } catch (error) {
+      console.error('Error when trying to parse json');
+      console.debug(error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }

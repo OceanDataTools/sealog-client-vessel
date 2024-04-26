@@ -12,14 +12,13 @@ import {
   AUTH_SUCCESS,
   CREATE_USER_SUCCESS,
   CREATE_USER_ERROR,
-  LEAVE_CREATE_USER_FORM,
   REGISTER_USER_SUCCESS,
   REGISTER_USER_ERROR,
   LEAVE_REGISTER_USER_FORM,
   INIT_USER,
   UPDATE_USER_SUCCESS,
   UPDATE_USER_ERROR,
-  LEAVE_UPDATE_USER_FORM,
+  LEAVE_USER_FORM,
   FETCH_USERS,
   FETCH_EVENT_TEMPLATES_FOR_MAIN,
   FETCH_EVENTS,
@@ -38,10 +37,9 @@ import {
   UPDATE_EVENT_TEMPLATE_CATEGORY,
   UPDATE_EVENT_TEMPLATE_SUCCESS,
   UPDATE_EVENT_TEMPLATE_ERROR,
-  LEAVE_UPDATE_EVENT_TEMPLATE_FORM,
+  LEAVE_EVENT_TEMPLATE_FORM,
   CREATE_EVENT_TEMPLATE_SUCCESS,
   CREATE_EVENT_TEMPLATE_ERROR,
-  LEAVE_CREATE_EVENT_TEMPLATE_FORM,
   INIT_EVENT,
   EVENT_FETCHING,
   UPDATE_EVENT_FILTER_FORM,
@@ -54,10 +52,9 @@ import {
   INIT_CRUISE,
   UPDATE_CRUISE_SUCCESS,
   UPDATE_CRUISE_ERROR,
-  LEAVE_UPDATE_CRUISE_FORM,
+  LEAVE_CRUISE_FORM,
   CREATE_CRUISE_SUCCESS,
   CREATE_CRUISE_ERROR,
-  LEAVE_CREATE_CRUISE_FORM,
   FETCH_CRUISES,
 
 } from './types';
@@ -79,7 +76,6 @@ export function validateJWT() {
 
   if(!token) {
     return function (dispatch) {
-      // console.log("JWT is missing, logging out");
       dispatch({type: UNAUTH_USER});
     };
   }
@@ -118,7 +114,7 @@ export function updateProfileState() {
       }).then((response) => {
         return dispatch({ type: UPDATE_PROFILE, payload: response.data });
       }).catch((error)=>{
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -131,7 +127,7 @@ export function initUser(id) {
       }).then((response) => {
         return dispatch({ type: INIT_USER, payload: response.data });
       }).catch((error)=>{
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -149,7 +145,7 @@ export function initEventTemplate(id) {
 
         return dispatch({ type: INIT_EVENT_TEMPLATE, payload: response.data });
       }).catch((error)=>{
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -320,7 +316,7 @@ export async function createEventRequest(eventValue, eventFreeText, eventOptions
       return response.data.insertedEvent;
     })
     .catch((error)=>{
-      console.error(error);
+      console.debug(error);
     });
 
   return response;
@@ -333,7 +329,7 @@ export function createEvent(eventValue, eventFreeText = '', eventOptions = [], e
       const event = await createEventRequest(eventValue, eventFreeText, eventOptions, eventTS, publish);
       return event;
     } catch (error) {
-      console.error(error);
+      console.debug(error);
     }
   };
 }
@@ -358,7 +354,7 @@ export async function updateEventRequest(event_id, eventValue, eventFreeText = '
       return { response };
     })
     .catch((error)=>{
-      console.error(error);
+      console.debug(error);
     });
   
   return response;
@@ -371,7 +367,7 @@ export function updateEvent(event_id, eventValue, eventFreeText = '', eventOptio
       const event = await updateEventRequest(event_id, eventValue, eventFreeText, eventOptions, eventTS);
       return event;
     } catch (error) {
-      console.error(error);
+      console.debug(error);
     }
   };
 }
@@ -387,7 +383,7 @@ export function updateCruiseReplayEvent(event_id) {
       return dispatch({type: UPDATE_EVENT, payload: data});
     }).catch((error) => {
       if(error.response.status !== 404) {
-        console.error(error);
+        console.debug(error);
       }
     });
   };
@@ -401,7 +397,7 @@ export async function deleteEventRequest(event_id) {
     }).then((response) => {
       return { response };
     }).catch((error)=>{
-      console.error(error);
+      console.debug(error);
     });
 
   return response;
@@ -414,7 +410,7 @@ export function deleteEvent(event_id) {
       const response = await deleteEventRequest(event_id);
       return response;
     } catch (error) {
-      console.error(error);
+      console.debug(error);
     }
   };
 }
@@ -428,7 +424,7 @@ export function forgotPassword({email, reCaptcha = null}) {
       ).then(response => {
         return dispatch(authSuccess(response.data.message));
       }).catch((error)=>{
-        console.error(error);
+        console.debug(error);
 
         // If request is invalid
        return dispatch(authError(error.response.data.message));
@@ -447,7 +443,7 @@ export function resetPassword({token, password, reCaptcha = null}) {
         return dispatch(authSuccess('Password Reset'));
       }).catch((error) => {
 
-        console.error(error);
+        console.debug(error);
 
         // If request is unauthenticated
         return dispatch(authError(error.response.data.message));
@@ -466,7 +462,7 @@ export function registerUser({username, fullname, password, email, reCaptcha = n
         return dispatch(registerUserSuccess('User created'));
       }).catch((error) => {
 
-        console.error(error);
+        console.debug(error);
 
         // If request is unauthenticated
         return dispatch(registerUserError(error.response.data.message));
@@ -475,100 +471,60 @@ export function registerUser({username, fullname, password, email, reCaptcha = n
   };
 }
 
-export function createUser({username, fullname, password = '', email, roles, system_user = false, disabled = false}) {
-  return async function (dispatch) {
+export function createUser(formProps) {
 
-    return await axios.post(`${API_ROOT_URL}/api/v1/users`,
-      {username, fullname, password, email, roles, system_user, disabled, resetURL},
+  let fields = { ...formProps, resetURL };
+
+  return async function (dispatch) {
+    return await axios.post(`${API_ROOT_URL}/api/v1/users`, fields,
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        dispatch(createUserSuccess('Account created'));
+      }).then((response) => {
+        dispatch(initUser(response.data.insertedId));
+        dispatch(createUserSuccess('User created'));
         return dispatch(fetchUsers());
       }).catch((error) => {
       // If request is unauthenticated
-        console.error(error);
+        console.debug(error);
         return dispatch(createUserError(error.response.data.message));
       });
   };
 }
 
-export function createCruise({cruise_id, start_ts, stop_ts, cruise_location = '', cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
+export function createCruise(formProps) {
+  
+  let fields = { ...formProps };
+
   return async function (dispatch) {
-    return await axios.post(`${API_ROOT_URL}/api/v1/cruises`,
-      {cruise_id, start_ts, stop_ts, cruise_location, cruise_tags, cruise_hidden, cruise_additional_meta },
+    return await axios.post(`${API_ROOT_URL}/api/v1/cruises`, fields,
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
+      }).then((response) => {
+        dispatch(initCruise(response.data.insertedId));
         dispatch(createCruiseSuccess('Cruise created'));
         return dispatch(fetchCruises());
       }).catch((error) => {
-
-      // If request is unauthenticated
-      console.error(error);
-      return dispatch(createCruiseError(error.response.data.message));
-    });
+        // If request is unauthenticated
+        console.debug(error);
+        return dispatch(createCruiseError(error.response.data.message));
+      });
   };
 }
 
 export function createEventTemplate(formProps) {
 
-  let fields = {};
-
-  fields.event_name = formProps.event_name;
-  fields.event_value = formProps.event_value;
-  fields.system_template = formProps.system_template;
-  fields.disabled = formProps.disabled;
-  fields.template_categories = formProps.template_categories;
-
-  if(!formProps.event_free_text_required) {
-    fields.event_free_text_required = false;
-  } else {
-    fields.event_free_text_required = formProps.event_free_text_required;
-  }
-
-  if(!formProps.event_options) {
-    fields.event_options = [];
-  } else {
-    fields.event_options = formProps.event_options;
-    fields.event_options = fields.event_options.map(event_option => {
-
-      if(!event_option.event_option_allow_freeform) {
-        event_option.event_option_allow_freeform = false;
-      }
-
-      if(!event_option.event_option_required) {
-        event_option.event_option_required = false;
-      }
-
-      if(event_option.event_option_type === 'dropdown') {
-        event_option.event_option_values = event_option.event_option_values.split(',');
-        event_option.event_option_values = event_option.event_option_values.map(string => {
-          return string.trim();
-        });
-      } else if(event_option.event_option_type === 'checkboxes' || event_option.event_option_type === 'radio buttons') {
-        event_option.event_option_values = event_option.event_option_values.split(',');
-        event_option.event_option_values = event_option.event_option_values.map(string => {
-          return string.trim();
-        });
-      } else if (event_option.event_option_type === 'text' || event_option.event_option_type === 'static text') {
-        event_option.event_option_values = [];
-      }
-
-      return event_option;
-    });
-  }
+  let fields = { ...formProps };
 
   return async function (dispatch) {
     return await axios.post(`${API_ROOT_URL}/api/v1/event_templates`, fields,
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        dispatch(fetchEventTemplates());
-        return dispatch(createEventTemplateSuccess('Event Template created'));
+      }).then((response) => {
+        dispatch(initEventTemplate(response.data.insertedId));
+        dispatch(createEventTemplateSuccess('Event Template created'));
+        return dispatch(fetchEventTemplates());
       }).catch((error) => {
-        console.error(error);
-
+        console.debug(error);
         // If request is unauthenticated
         return dispatch(createEventTemplateError(error.response.data.message));
       });
@@ -598,9 +554,9 @@ export function updateProfile(formProps) {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then(() => {
         dispatch(updateProfileState());
-        return dispatch(updateProfileSuccess('Account updated'));
+        return dispatch(updateProfileSuccess('User updated'));
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
 
         // If request is unauthenticated
         return dispatch(updateProfileError(error.response.data.message));
@@ -620,7 +576,7 @@ export function showCruise(id) {
       }).then(() => {
         return dispatch(fetchCruises());
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
         return dispatch(updateCruiseError(error.response.data.message));
       });
   };
@@ -638,7 +594,7 @@ export function hideCruise(id) {
       }).then(() => {
         return dispatch(fetchCruises());
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
         return dispatch(updateCruiseError(error.response.data.message));
       });
   };
@@ -646,45 +602,8 @@ export function hideCruise(id) {
 
 export function updateCruise(formProps) {
 
-  let fields = {};
-
-  if(formProps.cruise_id) {
-    fields.cruise_id = formProps.cruise_id;
-  }
-
-  if(formProps.cruise_location) {
-    fields.cruise_location = formProps.cruise_location;
-  } else {
-    fields.cruise_location = '';
-  }
-
-  if(formProps.cruise_tags) {
-    fields.cruise_tags = formProps.cruise_tags;
-  } else {
-    fields.cruise_tags = [];
-  }
-
-  if(formProps.start_ts) {
-    fields.start_ts = formProps.start_ts;
-  }
-
-  if(formProps.stop_ts) {
-    fields.stop_ts = formProps.stop_ts;
-  }
-
-  if(typeof(formProps.cruise_hidden) !== "undefined") {
-    fields.cruise_hidden = formProps.cruise_hidden;
-  }
-
-  if(formProps.cruise_additional_meta) {
-
-    // FIX THIS
-    // if (formProps.cruise_additional_meta.cruise_files) {
-    //   delete formProps.cruise_additional_meta.cruise_files
-    // }
-
-    fields.cruise_additional_meta = formProps.cruise_additional_meta;
-  }
+  let fields = { ...formProps};
+  delete fields.id;
 
   return async function (dispatch) {
     await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${formProps.id}`,
@@ -695,7 +614,7 @@ export function updateCruise(formProps) {
         dispatch(fetchCruises());
         return dispatch(updateCruiseSuccess('Cruise updated'));
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
         return dispatch(updateCruiseError(error.response.data.message));
       });
   };
@@ -703,39 +622,8 @@ export function updateCruise(formProps) {
 
 export function updateUser(formProps) {
 
-  let fields = {};
-
-  if(formProps.username) {
-    fields.username = formProps.username;
-  }
-
-  if(formProps.fullname) {
-    fields.fullname = formProps.fullname;
-  }
-
-  // if(formProps.email) {
-  //   fields.email = formProps.email;
-  // }
-
-  if(formProps.password) {
-    fields.password = formProps.password;
-  }
-
-  if(formProps.roles) {
-    fields.roles = formProps.roles;
-  }
-
-  if(typeof formProps.disabled !== 'undefined') {
-    fields.disabled = formProps.disabled;
-  } else {
-    fields.disabled = false;
-  }
-
-  if(formProps.system_user) {
-    fields.system_user = formProps.system_user;
-  } else {
-    fields.system_user = false;
-  }
+  let fields = { ...formProps};
+  delete fields.id;
 
   return async function (dispatch) {
     return await axios.patch(`${API_ROOT_URL}/api/v1/users/${formProps.id}`,
@@ -744,9 +632,9 @@ export function updateUser(formProps) {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then(() => {
         dispatch(fetchUsers());
-        return dispatch(updateUserSuccess('Account updated'));
+        return dispatch(updateUserSuccess('User updated'));
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
 
         // If request is unauthenticated
         return dispatch(updateUserError(error.response.data.message));
@@ -756,63 +644,8 @@ export function updateUser(formProps) {
 
 export function updateEventTemplate(formProps) {
 
-  let fields = {};
-
-  fields.event_name = formProps.event_name;
-  fields.event_value = formProps.event_value;
-  fields.template_categories = (formProps.template_categories) ? formProps.template_categories : [];
-
-  if(!formProps.event_free_text_required) {
-    fields.event_free_text_required = false;
-  } else {
-    fields.event_free_text_required = formProps.event_free_text_required;
-  }
-
-  if(!formProps.system_template) {
-    fields.system_template = false;
-  } else {
-    fields.system_template = formProps.system_template;
-  }
-
-  if(typeof formProps.disabled !== 'undefined') {
-    fields.disabled = formProps.disabled;
-  }
-  else {
-    fields.disabled = false;
-  }
-
-
-  if(!formProps.event_options) {
-    fields.event_options = [];
-  } else {
-    fields.event_options = formProps.event_options;
-    fields.event_options = fields.event_options.map(event_option => {
-
-      if(!event_option.event_option_allow_freeform) {
-        event_option.event_option_allow_freeform = false;
-      }
-
-      if(!event_option.event_option_required) {
-        event_option.event_option_required = false;
-      }
-
-      if(event_option.event_option_type === 'dropdown') {
-        event_option.event_option_values = event_option.event_option_values.split(',');
-        event_option.event_option_values = event_option.event_option_values.map(string => {
-          return string.trim();
-        });
-      } else if(event_option.event_option_type === 'checkboxes' || event_option.event_option_type === 'radio buttons') {
-        event_option.event_option_values = event_option.event_option_values.split(',');
-        event_option.event_option_values = event_option.event_option_values.map(string => {
-          return string.trim();
-        });
-      } else if (event_option.event_option_type === 'text' || event_option.event_option_type === 'static text') {
-        event_option.event_option_values = [];
-      }
-
-      return event_option;
-    });
-  }
+  let fields = { ...formProps };
+  delete fields.id;
 
   return async function (dispatch) {
     return await axios.patch(`${API_ROOT_URL}/api/v1/event_templates/${formProps.id}`,
@@ -823,7 +656,7 @@ export function updateEventTemplate(formProps) {
         dispatch(fetchEventTemplates());
         return dispatch(updateEventTemplateSuccess('Event template updated'));
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
 
         // If request is unauthenticated
         return dispatch(updateEventTemplateError(error.response.data.message));
@@ -839,13 +672,13 @@ export function deleteCruise(id) {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then(() => {
         if(getState().cruise.cruise.id === id) {
-          dispatch(leaveUpdateCruiseForm());
+          dispatch(leaveCruiseForm());
         }
         
         return dispatch(fetchCruises());
 
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -858,13 +691,13 @@ export function deleteUser(id) {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then(() => {
         if(getState().user.user.id === id) {
-          dispatch(leaveUpdateUserForm());
+          dispatch(leaveUserForm());
         }
 
         return dispatch(fetchUsers());
 
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -877,13 +710,13 @@ export function deleteEventTemplate(id) {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then(() => {
         if(getState().event_template.event_template.id === id) {
-          dispatch(leaveUpdateEventTemplateForm());
+          dispatch(leaveEventTemplateForm());
         }
 
         return dispatch(fetchEventTemplates());
 
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -1027,7 +860,7 @@ export function fetchUsers() {
         if(error.response.status === 404) {
           return dispatch({type: FETCH_USERS, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1045,7 +878,7 @@ export function fetchCruises() {
         if(error.response.status === 404) {
           return dispatch({type: FETCH_CRUISES, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1063,7 +896,7 @@ export function fetchCustomVars() {
         if(error.response.status === 404) {
           return dispatch({type: FETCH_CUSTOM_VARS, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1079,7 +912,7 @@ export function updateCustomVars(id, value) {
       }).then(() => {
         return dispatch(fetchCustomVars());
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
       });
   };
 }
@@ -1111,7 +944,7 @@ export function fetchEventTemplatesForMain() {
         if(error.response.status === 404) {
           return dispatch({type: FETCH_EVENT_TEMPLATES_FOR_MAIN, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1131,7 +964,7 @@ export function fetchFilteredEvents(filterParams={}) {
         if(error.response.status === 404) {
           return dispatch({type: FETCH_FILTERED_EVENTS, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1149,7 +982,7 @@ export function fetchEvents() {
         if(error.response.status === 404) {
           return dispatch({type: FETCH_EVENTS, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1164,7 +997,7 @@ export function fetchSelectedEvent(id) {
       }).then((response) => {
         return dispatch({type: SET_SELECTED_EVENT, payload: response.data});
       }).catch((error) => {
-        console.error(error);
+        console.debug(error);
         return dispatch({type: SET_SELECTED_EVENT, payload: {}});
       });
   };
@@ -1206,7 +1039,7 @@ export function fetchEventHistory(asnap=false, filter='', page=0) {
       if(error.response.status === 404) {
         return dispatch({type: FETCH_EVENT_HISTORY, payload: []});
       } else {
-        console.error(error);
+        console.debug(error);
       }
     });
   };
@@ -1224,7 +1057,7 @@ export function fetchEventTemplates() {
         if(error.response.data.statusCode === 404) {
           return dispatch({type: FETCH_EVENT_TEMPLATES, payload: []});
         } else {
-          console.error(error);
+          console.debug(error);
         }
       });
   };
@@ -1238,7 +1071,7 @@ export function initCruise(id) {
       }).then((response) => {
       return dispatch({ type: INIT_CRUISE, payload: response.data });
     }).catch((error)=>{
-      console.error(error);
+      console.debug(error);
     });
   };
 }
@@ -1262,7 +1095,7 @@ export function initCruiseReplay(id, hideASNAP = false) {
         return dispatch({ type: EVENT_FETCHING, payload: false});
       }).catch((error)=>{
         if(error.response.data.statusCode !== 404) {
-          console.error(error);
+          console.debug(error);
         }
         return dispatch({ type: EVENT_FETCHING, payload: false});
       });
@@ -1276,8 +1109,8 @@ export function advanceCruiseReplayTo(id) {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
         return dispatch({ type: SET_SELECTED_EVENT, payload: response.data });
-      }).catch((err) => {
-        console.error(err);
+      }).catch((error) => {
+        console.debug(error);
       });
   };
 }
@@ -1318,15 +1151,9 @@ export function leaveUpdateProfileForm() {
   };
 }
 
-export function leaveUpdateUserForm() {
+export function leaveUserForm() {
   return function (dispatch) {
-    return dispatch({type: LEAVE_UPDATE_USER_FORM, payload: null});
-  };
-}
-
-export function leaveCreateUserForm() {
-  return function (dispatch) {
-    return dispatch({type: LEAVE_CREATE_USER_FORM, payload: null});
+    return dispatch({type: LEAVE_USER_FORM, payload: null});
   };
 }
 
@@ -1336,27 +1163,15 @@ export function leaveRegisterForm() {
   };
 }
 
-export function leaveUpdateEventTemplateForm() {
+export function leaveEventTemplateForm() {
   return function (dispatch) {
-    return dispatch({type: LEAVE_UPDATE_EVENT_TEMPLATE_FORM, payload: null});
+    return dispatch({type: LEAVE_EVENT_TEMPLATE_FORM, payload: null});
   };
 }
 
-export function leaveCreateEventTemplateForm() {
+export function leaveCruiseForm() {
   return function (dispatch) {
-    return dispatch({type: LEAVE_CREATE_EVENT_TEMPLATE_FORM, payload: null});
-  };
-}
-
-export function leaveUpdateCruiseForm() {
-  return function (dispatch) {
-    return dispatch({type: LEAVE_UPDATE_CRUISE_FORM, payload: null});
-  };
-}
-
-export function leaveCreateCruiseForm() {
-  return function (dispatch) {
-    return dispatch({type: LEAVE_CREATE_CRUISE_FORM, payload: null});
+    return dispatch({type: LEAVE_CRUISE_FORM, payload: null});
   };
 }
 
@@ -1368,7 +1183,7 @@ export function leaveEventFilterForm() {
 
 export function clearSelectedCruise() {
   return function (dispatch) {
-    return dispatch({type: LEAVE_UPDATE_CRUISE_FORM, payload: null});
+    return dispatch({type: LEAVE_CRUISE_FORM, payload: null});
   };
 }
 
@@ -1395,7 +1210,7 @@ export function eventUpdate() {
         dispatch({ type: UPDATE_EVENTS, payload: response.data });
         return dispatch({ type: EVENT_FETCHING, payload: false});
       }).catch((error)=>{
-        console.error(error);
+        console.debug(error);
         if(error.response.data.statusCode === 404) {
           dispatch({type: UPDATE_EVENTS, payload: []});
         } else {
@@ -1433,7 +1248,7 @@ export function eventUpdateCruiseReplay(cruise_id, hideASNAP = false) {
           dispatch({ type: SET_SELECTED_EVENT, payload: {} });
 
         } else {
-          console.error(error);
+          console.debug(error);
         }
         return dispatch({ type: EVENT_FETCHING, payload: false});
       });
@@ -1448,7 +1263,7 @@ export function deleteAllEvents() {
       }).then(() => {
         return dispatch(fetchEventHistory());
       }).catch((error)=> {
-        console.error(error.response);
+        console.debug(error.response);
       });
   };
 }
@@ -1461,7 +1276,7 @@ export function deleteAllCruises() {
       }).then(() => {
         return dispatch(fetchCruises());
       }).catch((error)=> {
-        console.error(error.response);
+        console.debug(error.response);
       });
   };
 }
@@ -1474,7 +1289,7 @@ export function deleteAllNonSystemUsers() {
       }).then((response) => {
         return response.data;
       }).catch((error) =>{
-        console.error(error.response);
+        console.debug(error.response);
       });
 
     users.map(async (user) => {
@@ -1493,7 +1308,7 @@ export function deleteAllNonSystemEventTemplates() {
       }).then((response) => {
         return response.data;
       }).catch((error)=> {
-        console.error(error.response);
+        console.debug(error.response);
       });
 
     event_templates.map(async (event_template) => {
