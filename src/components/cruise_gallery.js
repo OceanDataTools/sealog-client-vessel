@@ -8,8 +8,8 @@ import EventShowDetailsModal from './event_show_details_modal';
 import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL, CUSTOM_CRUISE_NAME } from '../client_config';
-import { getImageUrl } from '../utils';
+import { API_ROOT_URL } from '../client_config';
+import { _Cruises_, getImageUrl } from '../utils';
 
 const cookies = new Cookies();
 
@@ -23,8 +23,7 @@ class CruiseGallery extends Component {
     this.state = {
       fetching: false,
       aux_data: [],
-      maxImagesPerPage: 16,
-      cruises_name: (CUSTOM_CRUISE_NAME)? CUSTOM_CRUISE_NAME[1].charAt(0).toUpperCase() + CUSTOM_CRUISE_NAME[1].slice(1) : "Cruises"
+      maxImagesPerPage: 16
     };
 
     this.handleImageCountChange = this.handleImageCountChange.bind(this);
@@ -147,7 +146,7 @@ class CruiseGallery extends Component {
         <EventShowDetailsModal />
         <Row className="d-flex align-items-center justify-content-between">
           <ButtonToolbar className="align-items-center">
-            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
+            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{_Cruises_}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <span  className="text-warning">{cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>

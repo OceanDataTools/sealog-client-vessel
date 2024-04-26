@@ -15,7 +15,8 @@ import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
 import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL, CUSTOM_CRUISE_NAME } from '../client_config';
+import { API_ROOT_URL } from '../client_config';
+import { _Cruises_ } from '../utils';
 import { TILE_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers';
 
 const { BaseLayer } = LayersControl;
@@ -38,8 +39,6 @@ class CruiseMap extends Component {
     this.divFocus = null;
 
     this.state = {
-
-      cruises_name: (CUSTOM_CRUISE_NAME)? CUSTOM_CRUISE_NAME[1].charAt(0).toUpperCase() + CUSTOM_CRUISE_NAME[1].slice(1) : "Cruises",
 
       fetching: false,
       tracklines: {},
@@ -442,7 +441,7 @@ class CruiseMap extends Component {
         <EventShowDetailsModal />
         <Row>
           <ButtonToolbar className="mb-2 ml-1 align-items-center">
-            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{this.state.cruises_name}</span>
+            <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{_Cruises_}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <span className="text-warning">{cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
