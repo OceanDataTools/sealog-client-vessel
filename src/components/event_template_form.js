@@ -64,13 +64,13 @@ class EventTemplateForm extends Component {
 
       return event_option;
     });
-    
+
     if (formProps.id) {
       this.props.updateEventTemplate(formProps);
     }
     else {
       this.props.createEventTemplate(formProps);
-      
+
     }
 
     this.props.handleFormSubmit()
@@ -309,7 +309,7 @@ class EventTemplateForm extends Component {
   }
 }
 
-function validate(formProps) {
+const validate = (formProps) => {
 
   const errors = {};
 
@@ -410,7 +410,7 @@ function validate(formProps) {
 }
 
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
 
   let initialValues = { ...state.event_template.event_template }
 

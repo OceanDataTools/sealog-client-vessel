@@ -11,7 +11,7 @@ import {
 
 } from '../actions/types';
 
-export default function(state={ event_template: {}, event_templates: [], event_template_error: '', event_template_message: '' }, action) {
+export default (state={ event_template: {}, event_templates: [], event_template_error: '', event_template_message: '' }, action) => {
 
   switch(action.type){
 
@@ -43,6 +43,6 @@ export default function(state={ event_template: {}, event_templates: [], event_t
       const selected_event_template_id = (state.event_template.id) ? state.event_template.id : null;
       const event_template = (selected_event_template_id) ? action.payload.find((event_template) => event_template.id === selected_event_template_id) : {};
       return { ...state, event_template: event_template, event_templates: action.payload };
-  }    
+  }
   return state;
 }

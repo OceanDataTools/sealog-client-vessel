@@ -38,71 +38,52 @@ class ImportUsersModal extends Component {
 
   async insertUser({id, username, fullname, email, password = '', roles, system_user = false}) {
 
-    try {
-      const result = await axios.get(`${API_ROOT_URL}/api/v1/users/${id}`,
-      {
-        headers: {
-          Authorization: 'Bearer ' + cookies.get('token'),
-          'content-type': 'application/json'
-        }
-      })
-
-      if(result) {
-        this.setState( prevState => (
-          {
-            skipped: prevState.skipped + 1,
-            pending: prevState.pending - 1
-          }
-        ))
+    const userExists = await axios.get(`${API_ROOT_URL}/api/v1/users/${id}`,
+    {
+      headers: {
+        Authorization: 'Bearer ' + cookies.get('token'),
+        'content-type': 'application/json'
       }
-    } catch(error) {
+    }).then(() => {
+      this.setState( prevState => (
+        {
+          skipped: prevState.skipped + 1,
+          pending: prevState.pending - 1
+        }
+      ))
+      return true
+    }).catch(() => {
+      return false
+    })
 
-      if(error.response.data.statusCode === 404) {
-
-        try {
-          const result = await axios.post(`${API_ROOT_URL}/api/v1/users`,
-          {id, username, fullname, email, password, roles, system_user},
-          {
-            headers: {
-              Authorization: 'Bearer ' + cookies.get('token'),
-              'content-type': 'application/json'
+    if(!userExists) {
+      await axios.post(`${API_ROOT_URL}/api/v1/users`,
+        { id, username, fullname, email, password, roles, system_user },
+        {
+          headers: {
+            Authorization: 'Bearer ' + cookies.get('token'),
+            'content-type': 'application/json'
+          }
+        }).then((response) => {
+          this.setState( prevState => (
+            {
+              imported: prevState.imported + 1,
+              pending: prevState.pending - 1
             }
-          })
+          ))
+        }).catch((error) => {
+          if(error.response.data.statusCode !== 400) {
+            console.error('Problem connecting to API');
+            console.debug(error);
+          }
 
-          if(result) {
-            this.setState( prevState => (
-              {
-                imported: prevState.imported + 1,
-                pending: prevState.pending - 1
-              }
-            ))
-          }
-        } catch(error) {
-          
-          if(error.response.data.statusCode === 400) {
-          } else {
-            console.debug(error);  
-          }
-          
           this.setState( prevState => (
             {
               errors: prevState.errors + 1,
               pending: prevState.pending - 1
             }
           ))
-        }
-      } else {
-
-        if(error.response.data.statusCode !== 400) {
-          console.debug(error.response);
-        }
-        this.setState( prevState => (
-          {
-            errors: prevState.errors + 1,
-            pending: prevState.pending - 1
-          }
-        ))
-      }
+        });
     }
   }
 
@@ -128,8 +109,7 @@ class ImportUsersModal extends Component {
       }
 
     } catch (error) {
-      console.error('Error when trying to parse json');
-      console.debug(error);
+      console.error('Error when trying to parse json = ' + error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }

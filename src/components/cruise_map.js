@@ -16,7 +16,7 @@ import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
 import * as mapDispatchToProps from '../actions';
 import { API_ROOT_URL } from '../client_config';
-import { _Cruises_ } from '../utils';
+import { _Cruises_ } from '../vocab';
 import { TILE_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers';
 
 const { BaseLayer } = LayersControl;
@@ -111,7 +111,7 @@ class CruiseMap extends Component {
         }
         else {
           this.setState({replayEventIndex: eventIndex + 1});
-          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)  
+          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)
         } 
       }
     }
@@ -160,6 +160,9 @@ class CruiseMap extends Component {
       }).catch((error)=>{
         if(error.response && error.response.data.statusCode === 404) {
           console.warn("No", this.auxDatasourceFilters[index], "data found")
+        } else {
+          console.error('Problem connecting to API');
+          console.debug(error);
         }
       });
 
@@ -279,7 +282,7 @@ class CruiseMap extends Component {
       const cruiseStartTime = moment(this.props.cruise.start_ts);
       const cruiseEndTime = moment(this.props.cruise.stop_ts);
       const cruiseDuration = cruiseEndTime.diff(cruiseStartTime);
-      
+
       return (
         <Card className="border-secondary p-1">
           <div className="d-flex align-items-center justify-content-between">
@@ -336,7 +339,7 @@ class CruiseMap extends Component {
 
       let eventList = this.props.event.events.map((event, index) => {
         if(index >= (this.state.activePage-1) * maxEventsPerPage && index < (this.state.activePage * maxEventsPerPage)) {
-          
+
           let comment_exists = false;
 
           let eventOptionsArray = event.event_options.reduce((filtered, option) => {
@@ -347,15 +350,14 @@ class CruiseMap extends Component {
             }
             return filtered;
           },[]);
-          
+
           if (event.event_free_text) {
             eventOptionsArray.push(`free_text: "${event.event_free_text}"`);
-          } 
-
+          }
           let active = (this.props.event.selected_event.id === event.id)? true : false;
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
-          
+
           let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
@@ -434,7 +436,7 @@ class CruiseMap extends Component {
     }
 
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading...";
-    
+
     return (
       <Container className="mt-2">
         <EventCommentModal />
@@ -474,17 +476,17 @@ class CruiseMap extends Component {
             {this.renderControlsCard()}
             {this.renderEventCard()}
             <CustomPagination className="mt-2" page={this.state.activePage} count={this.props.event.events.length} pageSelectFunc={this.handlePageSelect} maxPerPage={maxEventsPerPage}/>
-          </Col>          
+          </Col>
           <Col className="px-1 mb-1" md={3} lg={3}>
             <EventFilterForm disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
-          </Col>          
+          </Col>
         </Row>
       </Container>
     );
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
 
   return {
     cruise: state.cruise.cruise,

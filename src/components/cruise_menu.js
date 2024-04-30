@@ -4,12 +4,12 @@ import Cookies from 'universal-cookie';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import { connect } from 'react-redux';
-import { Accordion, Button, Container, Row, Col, Card } from 'react-bootstrap';
+import { Accordion, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import FileDownload from 'js-file-download';
 import ExportDropdown from './export_dropdown';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
-import { API_ROOT_URL, MAIN_SCREEN_TXT } from '../client_config';
-import { _Cruise_, _cruises_ } from '../utils';
+import { API_ROOT_URL, MAIN_SCREEN_HEADER, MAIN_SCREEN_TXT } from '../client_config';
+import { _Cruise_, _cruises_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
 
 const CRUISE_ROUTE = "/files/cruises";
@@ -51,8 +51,10 @@ class CruiseMenu extends Component {
         return (now.isBetween(moment.utc(cruise.start_ts), moment.utc(cruise.stop_ts)));
       }) : null;
 
-      this.setState({ activeYear: (currentCruise) ? moment.utc(currentCruise.start_ts).format("YYYY") : null, activeCruise: (currentCruise) ? currentCruise : null });
-
+      this.setState({
+        activeYear: (currentCruise) ? moment.utc(currentCruise.start_ts).format("YYYY") : null,
+        activeCruise: (currentCruise) ? currentCruise : null
+      });
     }
 
     if(this.state.activeYear !== prevState.activeYear && prevState.activeYear !== null ) {
@@ -112,12 +114,10 @@ class CruiseMenu extends Component {
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') },
         responseType: 'arraybuffer'
-      })
-      .then((response) => {
+      }).then((response) => {
         FileDownload(response.data, filename);
-      })
-      .catch((error)=>{
-        console.error("JWT is invalid, logging out");
+      }).catch((error)=>{
+        console.error('Problem connecting to API');
         console.debug(error);
       });
   }
@@ -126,7 +126,7 @@ class CruiseMenu extends Component {
     let output = files.map((file, index) => {
       return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => this.handleCruiseFileDownload(file)}>{file}</a></div>
     });
-    return <div>{output}<br/></div>;
+    return <div>{output}</div>;
   }
 
   renderCruiseCard() {
@@ -137,7 +137,7 @@ class CruiseMenu extends Component {
       let cruiseStopTime = moment.utc(this.state.activeCruise.stop_ts);
       let cruiseDurationValue = cruiseStopTime.diff(cruiseStartTime);
 
-      let cruiseFiles = (this.state.activeCruise.cruise_additional_meta.cruise_files && this.state.activeCruise.cruise_additional_meta.cruise_files.length > 0)? <div><strong>Files:</strong>{this.renderCruiseFiles(this.state.activeCruise.cruise_additional_meta.cruise_files)}</div>: null;
+      let cruiseFiles = (this.state.activeCruise.cruise_additional_meta.cruise_files && this.state.activeCruise.cruise_additional_meta.cruise_files.length > 0) ? <div><strong>Files:</strong>{this.renderCruiseFiles(this.state.activeCruise.cruise_additional_meta.cruise_files)}</div> : null;
 
       let cruiseName = (this.state.activeCruise.cruise_additional_meta.cruise_name)? <span><strong>{_Cruise_} Name:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_name}<br/></span> : null;
       let cruiseDescription = (this.state.activeCruise.cruise_additional_meta.cruise_description)? <p className="text-justify"><strong>Description:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_description}<br/></p> : null;
@@ -149,9 +149,16 @@ class CruiseMenu extends Component {
 
       let cruiseDuration = <span><strong>Duration:</strong> {moment.duration(cruiseDurationValue).format("d [days] h [hours] m [minutes]")}<br/></span>;
 
-      return (          
+      return (
         <Card className="border-secondary" key={`cruise_${this.state.activeCruise.cruise_id}`}>
-          <Card.Header>{_Cruise_}: <span className="text-warning">{this.state.activeCruise.cruise_id}</span><span className="float-right"><CopyCruiseToClipboard cruise={this.state.activeCruise} /> <ExportDropdown id="dropdown-download" disabled={false} hideASNAP={false} eventFilter={{}} cruiseID={this.state.activeCruise.id} prefix={this.state.activeCruise.cruise_id}/></span></Card.Header>
+          <Card.Header>
+            {_Cruise_}:
+            <span className="text-warning"> {this.state.activeCruise.cruise_id}</span>
+            <span className="float-right">
+              <CopyCruiseToClipboard cruise={this.state.activeCruise} />
+              <ExportDropdown id="dropdown-download" disabled={false} hideASNAP={false} eventFilter={{}} cruiseID={this.state.activeCruise.id} prefix={this.state.activeCruise.cruise_id}/>
+            </span>
+          </Card.Header>
           <Card.Body>
             {cruiseName}
             {cruisePi}
@@ -162,7 +169,8 @@ class CruiseMenu extends Component {
             {cruisePorts}
             {cruiseDuration}
             {cruiseFiles}
-            <Row className="mt-2 justify-content-center">
+            <br/>
+            <Row className="pt-2 justify-content-center">
               <Button className="mb-1 mr-1" size="sm" variant="outline-primary" onClick={ () => this.handleCruiseSelectForReplay() }>Replay</Button>
               <Button className="mb-1 mr-1" size="sm" variant="outline-primary" onClick={ () => this.handleCruiseSelectForReview() }>Review</Button>
               <Button className="mb-1 mr-1" size="sm" variant="outline-primary" onClick={ () => this.handleCruiseSelectForMap() }>Map</Button>
@@ -171,7 +179,7 @@ class CruiseMenu extends Component {
           </Card.Body>
         </Card>
       );
-    }      
+    }
   }
 
 
@@ -211,8 +219,7 @@ class CruiseMenu extends Component {
     if (this.state.yearCruises) {
       Object.entries(this.state.yearCruises).forEach(([year,cruises])=>{
 
-        let yearTxt = <span className={(year == this.state.activeYear || this.state.years.size == 1) ? "text-warning" : "text-primary"}>{year}</span> 
-
+        let yearTxt = <span className={(year == this.state.activeYear || this.state.years.size == 1) ? "text-warning" : "text-primary"}>{year}</span>
         let yearCruises = (
             cruises.map((cruise) => {
               return (<div key={`select_${cruise.id}`} className={(this.state.activeCruise && cruise.id === this.state.activeCruise.id) ? "ml-2 text-warning" : "ml-2 text-primary"} onClick={ () => this.handleCruiseSelect(cruise.id) }>{cruise.cruise_id}</div>);
@@ -261,8 +268,8 @@ class CruiseMenu extends Component {
       let cruisePI = <span><strong>Chief Scientist:</strong> {cruise.cruise_additional_meta.cruise_pi}<br/></span>;
       let cruiseVessel = <span><strong>Vessel:</strong> {cruise.cruise_additional_meta.cruise_vessel}<br/></span>;
       let cruiseFiles = (cruise.cruise_additional_meta.cruise_files && cruise.cruise_additional_meta.cruise_files.length > 0)? <span><strong>Files:</strong><br/>{this.renderCruiseFiles(cruise.cruise_additional_meta.cruise_files)}</span>: null;
-      
-      return (          
+
+      return (
         <Card className="border-secondary" key={cruise.id} >
           <Accordion.Toggle as={Card.Header} eventKey={cruise.id}>
             <h6>{_Cruise_}: <span className="text-primary">{cruise.cruise_id}</span></h6>
@@ -280,7 +287,7 @@ class CruiseMenu extends Component {
           </Accordion.Collapse>
         </Card>
       );
-    });      
+    });
   }
 
   renderYearList() {
@@ -302,8 +309,7 @@ class CruiseMenu extends Component {
         <Card.Body>No {_cruises_} found!</Card.Body>
       </Card>
     );
-  } 
-
+  }
   renderCruiseList() {
 
     if(this.props.cruises && this.props.cruises.length > 0) {
@@ -326,10 +332,10 @@ class CruiseMenu extends Component {
     return (
       <Container className="mt-2">
         <Row>
-            <h4>Welcome to Sealog</h4>
+            <h4>{MAIN_SCREEN_HEADER}</h4>
             <p className="text-justify">{MAIN_SCREEN_TXT}</p>
         </Row>
-        <Row className="justify-content-center">
+        <Row>
           <Col className="px-1" sm={3} md={3} lg={2}>
             {this.renderYearList()}
           </Col>
@@ -342,7 +348,7 @@ class CruiseMenu extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     cruise: state.cruise.cruise,
     cruises: state.cruise.cruises,

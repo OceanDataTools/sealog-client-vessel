@@ -202,7 +202,6 @@ class EventTemplateOptionsModal extends Component {
       </span>
       : 
       <Button size="sm" className="float-right" variant="secondary" onClick={this.handleFormHide}>Close</Button>
-      
 
     if (eventTemplate) {
       return (
@@ -243,7 +242,7 @@ class EventTemplateOptionsModal extends Component {
   }
 }
 
-function validate(formProps) {
+const validate = (formProps) => {
   const errors = {};
 
   if (formProps.event_ts === "") {

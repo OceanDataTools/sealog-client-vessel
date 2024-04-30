@@ -14,9 +14,7 @@ import { getImageUrl, handleMissingImage } from '../utils';
 const cookies = new Cookies();
 
 const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
-
 const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
-
 const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
 
 const eventHistoryRef = "eventHistory";
@@ -51,9 +49,8 @@ class EventHistory extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
     if(prevState.page !== this.state.page) {
-      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, this.state.page);      
+      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, this.state.page);
     }
 
     if(prevState.filter !== this.state.filter) {
@@ -67,7 +64,7 @@ class EventHistory extends Component {
     }
 
     if(prevState.showNewEventDetails !== this.state.showNewEventDetails && this.state.showNewEventDetails && this.props.history[0]) {
-      this.fetchEventExport(this.props.history[0].id);      
+      this.fetchEventExport(this.props.history[0].id);
     }
 
     if(prevProps.history[0] !== this.props.history[0] && this.props.history[0] && !this.state.event && this.state.showNewEventDetails) {
@@ -82,7 +79,6 @@ class EventHistory extends Component {
   }
 
   async connectToWS() {
-
     try {
       await this.client.connect({
         auth: {
@@ -104,7 +100,7 @@ class EventHistory extends Component {
       const updateHandler = (update) => {
         if(!(!this.state.showASNAP && update.event_value === "ASNAP") && filteredEvent(update.event_value)) {
           if(this.state.page == 0) {
-            this.props.updateEventHistory(update);            
+            this.props.updateEventHistory(update);
           }
           this.fetchEventExport(update.id);
         }
@@ -142,41 +138,36 @@ class EventHistory extends Component {
   }
 
   async fetchEventExport(event_id=null) {
-
     if(!event_id) {
       let url = `${API_ROOT_URL}/api/v1/events?sort=newest&limit=1`
-      const event = await axios.get(url, {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return response.data;
-
-      }).catch((error)=>{
-        if(error.response && error.response.data.statusCode !== 404) {
-          console.debug(error);
-        }
-        return null;
-      });
-
-      if(!event) {
-        return null;
-      }
-      event_id = event[0].id;
+      await axios.get(url,
+        {
+          headers: { Authorization: 'Bearer ' + cookies.get('token') }
+        }).then((response) => {
+          event_id = response.data[0].id;
+        }).catch((error)=>{
+          if(error.response && error.response.data.statusCode !== 404) {
+            console.error('Problem connecting to API');
+            console.debug(error);
+          }
+        });
     }
 
-    let url = `${API_ROOT_URL}/api/v1/event_exports/${event_id}`
-    const event_export = await axios.get(url, {
-      headers: { Authorization: 'Bearer ' + cookies.get('token') }
-    }).then((response) => {
-      return response.data;
-
-    }).catch((error)=>{
-      if(error.response && error.response.data.statusCode !== 404) {
-        console.debug(error);
-      }
-      return null;
-    });
-
-    this.setState({event: event_export});
+    if(event_id) {
+      let url = `${API_ROOT_URL}/api/v1/event_exports/${event_id}`
+      await axios.get(url,
+        {
+          headers: { Authorization: 'Bearer ' + cookies.get('token') }
+        }).then((response) => {
+          this.setState({event: response.data});
+        }).catch((error)=>{
+          if(error.response && error.response.data.statusCode !== 404) {
+            console.error('Problem connecting to API');
+            console.debug(error);
+          }
+          this.setState({ event: null });
+        });
+    }
   }
 
   handleEventShowDetailsModal(event) {
@@ -188,7 +179,6 @@ class EventHistory extends Component {
   }
 
   renderEventHistoryHeader() {
-
     const Label = "Event History";
     const expandTooltip = (<Tooltip id="expandHistoryTooltip">Expand event history</Tooltip>);
     const compressTooltip = (<Tooltip id="compressTooltip">Compress event history</Tooltip>);
@@ -212,7 +202,7 @@ class EventHistory extends Component {
           </div>
         );
       }
-      
+
       return (
         <div>
           { Label }
@@ -237,7 +227,6 @@ class EventHistory extends Component {
     );
   }
 
-
   handleHideEventHistory() {
     this.setState({showEventHistory: false});
   }
@@ -251,7 +240,6 @@ class EventHistory extends Component {
   }
 
   handleSearchChange(event) {
-
     if(this.state.filterTimer) {
       clearTimeout(this.state.filterTimer);
     }
@@ -261,7 +249,6 @@ class EventHistory extends Component {
   }
 
   handleKeyDown(event) {
-
     if (event.key === 'Enter' && event.shiftKey === false) {
       event.preventDefault();
     }
@@ -312,7 +299,7 @@ class EventHistory extends Component {
       if(frameGrabberData.length > 0) {
         for (let i = 0; i < frameGrabberData.length; i++) {
           for (let j = 0; j < frameGrabberData[i].data_array.length; j+=2) {
-      
+
             tmpData.push({
               source: frameGrabberData[i].data_array[j].data_value,
               filepath: getImageUrl(frameGrabberData[i].data_array[j+1].data_value)
@@ -334,8 +321,6 @@ class EventHistory extends Component {
   }
 
   renderEventOptionsCard() {
-
-    // return null;
     let return_event_options = this.state.event.event_options.reduce((filtered, event_option, index) => {
       if(event_option.event_option_name !== 'event_comment') {
         filtered.push(<div className="pl-1" key={`event_option_${index}`}><span className="data-name">{event_option.event_option_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{event_option.event_option_value}</span><br/></div>);
@@ -356,7 +341,6 @@ class EventHistory extends Component {
   }
 
   renderAuxDataCard() {
-
     if(this.state.event && this.state.event.aux_data) {
 
       const aux_data = this.state.event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
@@ -389,7 +373,6 @@ class EventHistory extends Component {
   }
 
   renderEventHistory() {
-
     if(this.props.history && this.props.history.length > 0){
 
       let eventArray = [];
@@ -397,9 +380,7 @@ class EventHistory extends Component {
       for (let i = 0; i < this.props.history.length; i++) {
 
         let event = this.props.history[i];
-        
         let comment_exists = false;
-
         let eventOptionsArray = event.event_options.reduce((filtered, option) => {
           if (option.event_option_name === 'event_comment') {
             if( option.event_option_value.length > 0) {
@@ -410,11 +391,10 @@ class EventHistory extends Component {
           }
           return filtered;
         },[]);
-        
+
         if (event.event_free_text) {
           eventOptionsArray.push(`free_text: "${event.event_free_text}"`);
-        } 
-
+        }
         let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
         let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon inverse icon='plus' fixedWidth transform="shrink-4"/></span>;
         let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
@@ -428,11 +408,8 @@ class EventHistory extends Component {
   }
 
   renderNewestEvent() {
-
     const hideTooltip = (<Tooltip id="hideHistoryTooltip">Hide this card</Tooltip>);
-
     const event_comment = (this.state.event.event_options) ? this.state.event.event_options.find((event_option) => (event_option.event_option_name === 'event_comment' && event_option.event_option_value.length > 0)) : null
-
     const event_comment_card = (event_comment)?(<Card><Card.Body className="data-card-body">Comment: {event_comment.event_option_value}</Card.Body></Card>) : null;
 
     return (
@@ -457,12 +434,10 @@ class EventHistory extends Component {
   }
 
   render() {
-
     let eventHistoryCard = null;
     let newEventDetailsCard = (this.state.showNewEventDetails && this.state.event) ? this.renderNewestEvent() : null
-
     const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' checked={this.state.showASNAP} disabled={this.state.filter} onChange={() => this.toggleASNAP()} label="ASNAP"/>);
-    
+
     if (!this.props.history) {
       eventHistoryCard = (
         <Card className={this.props.className}>
@@ -507,8 +482,7 @@ class EventHistory extends Component {
   }
 }
 
-function mapStateToProps(state) {
-
+const mapStateToProps = (state) => {
   return {
     authenticated: state.auth.authenticated,
     history: state.event_history.history

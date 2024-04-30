@@ -39,43 +39,52 @@ class ImportEventsModal extends Component {
 
   async insertEvent({id, ts, event_author, event_value, event_free_text = '', event_options = []}) {
 
-    try {
-      const result = await axios.post(`${API_ROOT_URL}/api/v1/events`,
-      {id, ts, event_author, event_value, event_free_text, event_options},
+    const eventExists = await axios.get(`${API_ROOT_URL}/api/v1/events/${id}`,
       {
         headers: {
           Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
-      })
-
-      if(result){
-        this.setState( prevState => (
-          {
-            imported: prevState.imported + 1,
-            pending: prevState.pending - 1
-          }
-        ))
-      }
-
-    } catch(error) {
-      if(error.response.data.statusCode === 400) {
+      }).then(() => {
         this.setState( prevState => (
           {
             skipped: prevState.skipped + 1,
             pending: prevState.pending - 1
           }
         ))
+        return true
+      }).catch(() => {
+        return false
+      });
 
-      } else {
-        console.debug(error.response.data.message);
-        this.setState( prevState => (
-          {
-            errors: prevState.errors + 1,
-            pending: prevState.pending - 1
+    if(!eventExists) {
+      await axios.post(`${API_ROOT_URL}/api/v1/events`,
+        { id, ts, event_author, event_value, event_free_text, event_options },
+        {
+          headers: {
+            Authorization: 'Bearer ' + cookies.get('token'),
+            'content-type': 'application/json'
           }
-        ))
-      }
+        }).then((response) => {
+          this.setState( prevState => (
+            {
+              imported: prevState.imported + 1,
+              pending: prevState.pending - 1
+            }
+          ))
+        }).catch((error) => {
+          if(error.response.data.statusCode !== 400) {
+            console.error('Problem connecting to API');
+            console.debug(error);
+          }
+
+          this.setState( prevState => (
+            {
+              errors: prevState.errors + 1,
+              pending: prevState.pending - 1
+            }
+          ))
+        });
     }
   }
 
@@ -102,8 +111,7 @@ class ImportEventsModal extends Component {
       }
 
     } catch (error) {
-      console.error('Error when trying to parse json');
-      console.debug(error);
+      console.error('Error when trying to parse json = ' + error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete!"})
   }

@@ -10,7 +10,7 @@ import {
 
 } from '../actions/types';
 
-export default function(state={ cruise: {}, cruises: [], cruise_message: '', cruise_error: '' }, action) {
+export default (state={ cruise: {}, cruises: [], cruise_message: '', cruise_error: '' }, action) => {
   switch(action.type){
 
     case INIT_CRUISE:
@@ -38,6 +38,6 @@ export default function(state={ cruise: {}, cruises: [], cruise_message: '', cru
       const selected_cruise_id = (state.cruise.id) ? state.cruise.id : null;
       const cruise = (selected_cruise_id) ? action.payload.find((cruise) => cruise.id === selected_cruise_id) : {};
       return { ...state, cruise: cruise, cruises: action.payload };
-  }    
+  }
   return state;
 }

@@ -65,10 +65,10 @@ class ExportDropdown extends Component {
     }
   }
 
-  async fetchEvents(format, eventFilter, hideASNAP) {
+  async fetchEvents(exportFormat, eventFilter, hideASNAP) {
 
     const cookies = new Cookies();
-    format = `format=${format}`;
+    let format = (exportFormat==='csv')? `format=${exportFormat}&add_record_ids=true` : `format=${exportFormat}`
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -82,17 +82,14 @@ class ExportDropdown extends Component {
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
-      return response.data;
-    }).catch((error)=>{
-      if(error.response.data.statusCode === 404){
+        return response.data;
+      }).catch((error)=>{
+        if(error.response.data.statusCode !== 404){
+          console.error('Problem connecting to API');
+          console.debug(error.response);
+        }
         return [];
-      } else {
-        console.error('Problem connecting to API');
-        console.debug(error.response);
-        return [];
-      }
-    }
-    );
+      });
   }
 
   async fetchEventAuxData(eventFilter, hideASNAP) {
@@ -111,23 +108,20 @@ class ExportDropdown extends Component {
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
-      return response.data;
-    }).catch((error)=>{
-      if(error.response.data.statusCode === 404){
+        return response.data;
+      }).catch((error)=>{
+        if(error.response.data.statusCode !== 404){
+          console.error('Problem connecting to API');
+          console.debug(error.response);
+        }
         return [];
-      } else {
-        console.error('Problem connecting to API');
-        console.debug(error.response);
-        return [];
-      }
-    }
-    );
+      });
   }
 
-  async fetchEventsWithAuxData(format, eventFilter, hideASNAP) {
+  async fetchEventsWithAuxData(exportFormat, eventFilter, hideASNAP) {
 
     const cookies = new Cookies();
-    format = `format=${format}`;
+    let format = (exportFormat==='csv')? `format=${exportFormat}&add_record_ids=true` : `format=${exportFormat}`
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -141,22 +135,19 @@ class ExportDropdown extends Component {
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
-      return response.data;
-    }).catch((error)=>{
-      if(error.response.data.statusCode === 404){
+        return response.data;
+      }).catch((error)=>{
+        if(error.response.data.statusCode !== 404){
+          console.error('Problem connecting to API');
+          console.debug(error.response);
+        }
         return [];
-      } else {
-        console.error('Problem connecting to API');
-        console.debug(error.response);
-        return [];
-      }
-    }
-    );
+      });
   }
 
   exportEventsWithAuxData(format='json') {
     this.fetchEventsWithAuxData(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
-      let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
+      const prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_export.${format}`);
     }).catch((error) => {
       console.debug(error);
@@ -165,8 +156,8 @@ class ExportDropdown extends Component {
 
   exportEvents(format='json') {
     this.fetchEvents(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
-      let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
-      fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_eventExport.${format}`);
+      const prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
+      fileDownload((format == 'json')? JSON.stringify(results) : results, `${this.state.prefix}_${moment.utc().format(dateFormat + "_" + timeFormat)}_sealog_eventExport.${format}`);
     }).catch((error) => {
       console.debug(error);
     });
@@ -174,8 +165,8 @@ class ExportDropdown extends Component {
 
   exportAuxData() {
     this.fetchEventAuxData(this.props.eventFilter, this.props.hideASNAP).then((results) => {
-      let prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
-      fileDownload(JSON.stringify(results), `${prefix}_sealog_auxDataExport.json`);
+      const prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
+      fileDownload(JSON.stringify(results), `${this.state.prefix}_${moment.utc().format(dateFormat + "_" + timeFormat)}_sealog_auxDataExport.json`);
     }).catch((error) => {
       console.debug(error);
     });

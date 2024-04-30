@@ -4,7 +4,7 @@ import {
 
 } from '../actions/types';
 
-export default function( state={ custom_vars: [] }, action) {
+export default ( state={ custom_vars: [] }, action) => {
   switch(action.type){
 
     case FETCH_CUSTOM_VARS:
@@ -12,6 +12,6 @@ export default function( state={ custom_vars: [] }, action) {
 
     case UPDATE_CUSTOM_VAR:
       return state;
-  }    
+  }
   return state;
 }

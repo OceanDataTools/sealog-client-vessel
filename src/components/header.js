@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { HEADER_TITLE, RECAPTCHA_SITE_KEY, DISABLE_EVENT_LOGGING } from '../client_config';
-import { _Cruises_ } from '../utils';
+import { _Cruises_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
 
 class Header extends Component {
@@ -78,7 +78,7 @@ class Header extends Component {
   }
 
   renderToggleASNAP() {
-    if ( !DISABLE_EVENT_LOGGING && ( this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager') || this.props.roles.includes('event_manager') || this.props.roles.includes('event_logger')) ) {
+    if ( !DISABLE_EVENT_LOGGING && this.props.roles.includes('admin') ) {
       return (
         <NavDropdown.Item onClick={ () => this.handleASNAPToggle() }>Toggle ASNAP</NavDropdown.Item>
       );
@@ -137,7 +137,7 @@ class Header extends Component {
   }
 }
 
-function mapStateToProps(state){
+const mapStateToProps = (state) => {
   return {
     authenticated: state.auth.authenticated,
     fullname: state.user.profile.fullname,

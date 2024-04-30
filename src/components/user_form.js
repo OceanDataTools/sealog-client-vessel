@@ -154,7 +154,7 @@ class UserForm extends Component {
   }
 }
 
-function validate(formProps) {
+const validate = (formProps) => {
 
   const errors = {};
 
@@ -189,7 +189,7 @@ function validate(formProps) {
   return errors;
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
 
   let initialValues = { ...state.user.user }
 

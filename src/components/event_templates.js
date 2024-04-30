@@ -198,7 +198,7 @@ class EventTemplates extends Component {
 
         const style = (template.disabled)? {"textDecoration": "line-through"}: {};
         const className = (this.props.event_templateid === template.id)? "text-warning" : "";
-    
+
         return (
           <tr key={template.id}>
             <td style={style} className={className}>{template.event_name}</td>
@@ -212,12 +212,12 @@ class EventTemplates extends Component {
         );
       });
     }
-    
+
     return (
       <tr key="noEventTemplatesFound">
         <td colSpan="3"> No event templates found!</td>
       </tr>
-    );   
+    );
   }
 
   renderEventTemplatesTable() {
@@ -361,7 +361,7 @@ class EventTemplates extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     event_templates: state.event_template.event_templates,
     event_templateid: state.event_template.event_template.id,

@@ -11,7 +11,7 @@ import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 import CruisePermissionsModal from './cruise_permissions_modal';
 import CustomPagination from './custom_pagination';
 import { USE_ACCESS_CONTROL, DEFAULT_VESSEL } from '../client_config';
-import { _Cruises_, _Cruise_, _cruise_ } from '../utils';
+import { _Cruises_, _Cruise_, _cruise_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
 
 let fileDownload = require('js-file-download');
@@ -249,7 +249,7 @@ class Cruises extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     cruises: state.cruise.cruises,
     cruiseid: state.cruise.cruise.id,

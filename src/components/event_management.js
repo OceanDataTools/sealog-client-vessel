@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import Cookies from 'universal-cookie';
-import { Row, Container, Col, Card, ListGroup, Tooltip, OverlayTrigger, Form } from 'react-bootstrap';
+import { Card, Col, Container, Form, ListGroup, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import axios from 'axios';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
@@ -12,6 +12,8 @@ import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
 import * as mapDispatchToProps from '../actions';
 import { API_ROOT_URL } from '../client_config';
+
+const cookies = new Cookies();
 
 const maxEventsPerPage = 15;
 
@@ -89,10 +91,8 @@ class EventManagement extends Component {
   }
 
   async fetchEventsForDisplay(eventFilter = this.state.eventFilter, activePage = this.state.activePage) {
-
     this.setState({fetching: true});
 
-    const cookies = new Cookies();
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
     let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
@@ -108,23 +108,17 @@ class EventManagement extends Component {
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
-      this.setState({fetching: false});
-      this.setState({events: response.data});
-    }).catch((error)=>{
-      if(error.response.data.statusCode === 404){
-        this.setState({fetching: false});
-        this.setState({events: []});
-      } else {
-        console.debug(error.response);
-        this.setState({fetching: false});
-        this.setState({events: []});
-      }
-    }
-    );
+        this.setState({events: response.data, fetching: false});
+      }).catch((error) => {
+        if(error.response.data.statusCode !== 404){
+          console.error('Problem connecting to API');
+          console.debug(error.response);
+        }
+        this.setState({events: [], fetching: false});
+      });
   }
 
   async fetchEventCount(eventFilter = this.state.eventFilter) {
-
     const cookies = new Cookies();
     let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
     let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
@@ -138,16 +132,12 @@ class EventManagement extends Component {
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
-      this.setState({eventCount: response.data.events});
-    }).catch((error)=>{
-      if(error.response.data.statusCode === 404){
-        this.setState({eventCount: 0});
-      } else {
+        this.setState({eventCount: response.data.events});
+      }).catch((error)=>{
+        console.error('Problem connecting to API');
         console.debug(error.response);
         this.setState({eventCount: 0});
-      }
-    }
-    );
+      });
   }
 
   async toggleASNAP() {
@@ -187,11 +177,10 @@ class EventManagement extends Component {
           }
           return filtered;
         },[]);
-        
+
         if (event.event_free_text) {
           eventOptionsArray.push(`free_text: "${event.event_free_text}"`);
-        } 
-
+        }
         let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
         let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={ "text-secondary" } icon='plus' fixedWidth inverse transform="shrink-4"/></span>;
         let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
@@ -249,7 +238,7 @@ class EventManagement extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     roles: state.user.profile.roles,
     event: state.event,

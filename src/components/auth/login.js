@@ -145,21 +145,21 @@ class Login extends Component {
   }
 }
 
-const validate = values => {
+const validate = (formProps) => {
 
   const errors = {};
-  if (!values.username) {
+  if (!formProps.username) {
     errors.username = 'Required';
   }
 
-  if (!values.password) {
+  if (!formProps.password) {
     errors.password = 'Required';
   }
 
   return errors;
 };
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     errorMessage: state.auth.error,
     successMessage: state.auth.message

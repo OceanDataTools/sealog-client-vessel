@@ -6,7 +6,7 @@ import { connectModal } from 'redux-modal';
 import ReactFileReader from 'react-file-reader';
 import Cookies from 'universal-cookie';
 import { API_ROOT_URL } from '../client_config';
-import { _Cruises_ } from '../utils';
+import { _Cruises_ } from '../vocab';
 
 const cookies = new Cookies();
 
@@ -39,72 +39,54 @@ class ImportCruisesModal extends Component {
 
   async insertCruise({ id, cruise_id, start_ts, stop_ts, cruise_location = '', cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
 
-    try {
-      const result = await axios.get(`${API_ROOT_URL}/api/v1/cruises/${id}`,
+    const cruiseExists = await axios.get(`${API_ROOT_URL}/api/v1/cruises/${id}`,
       {
         headers: {
           Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
-      })
-
-      if(result) {
+      }).then(() => {
         this.setState( prevState => (
           {
             skipped: prevState.skipped + 1,
             pending: prevState.pending - 1
           }
         ))
-      }
-    } catch(error) {
-      if(error.response.data.statusCode === 404) {
+        return true
+      }).catch(() => {
+        return false
+      })
 
-        try {
-          const result = await axios.post(`${API_ROOT_URL}/api/v1/cruises`,
-          { id, cruise_id, start_ts, stop_ts, cruise_location, cruise_tags, cruise_hidden, cruise_additional_meta},
-          {
-            headers: {
-              Authorization: 'Bearer ' + cookies.get('token'),
-              'content-type': 'application/json'
-            }
-          })
-
-          if(result) {
-            this.setState( prevState => (
-              {
-                imported: prevState.imported + 1,
-                pending: prevState.pending - 1
-              }
-            ))
+    if(!cruiseExists) {
+      await axios.post(`${API_ROOT_URL}/api/v1/cruises`,
+        { id, cruise_id, start_ts, stop_ts, cruise_location, cruise_tags, cruise_hidden, cruise_additional_meta},
+        {
+          headers: {
+            Authorization: 'Bearer ' + cookies.get('token'),
+            'content-type': 'application/json'
           }
-        } catch(error) {
-          
+        }).then((response) => {
+          this.setState( prevState => (
+            {
+              imported: prevState.imported + 1,
+              pending: prevState.pending - 1
+            }
+          ))
+        }).catch((error) => {
           if(error.response.data.statusCode !== 400) {
-            console.debug(error);  
+            console.debug(error);
           } else {
             console.error('Problem connecting to API');
             console.debug(error);
           }
-          
+
           this.setState( prevState => (
             {
               errors: prevState.errors + 1,
               pending: prevState.pending - 1
             }
           ))
-        }
-      } else {
-
-        if(error.response.data.statusCode !== 400) {
-          console.debug(error.response);
-        }
-        this.setState( prevState => (
-          {
-            errors: prevState.errors + 1,
-            pending: prevState.pending - 1
-          }
-        ))
-      }
+        })
     }
   }
 
@@ -144,7 +126,7 @@ class ImportCruisesModal extends Component {
         }
       }
     } catch (error) {
-      console.error('Error when trying to parse json')
+      console.error('Error parsing json')
       console.debug(error);
     }
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
@@ -166,8 +148,8 @@ class ImportCruisesModal extends Component {
   render() {
 
     const { show, handleExit } = this.props
-  
-    if (handleExit) {  
+
+    if (handleExit) {
       return (
         <Modal show={show} onExit={handleExit} onHide={this.quitImport}>
           <Modal.Header className="bg-light" closeButton>

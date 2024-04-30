@@ -28,7 +28,7 @@ class RenderTableRow extends Component {
 
   toggleRowCollapse() {
     this.setState((prevState) => {
-      return {open: !prevState.open};
+      return { open: !prevState.open };
     })
   }
 
@@ -107,6 +107,7 @@ class UserPermissionsModal extends Component {
         await this.fetchCruises();
         return response.data;
       }).catch((error) => {
+        console.error('Problem connecting to API');
         console.debug(error);
         return null;
       });
@@ -117,27 +118,21 @@ class UserPermissionsModal extends Component {
   }
 
   async fetchCruises() {
-    try {
-
-      const cruises = await axios.get(`${API_ROOT_URL}/api/v1/cruises`,
+    await axios.get(`${API_ROOT_URL}/api/v1/cruises`,
       {
         headers: {
           Authorization: 'Bearer ' + cookies.get('token'),
           'content-type': 'application/json'
         }
       }).then((response) => {
-        return response.data;
+        this.setState({ cruises: response.data });
       }).catch((error) => {
-        console.error('Problem connecting to API');
-        console.debug(error);
-        return [];
+        if(error.response.data.statusCode !== 404) {
+          console.error('Problem connecting to API');
+          console.debug(error);
+        }
+        this.setState({ cruises: [] });
       });
-
-      this.setState({ cruises })
-
-    } catch(error) {
-      console.debug(error);
-    }
   }
 
   render() {
@@ -158,7 +153,7 @@ class UserPermissionsModal extends Component {
         return <RenderTableRow key={cruise.id} cruise={cruiseCheckbox}/>;
       }) :
       null;
-      
+
     if (body) {
       return (
         <Modal show={show} onHide={handleHide}>

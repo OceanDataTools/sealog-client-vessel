@@ -13,7 +13,7 @@ import FileDownload from 'js-file-download';
 import { FilePond } from 'react-filepond';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 import { API_ROOT_URL, CRUISE_ID_PLACEHOLDER, CRUISE_ID_REGEX, DEFAULT_VESSEL } from '../client_config';
-import { _Cruise_, _cruise_ } from '../utils';
+import { _Cruise_, _cruise_ } from '../vocab';
 
 import * as mapDispatchToProps from '../actions';
 
@@ -39,10 +39,21 @@ class CruiseForm extends Component {
   };
 
   componentDidMount() {
+    this.populateDefaultValues();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(this.props.cruise !== prevProps.cruise && Object.keys(this.props.cruise).length === 0) {
+      this.populateDefaultValues();
+    }
   }
 
   componentWillUnmount() {
     this.props.leaveCruiseForm();
+  }
+
+  populateDefaultValues() {
+    this.props.initialize({cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL }});
   }
 
   handleFileDeleteModal(file) {
@@ -63,7 +74,7 @@ class CruiseForm extends Component {
         return string.trim();
       });
     }
-    
+
     const end_of_stop_ts = moment.utc(formProps.stop_ts);
     end_of_stop_ts.set({
       hour:   23,
@@ -95,31 +106,27 @@ class CruiseForm extends Component {
 
   async handleFileDownload(filename) {
     await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
-    {
-      headers: { Authorization: 'Bearer ' + cookies.get('token') },
-      responseType: 'arraybuffer'
-    })
-    .then((response) => {
-        FileDownload(response.data, filename);
-     })
-    .catch((error)=>{
-      console.error("JWT is invalid, logging out");
-      console.debug(error);
-    });
+      {
+        headers: { Authorization: 'Bearer ' + cookies.get('token') },
+        responseType: 'arraybuffer'
+      }).then((response) => {
+          FileDownload(response.data, filename);
+       }).catch((error)=>{
+        console.error('Problem connecting to API');
+        console.debug(error);
+      });
   }
 
   async handleFileDelete(filename) {
     await axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
-    {
-      headers: { Authorization: 'Bearer ' + cookies.get('token') }
-    })
-    .then(() => {
+      {
+        headers: { Authorization: 'Bearer ' + cookies.get('token') }
+      }).then(() => {
         this.props.initCruise(this.props.cruise.id)
-     })
-    .catch((error)=>{
-      console.error("JWT is invalid, logging out");
-      console.debug(error);
-    });
+      }).catch((error)=>{
+        console.error('Problem connecting to API');
+        console.debug(error);
+      });
   }
 
   renderFiles() {
@@ -134,7 +141,7 @@ class CruiseForm extends Component {
         </div>
       )
     }
-      
+
     return null
   }
 
@@ -264,29 +271,29 @@ class CruiseForm extends Component {
                   rows={2}
                 />
               </Form.Row>
-                <Form.Label>{_Cruise_} Files</Form.Label>
-                {this.renderFiles()}
-                <FilePond
-                  ref={ref => this.pond = ref}
-                  allowMultiple={true} 
-                  maxFiles={5}
-                  server={{
-                    url: API_ROOT_URL,
-                    process: {
-                      url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
-                      headers: { Authorization: 'Bearer ' + cookies.get('token') },
-                    },
-                    revert: {
-                      url: CRUISE_ROUTE + '/filepond/revert',
-                      headers: { Authorization: 'Bearer ' + cookies.get('token') },
-                    }
-                  }}
-                  onupdatefiles={() => {
-                    this.props.dispatch(change('editCruise', 'cruise_additional_meta.cruise_files', true));
-                  }}
-                  disabled={(this.props.cruise.id) ? false : true }
-                >
-                </FilePond>
+              <Form.Label>{_Cruise_} Files</Form.Label>
+              {this.renderFiles()}
+              <FilePond
+                ref={ref => this.pond = ref}
+                allowMultiple={true} 
+                maxFiles={5}
+                server={{
+                  url: API_ROOT_URL,
+                  process: {
+                    url: CRUISE_ROUTE + '/filepond/process/' + this.props.cruise.id,
+                    headers: { Authorization: 'Bearer ' + cookies.get('token') },
+                  },
+                  revert: {
+                    url: CRUISE_ROUTE + '/filepond/revert',
+                    headers: { Authorization: 'Bearer ' + cookies.get('token') },
+                  }
+                }}
+                onupdatefiles={() => {
+                  this.props.dispatch(change('editCruise', 'cruise_additional_meta.cruise_files', true));
+                }}
+                disabled={(this.props.cruise.id) ? false : true }
+              >
+              </FilePond>
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
               <div className="float-right">
@@ -307,7 +314,7 @@ class CruiseForm extends Component {
   }
 }
 
-function validate(formProps) {
+const validate = (formProps) => {
 
   const errors = {cruise_additional_meta: {}};
 
@@ -370,7 +377,7 @@ function validate(formProps) {
   return errors;
 }
 
-function warn(formProps) {
+const warn = (formProps) => {
 
   const warnings = {}
 
@@ -381,14 +388,12 @@ function warn(formProps) {
   return warnings;
 }
 
-function mapStateToProps(state) {
-
-  let initialValues = { cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL }, ...state.cruise.cruise }
+const mapStateToProps = (state) => {
 
   return {
     errorMessage: state.cruise.cruise_error,
     message: state.cruise.cruise_message,
-    initialValues: initialValues,
+    initialValues: state.cruise.cruise,
     cruise: state.cruise.cruise,
     roles: state.user.profile.roles
   };

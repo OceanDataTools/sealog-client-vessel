@@ -15,14 +15,9 @@ class Footer extends Component {
   constructor (props) {
     super(props);
 
-    this.state = {
-      // intervalID: null
-    };
-
     this.handleASNAPNotification = this.handleASNAPNotification.bind(this);
     this.client = new Client(`${WS_ROOT_URL}`);
     this.connectToWS = this.connectToWS.bind(this);
-
   }
 
   componentDidMount() {
@@ -40,7 +35,6 @@ class Footer extends Component {
   }
 
   async connectToWS() {
-
     try {
       await this.client.connect({
         auth: {
@@ -59,7 +53,6 @@ class Footer extends Component {
     } catch(error) {
       console.error('Problem connecting to websocket subscriptions');
       console.debug(error);
-      throw(error);
     }
   }
 
@@ -71,7 +64,6 @@ class Footer extends Component {
   }
 
   render () {
-
     let freeSpaceStatus = null;
     let asnapStatus = null;
 
@@ -84,21 +76,21 @@ class Footer extends Component {
           <span className="ml-2">
             Free Space: <span  className="text-danger">{prettyBytes(parseInt(this.props.freeSpaceInBytes))}</span>
           </span>
-        );        
+        );
       }
       else if(parseInt(this.props.freeSpaceInBytes) < 21474836480) {
         freeSpaceStatus =  (
           <span className="ml-2">
             Free Space: <span  className="text-warning">{prettyBytes(parseInt(this.props.freeSpaceInBytes))}</span>
           </span>
-        );        
+        );
       }
       else {
         freeSpaceStatus =  (
           <span className="ml-2">
             Free Space: <span  className="text-success">{prettyBytes(parseInt(this.props.freeSpaceInBytes))}</span>
           </span>
-        );        
+        );
       }
     }
 
@@ -137,8 +129,7 @@ class Footer extends Component {
   }
 }
 
-function mapStateToProps(state){
-
+const mapStateToProps = (state) => {
   let asnapStatus = (state.custom_var)? state.custom_var.custom_vars.find(custom_var => custom_var.custom_var_name === "asnapStatus") : null;
   let freeSpaceInBytes = (state.custom_var)? state.custom_var.custom_vars.find(custom_var => custom_var.custom_var_name === "freeSpaceInBytes") : null;
 
@@ -146,7 +137,6 @@ function mapStateToProps(state){
     asnapStatus: (asnapStatus)? asnapStatus.custom_var_value : null,
     freeSpaceInBytes: (freeSpaceInBytes)? freeSpaceInBytes.custom_var_value : null,
     authenticated: state.auth.authenticated,
-
   };
 }
 

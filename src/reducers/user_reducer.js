@@ -18,7 +18,7 @@ import {
   FETCH_USERS
 } from '../actions/types';
 
-export default function(state={ profile: {}, profile_error: '', profile_message: '', user: {}, user_error: '', user_message: '', users: [] }, action) {
+export default (state={ profile: {}, profile_error: '', profile_message: '', user: {}, user_error: '', user_message: '', users: [] }, action) => {
   switch(action.type){
 
     case UNAUTH_USER:
@@ -75,6 +75,6 @@ export default function(state={ profile: {}, profile_error: '', profile_message:
       const profile = (state.profile.id && state.user.id === state.profile.id) ? user : state.profile;
       return { ...state, profile, user, users: action.payload };
 
-  }    
+  }
   return state;
 }

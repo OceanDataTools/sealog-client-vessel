@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Tooltip, OverlayTrigger} from 'react-bootstrap';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import * as mapDispatchToProps from '../actions';
-import { _Cruise_ } from '../utils';
+import { _Cruise_ } from '../vocab';
 
 class CopyCruiseToClipboard extends Component {
 

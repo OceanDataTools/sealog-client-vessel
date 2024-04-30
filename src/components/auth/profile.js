@@ -3,8 +3,8 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import Cookies from 'universal-cookie';
 import { reduxForm, Field } from 'redux-form';
-import { renderTextField } from '../form_elements';
 import { Alert, Button, Col, Form, Card, Row} from 'react-bootstrap';
+import { renderTextField } from '../form_elements';
 import * as mapDispatchToProps from '../../actions';
 
 const cookies = new Cookies();
@@ -39,7 +39,7 @@ class UserProfile extends Component {
           your account including access to you username and email.</p>
           <span style={{wordWrap: "break-word"}}>{cookies.get('token')}</span>
         </div>
-      );      
+      );
     } else {
       return (
         <Button variant="warning" size="sm" block onClick={()=> {this.setState({showToken: true});setTimeout(()=>{this.setState({showToken: false});}, 10*1000);}}>Show API Token</Button>
@@ -129,7 +129,7 @@ class UserProfile extends Component {
   }
 }
 
-function validate(formProps) {
+const validate = (formProps) => {
   const errors = {};
 
   if (!formProps.username) {
@@ -158,7 +158,7 @@ function validate(formProps) {
 
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
 
   return {
     errorMessage: state.user.profile_error,

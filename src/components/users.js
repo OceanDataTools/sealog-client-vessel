@@ -10,7 +10,7 @@ import DeleteUserModal from './delete_user_modal';
 import UserPermissionsModal from './user_permissions_modal';
 import CustomPagination from './custom_pagination';
 import { USE_ACCESS_CONTROL } from '../client_config';
-import { _Cruise_ } from '../utils';
+import { _Cruise_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
 
 const disabledAccounts = ['admin', 'guest', 'pi'];
@@ -174,7 +174,7 @@ class Users extends Component {
           </td>
         </tr>
       );
-    });      
+    });
   }
 
   renderSystemUsers() {
@@ -348,7 +348,7 @@ class Users extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     users: state.user.users,
     userid: state.user.user.id,

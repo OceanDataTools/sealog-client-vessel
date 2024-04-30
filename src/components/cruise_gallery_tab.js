@@ -86,7 +86,7 @@ class CruiseGalleryTab extends Component {
   }
 }
 
-function mapStateToProps() {
+const mapStateToProps = () => {
   return {}
 }
 

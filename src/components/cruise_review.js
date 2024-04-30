@@ -77,7 +77,7 @@ class CruiseReview extends Component {
           this.handlePageSelect(Math.ceil((eventIndex + 2) / maxEventsPerPage))
         }
         else {
-          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)  
+          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)
         } 
       }
     }
@@ -204,15 +204,14 @@ class CruiseReview extends Component {
             }
             return filtered;
           },[]);
-          
+
           if (event.event_free_text) {
             eventOptionsArray.push(`free_text: "${event.event_free_text}"`);
-          } 
-
+          }
           let active = (this.props.event.selected_event.id === event.id)? true : false;
 
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
-          
+
           let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(event)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
           let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
@@ -254,14 +253,14 @@ class CruiseReview extends Component {
           </Col>
           <Col className="px-1 mb-1" sm={6} md={4} lg={3}>
             <EventFilterForm className="mt-2" disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} handlePostSubmit={ this.updateEventFilter } minDate={this.props.cruise.start_ts} maxDate={this.props.cruise.stop_ts} initialValues={this.props.event.eventFilter}/>
-          </Col>          
+          </Col>
         </Row>
       </Container>
     );
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     roles: state.user.profile.roles,
     event: state.event,

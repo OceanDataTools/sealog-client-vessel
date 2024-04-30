@@ -39,8 +39,9 @@ class ForgotPassword extends Component {
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.successMessage}
             </div>
-            <div className="float-right">
-              <Link to={ `/login` }>Proceed to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            <div className="text-center">
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
             </div>
           </Card.Body>
         </Card>
@@ -124,17 +125,17 @@ class ForgotPassword extends Component {
   }
 }
 
-const validate = values => {
+const validate = (formProps) => {
 
   const errors = {};
-  if (!values.email) {
+  if (!formProps.email) {
     errors.email = 'Required';
   }
 
   return errors;
 };
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     errorMessage: state.auth.error,
     successMessage: state.auth.message

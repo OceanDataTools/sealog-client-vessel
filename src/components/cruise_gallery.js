@@ -9,7 +9,8 @@ import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import * as mapDispatchToProps from '../actions';
 import { API_ROOT_URL } from '../client_config';
-import { _Cruises_, getImageUrl } from '../utils';
+import { getImageUrl } from '../utils';
+import { _Cruises_ } from '../vocab';
 
 const cookies = new Cookies();
 
@@ -43,7 +44,7 @@ class CruiseGallery extends Component {
 
     if(prevProps.event.hideASNAP !== this.props.event.hideASNAP) {
       this.initCruiseImages(this.props.match.params.id, this.props.event.hideASNAP);
-    }  
+    }
   }
 
   toggleASNAP() {
@@ -69,34 +70,34 @@ class CruiseGallery extends Component {
       url += '&value=!ASNAP'
     }
 
-    const image_data = await axios.get(url,
+    await axios.get(url,
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {
 
-      let image_data = {};
-      response.data.forEach((data) => {
-        for (let i = 0; i < data.data_array.length; i+=2) {
-          if(!(data.data_array[i].data_value in image_data)){
-            image_data[data.data_array[i].data_value] = { images: [] };
+        let image_data = {};
+        response.data.forEach((data) => {
+          for (let i = 0; i < data.data_array.length; i+=2) {
+            if(!(data.data_array[i].data_value in image_data)){
+              image_data[data.data_array[i].data_value] = { images: [] };
+            }
+
+            image_data[data.data_array[i].data_value].images.push({
+              event_id: data.event_id,
+              filepath: getImageUrl(data.data_array[i+1].data_value)
+            });
           }
+        });
 
-          image_data[data.data_array[i].data_value].images.push({
-            event_id: data.event_id,
-            filepath: getImageUrl(data.data_array[i+1].data_value)
-          });
+        this.setState({ aux_data: image_data, fetching: false });
+      }).catch((error)=>{
+
+        if(error.response.data.statusCode !== 404) {
+          console.error('Problem connecting to API');
+          console.debug(error);
         }
+        this.setState({ aux_data: [], fetching: false });
       });
-
-      return image_data;
-    }).catch((error)=>{
-      if(error.response.data.statusCode !== 404) {
-        console.debug(error);
-      }
-      return [];
-    });
-
-    this.setState({ aux_data: image_data, fetching: false });
   }
 
   handleImageCountChange(event) {
@@ -178,7 +179,7 @@ class CruiseGallery extends Component {
   }
 }
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     roles: state.user.profile.roles,
     event: state.event,

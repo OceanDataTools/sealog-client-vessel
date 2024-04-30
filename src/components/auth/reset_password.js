@@ -6,9 +6,9 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Row, Col, Form, Card, Button, Alert } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
-import * as mapDispatchToProps from '../../actions';
-import { renderTextField } from '../form_elements';
 import { RECAPTCHA_SITE_KEY } from '../../client_config';
+import { renderTextField } from '../form_elements';
+import * as mapDispatchToProps from '../../actions';
 
 class ResetPassword extends Component {
  
@@ -41,8 +41,9 @@ class ResetPassword extends Component {
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.successMessage}
             </div>
-            <div className="float-right">
-              <Link to={ `/login` }>Proceed to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            <div className="text-center">
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
             </div>
           </Card.Body>
         </Card>
@@ -65,8 +66,7 @@ class ResetPassword extends Component {
         </Alert>
       );
     }
-  } 
-
+  }
   renderForm() {
 
     if(!this.props.successMessage) {
@@ -143,7 +143,7 @@ const afterSubmit = (result, dispatch) => {
   dispatch(reset('resetPassword'));
 };
 
-const validate = values => {
+const validate = (values) => {
   const errors = {};
 
   if (!values.password) {
@@ -161,7 +161,7 @@ const validate = values => {
   return errors;
 };
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     errorMessage: state.auth.error,
     successMessage: state.auth.message

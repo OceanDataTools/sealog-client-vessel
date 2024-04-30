@@ -6,8 +6,8 @@ import { reduxForm, Field } from 'redux-form';
 import { Link } from 'react-router-dom';
 import { Row, Col, Card, Form, Button } from 'react-bootstrap';
 import ReCAPTCHA from "react-google-recaptcha";
-import { renderTextField} from '../form_elements';
 import { RECAPTCHA_SITE_KEY } from '../../client_config';
+import { renderTextField } from '../form_elements';
 import * as mapDispatchToProps from '../../actions';
 
 class Register extends Component {
@@ -39,8 +39,9 @@ class Register extends Component {
             <div className="alert alert-success">
               <strong>Success!</strong> {this.props.message}
             </div>
-            <div className="float-right">
-              <Link to={ `/login` }>Proceed to Login {<FontAwesomeIcon icon="arrow-right"/>}</Link>
+            <div className="text-center">
+              <hr className="border-secondary"/>
+              <Link className="btn btn-outline-primary btn-block" to={ `/login` }>Back to Login</Link>
             </div>
           </Card.Body>
         </Card>
@@ -142,7 +143,7 @@ class Register extends Component {
   }
 }
 
-function validate(formProps) {
+const validate = (formProps) => {
   const errors = {};
 
   if (!formProps.username) {
@@ -188,7 +189,7 @@ const afterSubmit = () => {
   }
 };
 
-function mapStateToProps(state) {
+const mapStateToProps = (state) => {
   return {
     errorMessage: state.user.register_error,
     message: state.user.register_message
