@@ -1,4 +1,5 @@
 # sealog-client-vessel
+
 React-Redux based client for the Sealog Eventlogging Server
 
 This variant is tailored towards cruise-level event-logging for a research vessel.
@@ -17,9 +18,11 @@ For installation instruction please look at [INSTALL.md](./INSTALL.md)
 - admin account for demo: admin:demo
 
 # Current Users
+
 - R/V Falkor operated by the Schmidt Ocean Institute
 - R/V OceanXplorer1 operated by OceanX
 - E/V Nautilus operated by Ocean Exploration Trust
 
 # Thanks and acknowledgments
+
 Sealog exists thanks to financial support from all of it's users and continues to evolve thanks to the UNOLS community who have helped me since the beginning by sharing their wealth of experience and technical ability.

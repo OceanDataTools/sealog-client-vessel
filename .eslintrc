@@ -3,12 +3,11 @@
         "react",
         "react-redux"
     ],
-    parser: "babel-eslint",
     extends: [
         "eslint:recommended",
         "plugin:react/recommended",
         "plugin:react-redux/recommended",
-        "prettier"
+        'plugin:prettier/recommended',
     ],
     "parserOptions": {
         ecmaVersion: 12,
@@ -17,7 +16,8 @@
             jsx: true,
             modules: true,
             experimentalObjectRestSpread: true
-        }
+        },
+        parser: "@babel/eslint-parser"
     },
     env: {
         node: true,
