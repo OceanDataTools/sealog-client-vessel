@@ -32,7 +32,7 @@ const MAIN_SCREEN_TXT = "Please select a cruise from the list below.  Selecting 
 const HEADER_TITLE = `Sealog for Vessels v${Pkg.version}`;
 
 // Set default vessel
-const DEFAULT_VESSEL = "";
+const DEFAULT_VESSEL = "R/V Discovery";
 
 // Use an internal tile server (true), or pull tiles directly from the Internet (false).
 const USE_MAPTILE_PROXY = false;
@@ -43,31 +43,43 @@ const USE_ACCESS_CONTROL = false;
 // Remove ability to add new events
 const DISABLE_EVENT_LOGGING = false;
 
-// Placeholder text displayed in CruiseID textfield "i.e. OXR20210101"
-const CRUISE_ID_PLACEHOLDER = "";
+// Placeholder text displayed in CruiseID textfield "i.e. CS240101"
+const CRUISE_ID_PLACEHOLDER = "i.e. CS240101";
 
-// RegExp object to use when verifying CruiseID i.e. RegExp(/^OXR20[0-9]{2}[0-1][0-9][0-3][0-9]$/)
-const CRUISE_ID_REGEX = null;
+// RegExp object to use when verifying CruiseID i.e. RegExp(/^CS[0-9]{2}[0-1][0-9][0-3][0-9]$/)
+const CRUISE_ID_REGEX = RegExp(/^CS[0-9]{2}[0-1][0-9][0-3][0-9]$/);
 
 // What to call "cruise/cruises", format: null OR ["single version","plural version"] use lowercase
 const CUSTOM_CRUISE_NAME = null;
 
+const POSITION_DATASOURCES = ['vesselRealtimeNavData'];
+
+const EXCLUDE_AUX_DATA_SOURCES = []
+
+const IMAGES_AUX_DATA_SOURCES = [];
+
+const AUX_DATA_SORT_ORDER = ['vesselRealtimeNavData'];
+
 module.exports = {
   API_ROOT_URL,
-  CRUISE_ID_PLACEHOLDER,
-  CRUISE_ID_REGEX,
-  CUSTOM_CRUISE_NAME
-  DEFAULT_VESSEL,
-  DISABLE_EVENT_LOGGING,
-  HEADER_TITLE,
+  WS_ROOT_URL,
+  ROOT_PATH,
   IMAGE_PATH,
-  LOGIN_IMAGE,
+  RECAPTCHA_SITE_KEY,
   LOGIN_SCREEN_TXT,
+  LOGIN_IMAGE,
   MAIN_SCREEN_HEADER,
   MAIN_SCREEN_TXT,
-  RECAPTCHA_SITE_KEY,
-  ROOT_PATH,
-  USE_ACCESS_CONTROL,
+  HEADER_TITLE,
+  DEFAULT_VESSEL,
   USE_MAPTILE_PROXY,
-  WS_ROOT_URL,
+  USE_ACCESS_CONTROL,
+  DISABLE_EVENT_LOGGING,
+  CRUISE_ID_PLACEHOLDER,
+  CRUISE_ID_REGEX,
+  CUSTOM_CRUISE_NAME,
+  POSITION_DATASOURCES,
+  EXCLUDE_AUX_DATA_SOURCES,
+  IMAGES_AUX_DATA_SOURCES,
+  AUX_DATA_SORT_ORDER
 }
