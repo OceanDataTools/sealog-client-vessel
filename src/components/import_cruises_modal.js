@@ -26,11 +26,6 @@ class ImportCruisesModal extends Component {
     this.quitImport = this.quitImport.bind(this);
   }
 
-  static propTypes = {
-    handleHide: PropTypes.func.isRequired,
-    handleExit: PropTypes.func
-  };
-
   quitImport() {
     this.setState({quit: true})
     this.props.handleExit()
@@ -89,7 +84,7 @@ class ImportCruisesModal extends Component {
     }
   }
 
-  importCruisesFromFile = async (e) => {
+  async importCruisesFromFile(e) {
     try {
 
       let json = JSON.parse(e.target.result);
@@ -131,7 +126,7 @@ class ImportCruisesModal extends Component {
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }
 
-  handleCruiseRecordImport = files => {
+  handleCruiseRecordImport(files) {
     this.setState(
       {
         pending: "Calculating..."
@@ -181,5 +176,10 @@ class ImportCruisesModal extends Component {
     }
   }
 }
+
+ImportCruisesModal.propTypes = {
+  handleHide: PropTypes.func.isRequired,
+  handleExit: PropTypes.func
+};
 
 export default connectModal({ name: 'importCruises' })(ImportCruisesModal)

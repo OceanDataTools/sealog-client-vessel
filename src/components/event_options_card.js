@@ -4,10 +4,6 @@ import { Card, Col } from 'react-bootstrap';
 
 class EventOptionsCard extends Component {
 
-  static propTypes = {
-    event_options: PropTypes.array.isRequired
-  }
-
   render() {
     if(!this.props.event_options) {
       return null;
@@ -37,6 +33,10 @@ class EventOptionsCard extends Component {
       </Col>
     ) : null
   }
+}
+
+EventOptionsCard.propTypes = {
+  event_options: PropTypes.array.isRequired
 }
 
 export default EventOptionsCard;

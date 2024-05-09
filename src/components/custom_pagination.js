@@ -13,14 +13,6 @@ class CustomPagination extends Component {
     };
   }
 
-  static propTypes = {
-    maxPerPage: PropTypes.number,
-    pageSelectFunc: PropTypes.func.isRequired,
-    page: PropTypes.number.isRequired,
-    count: PropTypes.number.isRequired,
-    className: PropTypes.string
-  };
-
   componentDidUpdate(prevProps) {
     if(prevProps.maxPerPage !== this.props.maxPerPage) {
       this.setState({maxPerPage: this.props.maxPerPage})
@@ -70,5 +62,13 @@ class CustomPagination extends Component {
     return null;
   }
 }
+
+CustomPagination.propTypes = {
+  maxPerPage: PropTypes.number,
+  pageSelectFunc: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
+  count: PropTypes.number.isRequired,
+  className: PropTypes.string
+};
 
 export default connect(null, null)(CustomPagination);

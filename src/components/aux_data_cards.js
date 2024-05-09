@@ -4,10 +4,6 @@ import { Card, Col } from 'react-bootstrap';
 
 class AuxDataCard extends Component {
 
-  static propTypes = {
-    aux_data: PropTypes.object.isRequired
-  }
-
   render() {
 
     const aux_data_points = this.props.aux_data.data_array.map((data, index) => {
@@ -33,11 +29,12 @@ class AuxDataCard extends Component {
   }
 }
 
-class AuxDataCards extends Component {
+AuxDataCard.propTypes = {
+  aux_data: PropTypes.object.isRequired
+}
 
-  static propTypes = {
-    aux_data: PropTypes.array.isRequired,
-  }
+
+class AuxDataCards extends Component {
 
   render() {
     return this.props.aux_data.map((aux_data) => {
@@ -46,6 +43,10 @@ class AuxDataCards extends Component {
       );
     });
   }
+}
+
+AuxDataCards.propTypes = {
+  aux_data: PropTypes.array.isRequired,
 }
 
 export default AuxDataCards;

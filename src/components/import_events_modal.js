@@ -25,10 +25,6 @@ class ImportEventsModal extends Component {
     this.handleHideCustom = this.handleHideCustom.bind(this);
   }
 
-  static propTypes = {
-    handleHide: PropTypes.func.isRequired
-  };
-
   handleHideCustom() {
     this.setState({quit: true})
     this.props.handleHide()
@@ -84,7 +80,7 @@ class ImportEventsModal extends Component {
     }
   }
 
-  importEventsFromFile = async (e) => {
+  async importEventsFromFile(e) {
     try {
 
       let json = JSON.parse(e.target.result);
@@ -112,7 +108,7 @@ class ImportEventsModal extends Component {
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete!"})
   }
 
-  handleEventRecordImport = files => {
+  handleEventRecordImport(files) {
     let reader = new FileReader();
     reader.onload = this.importEventsFromFile
     reader.readAsText(files[0]);
@@ -151,5 +147,9 @@ class ImportEventsModal extends Component {
     );
   }
 }
+
+ImportEventsModal.propTypes = {
+  handleHide: PropTypes.func.isRequired
+};
 
 export default connectModal({ name: 'importEvents' })(ImportEventsModal)

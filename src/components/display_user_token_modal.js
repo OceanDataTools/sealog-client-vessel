@@ -16,11 +16,6 @@ class DisplayUserTokenModal extends Component {
     this.handleConfirm = this.handleConfirm.bind(this);
   }
 
-  static propTypes = {
-    id: PropTypes.string,
-    handleHide: PropTypes.func.isRequired
-  };
-
   componentDidMount() {
     this.getUserJWT()
   }
@@ -60,5 +55,10 @@ class DisplayUserTokenModal extends Component {
     }
   }
 }
+
+DisplayUserTokenModal.propTypes = {
+    id: PropTypes.string,
+    handleHide: PropTypes.func.isRequired
+  };
 
 export default connectModal({ name: 'displayUserToken' })(DisplayUserTokenModal)

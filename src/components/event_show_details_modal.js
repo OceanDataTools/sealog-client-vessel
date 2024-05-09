@@ -23,11 +23,6 @@ class EventShowDetailsModal extends Component {
     this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this);
   }
 
-  static propTypes = {
-    event: PropTypes.object,
-    handleHide: PropTypes.func.isRequired
-  };
-
   componentDidMount() {
     this.initEvent()
   }
@@ -117,6 +112,11 @@ class EventShowDetailsModal extends Component {
     }
   }
 }
+
+EventShowDetailsModal.propTypes = {
+  event: PropTypes.object,
+  handleHide: PropTypes.func.isRequired
+};
 
 const mapStateToProps = (state) => {
   return {

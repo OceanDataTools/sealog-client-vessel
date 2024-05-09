@@ -25,11 +25,6 @@ class ImportUsersModal extends Component {
     this.quitImport = this.quitImport.bind(this);
   }
 
-  static propTypes = {
-    handleHide: PropTypes.func.isRequired,
-    handleExit: PropTypes.func
-  };
-
   quitImport() {
     this.setState({quit: true})
     this.props.handleExit()
@@ -86,7 +81,7 @@ class ImportUsersModal extends Component {
     }
   }
 
-  importUsersFromFile = async (e) => {
+  async importUsersFromFile(e) {
     try {
 
       let json = JSON.parse(e.target.result);
@@ -113,7 +108,7 @@ class ImportUsersModal extends Component {
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }
 
-  handleUserRecordImport = files => {
+  handleUserRecordImport(files) {
     let reader = new FileReader();
     reader.onload = this.importUsersFromFile
     reader.readAsText(files[0]);
@@ -157,5 +152,10 @@ class ImportUsersModal extends Component {
     }
   }
 }
+
+ImportUsersModal.propTypes = {
+  handleHide: PropTypes.func.isRequired,
+  handleExit: PropTypes.func
+};
 
 export default connectModal({ name: 'importUsers' })(ImportUsersModal)

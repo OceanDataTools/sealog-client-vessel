@@ -11,12 +11,6 @@ class DeleteEventTemplateModal extends Component {
     this.handleConfirm = this.handleConfirm.bind(this);
   }
 
-  static propTypes = {
-    id: PropTypes.string,
-    handleDelete: PropTypes.func,
-    handleHide: PropTypes.func.isRequired
-  };
-
   handleConfirm() {
     this.props.handleDelete(this.props.id);
     this.props.handleHide();
@@ -49,5 +43,11 @@ class DeleteEventTemplateModal extends Component {
     }
   }
 }
+
+DeleteEventTemplateModal.propTypes = {
+  id: PropTypes.string,
+  handleDelete: PropTypes.func,
+  handleHide: PropTypes.func.isRequired
+};
 
 export default connectModal({ name: 'deleteEventTemplate' })(DeleteEventTemplateModal)

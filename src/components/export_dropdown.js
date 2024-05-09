@@ -32,17 +32,6 @@ class ExportDropdown extends Component {
     };
   }
 
-  static propTypes = {
-    id: PropTypes.string,
-    prefix: PropTypes.string,
-    disabled: PropTypes.bool.isRequired,
-    hideASNAP: PropTypes.bool.isRequired,
-    eventFilter: PropTypes.object.isRequired,
-    cruiseID: PropTypes.string,
-    loweringID: PropTypes.string,
-    sort: PropTypes.string
-  };
-
   componentDidUpdate(prevProps) {
     // Typical usage (don't forget to compare props):
     if (this.props.cruiseID !== prevProps.cruiseID) {
@@ -150,5 +139,16 @@ class ExportDropdown extends Component {
     );
   }
 }
+
+ExportDropdown.propTypes = {
+  id: PropTypes.string,
+  prefix: PropTypes.string,
+  disabled: PropTypes.bool.isRequired,
+  hideASNAP: PropTypes.bool.isRequired,
+  eventFilter: PropTypes.object.isRequired,
+  cruiseID: PropTypes.string,
+  loweringID: PropTypes.string,
+  sort: PropTypes.string
+};
 
 export default connect(null, null)(ExportDropdown);

@@ -25,10 +25,6 @@ class ImportAuxDataModal extends Component {
     this.handleHideCustom = this.handleHideCustom.bind(this);
   }
 
-  static propTypes = {
-    handleHide: PropTypes.func.isRequired
-  };
-
   handleHideCustom() {
     this.setState({quit: true})
     this.props.handleHide()
@@ -70,7 +66,7 @@ class ImportAuxDataModal extends Component {
       })
   }
 
-  importAuxDataFromFile = async (e) => {
+  async importAuxDataFromFile(e) {
     try {
 
       let json = JSON.parse(e.target.result);
@@ -97,7 +93,7 @@ class ImportAuxDataModal extends Component {
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }
 
-  handleAuxDataRecordImport = files => {
+  handleAuxDataRecordImport(files) {
 
     let reader = new FileReader();
     reader.onload = this.importAuxDataFromFile
@@ -138,5 +134,9 @@ class ImportAuxDataModal extends Component {
     );
   }
 }
+
+ImportAuxDataModal.propTypes = {
+    handleHide: PropTypes.func.isRequired
+  };
 
 export default connectModal({ name: 'importAuxData' })(ImportAuxDataModal)

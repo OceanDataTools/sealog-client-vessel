@@ -11,10 +11,6 @@ import { systemUserRoleOptions } from '../system_user_role_options';
 
 class UserForm extends Component {
 
-  static propTypes = {
-    handleFormSubmit: PropTypes.func.isRequired
-  };
-
   componentDidMount() {
   }
 
@@ -154,6 +150,10 @@ class UserForm extends Component {
     }
   }
 }
+
+UserForm.propTypes = {
+  handleFormSubmit: PropTypes.func.isRequired
+};
 
 const validate = (formProps) => {
   const errors = {};

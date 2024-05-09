@@ -11,11 +11,6 @@ class NonSystemUsersWipeModal extends Component {
     this.handleConfirm = this.handleConfirm.bind(this);
   }
 
-  static propTypes = {
-    handleDelete: PropTypes.func,
-    handleHide: PropTypes.func.isRequired
-  };
-
   handleConfirm() {
     this.props.handleDelete();
     this.props.handleHide();
@@ -47,5 +42,10 @@ class NonSystemUsersWipeModal extends Component {
     }
   }
 }
+
+NonSystemUsersWipeModal.propTypes = {
+  handleDelete: PropTypes.func,
+  handleHide: PropTypes.func.isRequired
+};
 
 export default connectModal({ name: 'nonSystemUsersWipe' })(NonSystemUsersWipeModal)

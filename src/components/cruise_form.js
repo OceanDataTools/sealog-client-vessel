@@ -28,10 +28,6 @@ class CruiseForm extends Component {
     }
   }
 
-  static propTypes = {
-    handleFormSubmit: PropTypes.func.isRequired
-  };
-
   componentWillUnmount() {
     this.props.leaveCruiseForm();
   }
@@ -265,6 +261,11 @@ class CruiseForm extends Component {
     }
   }
 }
+
+CruiseForm.propTypes = {
+  handleFormSubmit: PropTypes.func.isRequired
+};
+
 
 const validate = (formProps) => {
 

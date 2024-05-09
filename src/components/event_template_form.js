@@ -18,10 +18,6 @@ class EventTemplateForm extends Component {
     this.renderOptionOptions = this.renderOptionOptions.bind(this);
   }
 
-  static propTypes = {
-    handleFormSubmit: PropTypes.func.isRequired
-  };
-
   componentDidMount() {
   }
 
@@ -405,6 +401,10 @@ const validate = (formProps) => {
 
 }
 
+
+EventTemplateForm.propTypes = {
+  handleFormSubmit: PropTypes.func.isRequired
+};
 
 const mapStateToProps = (state) => {
   let initialValues = { ...state.event_template.event_template }

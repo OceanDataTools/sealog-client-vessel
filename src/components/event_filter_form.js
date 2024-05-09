@@ -18,11 +18,6 @@ class EventFilterForm extends Component {
     this.clearForm = this.clearForm.bind(this);
   }
 
-  static propTypes = {
-    handlePostSubmit: PropTypes.func.isRequired,
-    initialValues: PropTypes.object
-  };
-
   componentDidMount() {
     if(this.props.initialValues) {
       this.props.initialize(this.props.initialValues);
@@ -130,6 +125,11 @@ class EventFilterForm extends Component {
     )
   }
 }
+
+EventFilterForm.propTypes = {
+  handlePostSubmit: PropTypes.func.isRequired,
+  initialValues: PropTypes.object
+};
 
 const validate = () => {
   const errors = {};

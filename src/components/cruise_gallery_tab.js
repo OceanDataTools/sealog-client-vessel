@@ -21,12 +21,6 @@ class CruiseGalleryTab extends Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 
-  static propTypes = {
-    imagesSource: PropTypes.string.isRequired,
-    imagesData: PropTypes.object.isRequired,
-    maxImagesPerPage: PropTypes.number.isRequired
-  };
-
   componentDidMount() {
     this.divFocus.focus();
   }
@@ -81,5 +75,12 @@ class CruiseGalleryTab extends Component {
     )
   }
 }
+
+CruiseGalleryTab.propTypes = {
+  imagesSource: PropTypes.string.isRequired,
+  imagesData: PropTypes.object.isRequired,
+  maxImagesPerPage: PropTypes.number.isRequired
+};
+
 
 export default connect(null, mapDispatchToProps)(CruiseGalleryTab);

@@ -5,9 +5,6 @@ import * as mapDispatchToProps from '../../actions';
 
 export default (ComposedComponent) => {
   class Unauthentication extends Component {
-    static contextTypes = {
-      router: PropTypes.object
-    }
 
     constructor (props, context) {
       super(props, context);
@@ -28,6 +25,10 @@ export default (ComposedComponent) => {
     render() {
       return <ComposedComponent {...this.props} />
     }
+  }
+
+  Unauthentication.contextTypes = {
+    router: PropTypes.object
   }
 
   const mapStateToProps = (state) => {

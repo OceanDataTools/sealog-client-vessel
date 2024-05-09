@@ -14,12 +14,6 @@ class EventCommentModal extends Component {
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
   }
 
-  static propTypes = {
-    event: PropTypes.object,
-    handleHide: PropTypes.func.isRequired,
-    handleUpdateEvent: PropTypes.func
-  };
-
   componentDidMount() {
     this.populateDefaultValues();
   }
@@ -91,6 +85,12 @@ class EventCommentModal extends Component {
     }
   }
 }
+
+EventCommentModal.propTypes = {
+  event: PropTypes.object,
+  handleHide: PropTypes.func.isRequired,
+  handleUpdateEvent: PropTypes.func
+};
 
 export default compose(
   connectModal({name: 'eventComment'}),

@@ -46,12 +46,6 @@ const CruiseModeDropdownMenu = React.forwardRef(
 
 class CruiseModeDropdown extends Component {
 
-  static propTypes = {
-    active_mode: PropTypes.string.isRequired,
-    modes: PropTypes.array.isRequired,
-    onClick: PropTypes.func
-  };
-
   render() {
 
     return (
@@ -64,5 +58,11 @@ class CruiseModeDropdown extends Component {
     )
   }
 }
+
+CruiseModeDropdown.propTypes = {
+  active_mode: PropTypes.string.isRequired,
+  modes: PropTypes.array.isRequired,
+  onClick: PropTypes.func
+};
 
 export default CruiseModeDropdown;

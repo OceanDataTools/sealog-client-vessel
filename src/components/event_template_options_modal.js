@@ -23,14 +23,6 @@ class EventTemplateOptionsModal extends Component {
 
   }
 
-  static propTypes = {
-    event: PropTypes.object,
-    eventTemplate: PropTypes.object,
-    handleHide: PropTypes.func.isRequired,
-    handleUpdateEvent: PropTypes.func,
-    handleDeleteEvent: PropTypes.func
-  };
-
   componentDidMount() {
     this.populateDefaultValues()
   }
@@ -256,6 +248,14 @@ class EventTemplateOptionsModal extends Component {
     }
   }
 }
+
+EventTemplateOptionsModal.propTypes = {
+  event: PropTypes.object,
+  eventTemplate: PropTypes.object,
+  handleHide: PropTypes.func.isRequired,
+  handleUpdateEvent: PropTypes.func,
+  handleDeleteEvent: PropTypes.func
+};
 
 const validate = (formProps) => {
   const errors = {};

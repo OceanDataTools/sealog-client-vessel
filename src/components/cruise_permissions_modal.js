@@ -29,12 +29,6 @@ class CruisePermissionsModal extends Component {
 
   }
 
-  static propTypes = {
-    cruise_id: PropTypes.string,
-    onClose: PropTypes.func.isRequired,
-    handleHide: PropTypes.func.isRequired
-  };
-
   componentDidMount() {
     this.fetchUsers();
     this.fetchCruise();
@@ -101,6 +95,13 @@ class CruisePermissionsModal extends Component {
     );
   }
 }
+
+CruisePermissionsModal.propTypes = {
+  cruise_id: PropTypes.string,
+  onClose: PropTypes.func.isRequired,
+  handleHide: PropTypes.func.isRequired
+};
+
 
 export default compose(
   connectModal({ name: 'cruisePermissions' }),

@@ -19,10 +19,6 @@ class CopyCruiseToClipboard extends Component {
     }
   }
 
-  static propTypes = {
-    cruise: PropTypes.object,
-  };
-
   componentDidMount() {
     this.copyToClipboard();
   }
@@ -64,6 +60,10 @@ class CopyCruiseToClipboard extends Component {
     return (<OverlayTrigger placement="top" overlay={<Tooltip id="copyToClipboardTooltip">Copy to clipboard</Tooltip>}><CopyToClipboard text={this.state.text} ><FontAwesomeIcon icon='clipboard' fixedWidth /></CopyToClipboard></OverlayTrigger>);
   }
 }
+
+CopyCruiseToClipboard.propTypes = {
+  cruise: PropTypes.object,
+};
 
 export default compose(
   connect(null, mapDispatchToProps)

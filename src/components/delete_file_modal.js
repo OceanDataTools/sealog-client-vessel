@@ -11,12 +11,6 @@ class DeleteFileModal extends Component {
     this.handleConfirm = this.handleConfirm.bind(this);
   }
 
-  static propTypes = {
-    file: PropTypes.string,
-    handleDelete: PropTypes.func,
-    handleHide: PropTypes.func.isRequired
-  };
-
   handleConfirm() {
     this.props.handleDelete(this.props.file);
     this.props.handleHide();
@@ -49,5 +43,11 @@ class DeleteFileModal extends Component {
     }
   }
 }
+
+DeleteFileModal.propTypes = {
+  file: PropTypes.string,
+  handleDelete: PropTypes.func,
+  handleHide: PropTypes.func.isRequired
+};
 
 export default connectModal({ name: 'deleteFile' })(DeleteFileModal)

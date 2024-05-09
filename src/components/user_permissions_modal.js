@@ -29,7 +29,7 @@ class RenderTableRow extends Component {
     })
   }
 
-  render () {
+  render() {
     const { cruise } = this.props
 
     return (
@@ -54,12 +54,6 @@ class UserPermissionsModal extends Component {
     this.handleHide = this.handleHide.bind(this);
     this.updateCruisePermissions = this.updateCruisePermissions.bind(this);
   }
-
-  static propTypes = {
-    user_id: PropTypes.string,
-    onClose: PropTypes.func.isRequired,
-    handleHide: PropTypes.func.isRequired
-  };
 
   componentDidMount() {
     this.fetchCruises();
@@ -140,6 +134,12 @@ class UserPermissionsModal extends Component {
     }
   }
 }
+
+UserPermissionsModal.propTypes = {
+  user_id: PropTypes.string,
+  onClose: PropTypes.func.isRequired,
+  handleHide: PropTypes.func.isRequired
+};
 
 export default compose(
   connectModal({ name: 'userPermissions' }),

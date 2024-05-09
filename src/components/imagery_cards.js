@@ -5,12 +5,6 @@ import { Card, Col, Image } from 'react-bootstrap';
 
 class ImageryCard extends Component {
 
-  static propTypes = {
-    source: PropTypes.string.isRequired,
-    filepath: PropTypes.string.isRequired,
-    onClick: PropTypes.func
-  }
-
   render() {
     return (
       <Col className="px-1 pb-2" key={this.props.source} sm={6} md={6} lg={4}>
@@ -23,12 +17,14 @@ class ImageryCard extends Component {
   }
 }
 
-class ImageryCards extends Component {
+ImageryCard.propTypes = {
+  source: PropTypes.string.isRequired,
+  filepath: PropTypes.string.isRequired,
+  onClick: PropTypes.func
+}
 
-  static propTypes = {
-    framegrab_data_sources: PropTypes.array.isRequired,
-    onClick: PropTypes.func
-  }
+
+class ImageryCards extends Component {
 
   render() {
     let imageryCards = []
@@ -49,6 +45,11 @@ class ImageryCards extends Component {
 
     return imageryCards
   }
+}
+
+ImageryCards.propTypes = {
+  framegrab_data_sources: PropTypes.array.isRequired,
+  onClick: PropTypes.func
 }
 
 export default ImageryCards;

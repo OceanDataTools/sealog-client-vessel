@@ -25,11 +25,6 @@ class ImportEventTemplatesModal extends Component {
     this.quitImport = this.quitImport.bind(this);
   }
 
-  static propTypes = {
-    handleHide: PropTypes.func.isRequired,
-    handleExit: PropTypes.func
-  };
-
   quitImport() {
     this.setState({quit: true})
     this.props.handleExit()
@@ -86,7 +81,7 @@ class ImportEventTemplatesModal extends Component {
     }
   }
 
-  importEventTemplatesFromFile = async (e) => {
+  async importEventTemplatesFromFile(e) {
     try {
 
       let json = JSON.parse(e.target.result);
@@ -113,7 +108,7 @@ class ImportEventTemplatesModal extends Component {
     this.setState({pending: (this.state.quit)?"Quit Early!":"Complete"})
   }
 
-  handleEventTemplateImport = files => {
+  handleEventTemplateImport(files) {
     let reader = new FileReader();
     reader.onload = this.importEventTemplatesFromFile
     reader.readAsText(files[0]);
@@ -152,5 +147,10 @@ class ImportEventTemplatesModal extends Component {
     );
   }
 }
+
+ImportEventTemplatesModal.propTypes = {
+  handleHide: PropTypes.func.isRequired,
+  handleExit: PropTypes.func
+};
 
 export default connectModal({ name: 'importEventTemplates' })(ImportEventTemplatesModal)

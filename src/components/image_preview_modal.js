@@ -13,12 +13,6 @@ class ImagePreviewModal extends Component {
     this.handleClose = this.handleClose.bind(this);
   }
 
-  static propTypes = {
-    name: PropTypes.string,
-    filepath: PropTypes.string,
-    handleHide: PropTypes.func.isRequired,
-  };
-
   handleClose() {
     this.props.handleHide();
   }
@@ -46,5 +40,11 @@ class ImagePreviewModal extends Component {
     }
   }
 }
+
+ImagePreviewModal.propTypes = {
+  name: PropTypes.string,
+  filepath: PropTypes.string,
+  handleHide: PropTypes.func.isRequired,
+};
 
 export default connectModal({ name: 'imagePreview' })(ImagePreviewModal)
