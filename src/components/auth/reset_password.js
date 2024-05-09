@@ -10,7 +10,7 @@ import { renderTextField } from '../form_elements';
 import * as mapDispatchToProps from '../../actions';
 
 class ResetPassword extends Component {
- 
+
   constructor (props) {
     super(props);
 

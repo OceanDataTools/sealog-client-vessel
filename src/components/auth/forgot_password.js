@@ -10,7 +10,7 @@ import { renderTextField } from '../form_elements';
 import { RECAPTCHA_SITE_KEY } from '../../client_config';
 
 class ForgotPassword extends Component {
- 
+
   constructor (props) {
     super(props);
 

@@ -223,7 +223,7 @@ class CruiseForm extends Component {
               {this.renderFiles()}
               <FilePond
                 ref={ref => this.pond = ref}
-                allowMultiple={true} 
+                allowMultiple={true}
                 maxFiles={5}
                 server={{
                   url: API_ROOT_URL,

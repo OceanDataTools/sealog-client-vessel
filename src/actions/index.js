@@ -77,7 +77,7 @@ const cookies = new Cookies();
 const port = (window.location.port) ? ':' + window.location.port : '';
 const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/';
 
-export const authorizationHeader = { 
+export const authorizationHeader = {
   headers: {
     Authorization: 'Bearer ' + cookies.get('token')
   }
@@ -86,7 +86,7 @@ export const authorizationHeader = {
 export const advanceCruiseReplayTo = (id) => {
   return async (dispatch) => {
     const payload = await get_event_exports({}, id) || {};
-    
+
     return dispatch({ type: SET_SELECTED_EVENT, payload });
   };
 }
@@ -807,11 +807,11 @@ export const updateCruise = (formProps) => {
   return async (dispatch) => {
     const response = await update_cruise(fields, formProps.id);
     if(response.success) {
-      dispatch(fetchCruises());      
+      dispatch(fetchCruises());
       return dispatch(updateCruiseSuccess('Cruise updated'));
     }
     else {
-      return dispatch(updateCruiseError(response.error.response.data.message));      
+      return dispatch(updateCruiseError(response.error.response.data.message));
     }
   };
 }
@@ -842,7 +842,7 @@ export const updateEvent = (formProps) => {
   return async (dispatch) => {
     const response = await updateEventRequest(formProps);
     if(response.success) {
-      return dispatch({ type: UPDATE_EVENT, payload: formProps });      
+      return dispatch({ type: UPDATE_EVENT, payload: formProps });
     }
   }
 }
@@ -943,7 +943,7 @@ export const updateProfileError = (message) => {
 export const updateProfileState = () => {
 
   return async (dispatch) => {
-    return await axios.get(`${API_ROOT_URL}/api/v1/auth/profile`, 
+    return await axios.get(`${API_ROOT_URL}/api/v1/auth/profile`,
       {
         headers: { Authorization: 'Bearer ' + cookies.get('token') }
       }).then((response) => {

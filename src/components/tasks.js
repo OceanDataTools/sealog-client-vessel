@@ -18,7 +18,7 @@ class Tasks extends Component {
     super(props);
 
     this.state = {
-      description: "" 
+      description: ""
     };
   }
 

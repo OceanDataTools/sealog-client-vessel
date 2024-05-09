@@ -8,7 +8,7 @@ const cookies = new Cookies();
 export const CRUISE_ROUTE = "/files/cruises";
 export const LOWERING_ROUTE = "/files/lowerings";
 
-export const authorizationHeader = { 
+export const authorizationHeader = {
   headers: {
     Authorization: 'Bearer ' + cookies.get('token')
   }

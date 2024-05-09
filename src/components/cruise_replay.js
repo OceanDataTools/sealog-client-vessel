@@ -165,7 +165,7 @@ class CruiseReplay extends Component {
         }
         else {
           this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)
-        } 
+        }
       }
     }
     else if(event.key === "ArrowUp") {

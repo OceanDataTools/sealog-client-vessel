@@ -114,7 +114,7 @@ class EventManagement extends Component {
 
     let eventFilter_value = (this.state.eventFilter.value) ? this.state.eventFilter.value : (this.state.hideASNAP) ? '!ASNAP' : null;
 
-    let query = { 
+    let query = {
       ...this.state.eventFilter,
       value: (eventFilter_value) ? eventFilter_value.split(',') : null,
       sort: 'newest',
@@ -128,13 +128,13 @@ class EventManagement extends Component {
   async fetchEventsCount() {
     let eventFilter_value = (this.state.eventFilter.value) ? this.state.eventFilter.value : (this.state.hideASNAP) ? '!ASNAP' : null;
 
-    let query = { 
+    let query = {
       ...this.state.eventFilter,
       value: (eventFilter_value) ? eventFilter_value.split(',') : null,
       sort: 'newest',
     }
     const eventCount = await get_events_count(query);
-    
+
     this.setState({ eventCount });
   }
 

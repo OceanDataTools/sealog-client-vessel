@@ -233,7 +233,7 @@ class CruiseMenu extends Component {
     }
 
     return yearCards;
- 
+
   }
 
   renderCruiseListItems() {

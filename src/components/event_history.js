@@ -133,7 +133,7 @@ class EventHistory extends Component {
 
     let eventFilterValue = (this.state.eventFilterValue) ? this.state.eventFilterValue : (this.state.hideASNAP) ? '!ASNAP' : null;
 
-    let query = { 
+    let query = {
       value: (eventFilterValue) ? eventFilterValue.split(',') : null,
       sort: 'newest',
       offset: (this.state.activePage-1) * maxEventsPerPage,
@@ -149,7 +149,7 @@ class EventHistory extends Component {
       const query = {
         value: (this.state.hideASNAP) ? ['!ASNAP'] : null,
         sort: 'newest',
-        limit: 1 
+        limit: 1
       }
 
       const event = await get_events(query);
@@ -232,7 +232,7 @@ class EventHistory extends Component {
   }
 
   renderImageryCard() {
-    if(this.state.event.aux_data) { 
+    if(this.state.event.aux_data) {
       let frameGrabberData = this.state.event.aux_data.filter(aux_data => IMAGES_AUX_DATA_SOURCES.includes(aux_data.data_source))
       let tmpData = []
 

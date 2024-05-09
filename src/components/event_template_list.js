@@ -82,7 +82,7 @@ class EventTemplateList extends Component {
   async fetchEventTemplates() {
     this.setState({ fetching: true });
     this.props.fetchEventTemplates();
-    this.setState({ fetching: false }); 
+    this.setState({ fetching: false });
   }
 
   updateEventTemplateCategory(category) {

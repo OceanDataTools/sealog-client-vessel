@@ -54,7 +54,7 @@ class ExportDropdown extends Component {
 
   async fetchEvents(exportFormat) {
     let eventFilter_value = (this.props.eventFilter.value) ? this.props.eventFilter.value : (this.props.hideASNAP) ? '!ASNAP' : null;
-    
+
     const query = { ...this.props.eventFilter,
       format: exportFormat,
       add_record_ids: (exportFormat==='json'),
@@ -68,7 +68,7 @@ class ExportDropdown extends Component {
 
   async fetchEventAuxData() {
     let eventFilter_value = (this.props.eventFilter.value) ? this.props.eventFilter.value : (this.props.hideASNAP) ? '!ASNAP' : null;
-    
+
     const query = { ...this.props.eventFilter,
       value: (eventFilter_value) ? eventFilter_value.split(',') : null,
       author: (this.props.eventFilter.author) ? this.props.eventFilter.author.split(',') : null,
@@ -80,7 +80,7 @@ class ExportDropdown extends Component {
 
   async fetchEventsWithAuxData(exportFormat) {
     let eventFilter_value = (this.props.eventFilter.value) ? this.props.eventFilter.value : (this.props.hideASNAP) ? '!ASNAP' : null;
-    
+
     const query = { ...this.props.eventFilter,
       format: exportFormat,
       add_record_ids: (exportFormat==='json'),

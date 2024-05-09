@@ -29,7 +29,7 @@ class Header extends Component {
 
     const id = asnapStatus.id;
     delete asnapStatus.id
-    
+
     if(asnapStatus) {
       const new_var_value = (asnapStatus.custom_var_value === 'Off') ? 'On' : 'Off'
       asnapStatus['custom_var_value'] = new_var_value

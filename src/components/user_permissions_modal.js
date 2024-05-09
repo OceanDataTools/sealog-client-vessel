@@ -35,7 +35,7 @@ class RenderTableRow extends Component {
     return (
       <ListGroup.Item onClick={this.toggleRowCollapse}>
         {cruise}
-      </ListGroup.Item> 
+      </ListGroup.Item>
     );
   }
 }
@@ -105,7 +105,7 @@ class UserPermissionsModal extends Component {
     const body = ( this.props.user_id && this.state.cruises) ?
       this.state.cruises.map((cruise) => {
 
-        const cruiseCheckbox = <Form.Check 
+        const cruiseCheckbox = <Form.Check
           type="switch"
           id={`cruise_${cruise.id}`}
           label={`${cruise.cruise_id}${(cruise.cruise_additional_meta.cruise_name) ? ': ' + cruise.cruise_additional_meta.cruise_name : ''}`}

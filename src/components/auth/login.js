@@ -10,7 +10,7 @@ import * as mapDispatchToProps from '../../actions';
 import { ROOT_PATH, LOGIN_SCREEN_TXT, LOGIN_IMAGE, RECAPTCHA_SITE_KEY } from '../../client_config';
 
 class Login extends Component {
- 
+
   constructor (props) {
     super(props);
 
@@ -76,7 +76,7 @@ class Login extends Component {
       );
     }
   }
- 
+
   render() {
     const { handleSubmit, submitting, valid } = this.props;
     const loginCardHeader = (<h5 className="form-signin-heading">Please Sign In</h5>);
@@ -95,7 +95,7 @@ class Login extends Component {
     const loginButton = <Button variant="primary" type="submit" block disabled={submitting || !valid}>Login</Button>;
     const loginAsGuestButton = <Button variant="success" onClick={() => this.switch2Guest()} block>Login as Guest</Button>;
 
-    const loginImage = ( LOGIN_IMAGE !== "" )? 
+    const loginImage = ( LOGIN_IMAGE !== "" )?
     <div className="d-flex justify-content-center">
       <Image style={{width:"250px"}} fluid src={`${ROOT_PATH}images/${LOGIN_IMAGE}`} />
     </div> : null

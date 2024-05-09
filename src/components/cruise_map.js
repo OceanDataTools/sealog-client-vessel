@@ -99,7 +99,7 @@ class CruiseMap extends Component {
         else {
           this.setState({replayEventIndex: eventIndex + 1});
           this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)
-        } 
+        }
       }
     }
     else if(event.key === "ArrowUp") {
@@ -140,7 +140,7 @@ class CruiseMap extends Component {
       }
 
       aux_data.forEach((r_data) => {
-        const latLng = [ 
+        const latLng = [
           parseFloat(r_data['data_array'].find(data => data['data_name'] == 'latitude')['data_value']),
           parseFloat(r_data['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])
         ];

@@ -71,7 +71,7 @@ class CruisePermissionsModal extends Component {
     const body = ( this.state.cruise && this.state.users) ?
       this.state.users.map((user) => {
         return ( <ListGroup.Item key={`user_${user.id}`} >
-          <Form.Check 
+          <Form.Check
             type="switch"
             id={`user_${user.id}`}
             label={`${user.fullname}`}
