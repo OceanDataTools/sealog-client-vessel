@@ -22,7 +22,6 @@ class NonSystemEventTemplatesWipeModal extends Component {
   }
 
   render() {
-
     const { show, handleHide, handleDelete } = this.props
     if( handleDelete ) {
       return (

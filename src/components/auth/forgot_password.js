@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { compose } from 'redux';
 import { reduxForm, Field } from 'redux-form';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Form, Row, Col, Card, Button, Alert } from 'react-bootstrap';

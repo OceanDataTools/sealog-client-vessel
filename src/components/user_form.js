@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import { Button, Card, Form, } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import { renderAlert, renderCheckboxGroup, renderHidden, renderMessage, renderSwitch, renderTextField } from './form_elements';
+import { renderAlert, renderCheckboxGroup, renderMessage, renderSwitch, renderTextField } from './form_elements';
 import * as mapDispatchToProps from '../actions';
 import { standardUserRoleOptions } from '../standard_user_role_options';
 import { systemUserRoleOptions } from '../system_user_role_options';
@@ -23,11 +23,17 @@ class UserForm extends Component {
   }
 
   handleFormSubmit(formProps) {
+    if(this.props.user.id) {
+      formProps.id = this.props.user.id;
+      delete formProps.email;
+      delete formProps.last_login
+    }
+    else {
+      formProps.system_user = formProps.system_user || false;
+      formProps.disabled = formProps.disabled || false;
+    }
 
     delete formProps.confirmPassword;
-
-    formProps.system_user = formProps.system_user || false;
-    formProps.disabled = formProps.disabled || false;
 
     if (formProps.id) {
       this.props.updateUser(formProps);
@@ -77,7 +83,6 @@ class UserForm extends Component {
   }
 
   render() {
-
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const formHeader = (<div>{(this.props.user.id) ? "Update" : "Add"} User</div>);
 
@@ -90,10 +95,6 @@ class UserForm extends Component {
           <Card.Header>{formHeader}</Card.Header>
           <Card.Body>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-             <Field
-              name="id"
-              component={renderHidden}
-            />
              <Form.Row>
                 <Field
                   name="username"
@@ -155,7 +156,6 @@ class UserForm extends Component {
 }
 
 const validate = (formProps) => {
-
   const errors = {};
 
   if (!formProps.username) {
@@ -190,7 +190,6 @@ const validate = (formProps) => {
 }
 
 const mapStateToProps = (state) => {
-
   let initialValues = { ...state.user.user }
 
   return {

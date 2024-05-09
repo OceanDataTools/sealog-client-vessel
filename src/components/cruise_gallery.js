@@ -1,20 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import axios from 'axios';
-import Cookies from 'universal-cookie';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { ButtonToolbar, Container, Row, Col, Tabs, Tab, Form } from 'react-bootstrap';
 import EventShowDetailsModal from './event_show_details_modal';
 import CruiseGalleryTab from './cruise_gallery_tab';
 import CruiseModeDropdown from './cruise_mode_dropdown';
-import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL } from '../client_config';
+import { get_event_aux_data_by_cruise } from '../api';
+import { IMAGES_AUX_DATA_SOURCES } from '../client_config';
 import { getImageUrl } from '../utils';
 import { _Cruises_ } from '../vocab';
-
-const cookies = new Cookies();
-
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
+import * as mapDispatchToProps from '../actions';
 
 class CruiseGallery extends Component {
 
@@ -33,7 +28,7 @@ class CruiseGallery extends Component {
   }
 
   componentDidMount() {
-    this.initCruiseImages(this.props.match.params.id, this.props.event.hideASNAP);
+    this.initCruiseImages(this.props.match.params.id);
 
     if(!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
       this.props.initCruise(this.props.match.params.id);
@@ -43,7 +38,7 @@ class CruiseGallery extends Component {
   componentDidUpdate(prevProps) {
 
     if(prevProps.event.hideASNAP !== this.props.event.hideASNAP) {
-      this.initCruiseImages(this.props.match.params.id, this.props.event.hideASNAP);
+      this.initCruiseImages(this.props.match.params.id);
     }
   }
 
@@ -61,43 +56,31 @@ class CruiseGallery extends Component {
   componentWillUnmount(){
   }
 
-  async initCruiseImages(id, hideASNAP=false, auxDatasourceFilter=imageAuxDataSources) {
+  async initCruiseImages(id, auxDatasourceFilter=IMAGES_AUX_DATA_SOURCES) {
     this.setState({ fetching: true});
 
-    let url = `${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${auxDatasourceFilter.join('&datasource=')}`
-
-    if(hideASNAP) {
-      url += '&value=!ASNAP'
+    let query = {
+      datasource: auxDatasourceFilter,
+      value: (this.props.event.hideASNAP) ? ['!ASNAP'] : null
     }
 
-    await axios.get(url,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
+    const aux_data = await get_event_aux_data_by_cruise(query, id);
 
-        let image_data = {};
-        response.data.forEach((data) => {
-          for (let i = 0; i < data.data_array.length; i+=2) {
-            if(!(data.data_array[i].data_value in image_data)){
-              image_data[data.data_array[i].data_value] = { images: [] };
-            }
-
-            image_data[data.data_array[i].data_value].images.push({
-              event_id: data.event_id,
-              filepath: getImageUrl(data.data_array[i+1].data_value)
-            });
-          }
-        });
-
-        this.setState({ aux_data: image_data, fetching: false });
-      }).catch((error)=>{
-
-        if(error.response.data.statusCode !== 404) {
-          console.error('Problem connecting to API');
-          console.debug(error);
+    let image_data = {};
+    aux_data.forEach((data) => {
+      for (let i = 0; i < data.data_array.length; i+=2) {
+        if(!(data.data_array[i].data_value in image_data)){
+          image_data[data.data_array[i].data_value] = { images: [] };
         }
-        this.setState({ aux_data: [], fetching: false });
-      });
+
+        image_data[data.data_array[i].data_value].images.push({
+          event_id: data.event_id,
+          filepath: getImageUrl(data.data_array[i+1].data_value)
+        });
+      }
+    });
+
+    this.setState({ aux_data: image_data, fetching: false });
   }
 
   handleImageCountChange(event) {
@@ -127,20 +110,25 @@ class CruiseGallery extends Component {
       ));
     }
 
-    return (galleries.length > 0 )?
+    return (galleries.length) ?
       (
-        <Tabs className="category-tab" variant="pills" id="galleries" mountOnEnter={true} unmountOnExit={true}>
+        <Tabs className="category-tab" variant="pills" transition={false} id="galleries" mountOnEnter={true} unmountOnExit={true}>
           { galleries }
         </Tabs>
-      ) :  (<div><hr className="border-secondary"/><span className="pl-2">No images found</span></div>);
+      ) : (
+        <div>
+          <hr className="border-secondary"/>
+          <span className="pl-2">No images found</span>
+        </div>
+      );
   }
 
   render(){
 
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "loading...";
     const galleries = (this.state.fetching)? <div><hr className="border-secondary"/><span className="pl-2">Loading...</span></div> : this.renderGalleries();
-
     const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.props.event.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.props.event.fetching} label='ASNAP'/>);
+    const imgCountOptions = [16, 32, 48, 64, 80].map((img_count, idx) => { return (<option key={`count_option${idx}`}>{img_count}</option>) })
 
     return (
       <Container className="mt-2">
@@ -149,7 +137,7 @@ class CruiseGallery extends Component {
           <ButtonToolbar className="align-items-center">
             <span onClick={() => this.props.gotoCruiseMenu()} className="text-warning">{_Cruises_}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
-            <span  className="text-warning">{cruise_id}</span>
+            <span className="text-warning">{cruise_id}</span>
             <FontAwesomeIcon icon="chevron-right" fixedWidth/>
             <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={"Gallery"} modes={["Replay", "Review", "Map"]}/>
           </ButtonToolbar>
@@ -157,11 +145,7 @@ class CruiseGallery extends Component {
             <Form style={{marginTop: '-4px'}} className='float-right' inline>
               <Form.Group controlId="selectMaxImagesPerPage" >
                 <Form.Control size="sm" as="select" onChange={this.handleImageCountChange}>
-                  <option>16</option>
-                  <option>32</option>
-                  <option>48</option>
-                  <option>64</option>
-                  <option>80</option>
+                  {imgCountOptions}
                 </Form.Control>
                 <Form.Label>&nbsp;&nbsp;Images/Page&nbsp;&nbsp;</Form.Label>
               </Form.Group>

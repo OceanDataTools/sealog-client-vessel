@@ -50,9 +50,9 @@ class CopyCruiseToClipboard extends Component {
       text += (this.props.cruise.cruise_location) ? `Location: ${this.props.cruise.cruise_location}\n` : "";
       text += '\n';
       text += `Start of ${_Cruise_}: ${cruiseStartTime.format("YYYY/MM/DD")}\n`;
-      text += (this.props.cruise.cruise_additional_meta.cruise_departure_location) ? `Departure Port:      ${this.props.cruise.cruise_additional_meta.cruise_departure_location}\n` : "";
+      text += (this.props.cruise.cruise_additional_meta.cruise_departure_location) ? `Departure Port:  ${this.props.cruise.cruise_additional_meta.cruise_departure_location}\n` : "";
       text += `End of ${_Cruise_}:   ${cruiseStopTime.format("YYYY/MM/DD")}\n`;
-      text += (this.props.cruise.cruise_additional_meta.cruise_arrival_location) ? `Arrival Port:        ${this.props.cruise.cruise_additional_meta.cruise_arrival_location}\n` : "";
+      text += (this.props.cruise.cruise_additional_meta.cruise_arrival_location) ? `Arrival Port:    ${this.props.cruise.cruise_additional_meta.cruise_arrival_location}\n` : "";
       text += '\n';
       text += `${_Cruise_} Duration: ${moment.duration(cruiseDurationValue).format("d [days] h [hours] m [minutes]")}\n`;
 

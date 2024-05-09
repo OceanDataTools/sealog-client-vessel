@@ -40,7 +40,6 @@ class EventCommentModal extends Component {
     }
   }
 
-
   handleFormSubmit(formProps) {
 
     let existing_comment = false;
@@ -57,7 +56,7 @@ class EventCommentModal extends Component {
       event_options.push({ event_option_name: 'event_comment', event_option_value: formProps.event_comment})
     }
 
-    this.props.handleUpdateEvent(this.props.event.id, this.props.event.event_value, this.props.event.event_free_text, event_options, this.props.event.ts);
+    this.props.handleUpdateEvent({ ...this.props.event, event_options });
     this.props.handleHide();
   }
 

@@ -5,14 +5,18 @@ import { connect } from 'react-redux';
 import { ButtonToolbar, Container, Row, Col, Card, ListGroup, Image, OverlayTrigger, Tooltip, Form } from 'react-bootstrap';
 import Slider, { createSliderWithTooltip } from 'rc-slider';
 import EventFilterForm from './event_filter_form';
+import AuxDataCards from './aux_data_cards';
+import EventOptionsCard from './event_options_card';
+import ImageryCards from './imagery_cards';
 import ImagePreviewModal from './image_preview_modal';
 import EventCommentModal from './event_comment_modal';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
-import * as mapDispatchToProps from '../actions';
-import { getImageUrl, handleMissingImage } from '../utils';
+import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_config';
+import { handleMissingImage } from '../utils';
 import { _Cruises_ } from '../vocab';
+import * as mapDispatchToProps from '../actions';
 
 const playTimer = 3000;
 const ffwdTimer = 1000;
@@ -24,11 +28,7 @@ const FREV = 3;
 
 const maxEventsPerPage = 10;
 
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
-
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
-
-const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
+const excludeAuxDataSources = Array.from(new Set([ ...EXCLUDE_AUX_DATA_SOURCES, ...IMAGES_AUX_DATA_SOURCES]));
 
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
@@ -60,19 +60,14 @@ class CruiseReplay extends Component {
   }
 
   componentDidMount() {
-
     if(!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
-      this.props.initCruiseReplay(this.props.match.params.id, this.props.event.hideASNAP);
+      this.props.initCruiseReplay(this.props.match.params.id);
     }
     else {
       const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id);
-      this.setState(
-        {
-          replayEventIndex: eventIndex,
-          activePage: Math.ceil((eventIndex+1)/maxEventsPerPage)
-        }
-      );
+      this.handlePageSelect(Math.ceil((eventIndex + 1)/maxEventsPerPage), false);
     }
+
     this.divFocus.focus();
   }
 
@@ -85,15 +80,15 @@ class CruiseReplay extends Component {
     }
   }
 
-  updateEventFilter(filter = {}) {
+  updateEventFilter(filter) {
     this.setState({ activePage: 1, replayEventIndex: 0 });
     this.handleCruiseReplayPause();
     this.props.updateEventFilterForm(filter);
-    this.props.eventUpdateCruiseReplay(this.props.match.params.id, this.props.event.hideASNAP);
+    this.props.eventUpdateCruiseReplay();
   }
 
   toggleASNAP() {
-    this.props.eventUpdateCruiseReplay(this.props.cruise.id, !this.props.event.hideASNAP);
+    this.props.eventUpdateCruiseReplay();
     this.handleCruiseReplayPause();
     if(this.props.event.hideASNAP) {
       this.props.showASNAP();
@@ -275,96 +270,9 @@ class CruiseReplay extends Component {
     }
   }
 
-  renderImageryCard() {
-    if(this.props.event && this.props.event.selected_event.aux_data) { 
-      let frameGrabberData = this.props.event.selected_event.aux_data.filter(aux_data => imageAuxDataSources.includes(aux_data.data_source));
-      let tmpData = [];
-
-      if(frameGrabberData.length > 0) {
-        for (let i = 0; i < frameGrabberData.length; i++) {
-          for (let j = 0; j < frameGrabberData[i].data_array.length; j+=2) {
-
-            tmpData.push({
-              source: frameGrabberData[i].data_array[j].data_value,
-              filepath: getImageUrl(frameGrabberData[i].data_array[j+1].data_value)
-            });
-          }
-        }
-
-        return (
-          tmpData.map((camera) => {
-            return (
-              <Col className="px-1 mb-2" key={camera.source} xs={12} sm={6} md={4} lg={3}>
-                {this.renderImage(camera.source, camera.filepath)}
-              </Col>
-            );
-          })
-        )
-      }
-    }
-  }
-
-  renderEventOptionsCard() {
-
-    if(this.props.event.selected_event && this.props.event.selected_event.event_options && this.props.event.selected_event.event_options.length > 0) {
-
-      let return_event_options = this.props.event.selected_event.event_options.reduce((filtered, event_option, index) => {
-        if(event_option.event_option_name !== 'event_comment') {
-          filtered.push(<div key={`event_option_${index}`}><span className="data-name">{event_option.event_option_name}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{event_option.event_option_value}</span><br/></div>);
-        }
-
-        return filtered;
-      },[]);
-
-      return (return_event_options.length > 0)? (
-        <Col className="px-1 mb-2" xs={12} sm={6} md={4} lg={3}>
-          <Card className="event-data-card">
-            <Card.Header>Event Options</Card.Header>
-            <Card.Body>
-              {return_event_options}
-            </Card.Body>
-          </Card>
-        </Col>
-      ) : null;
-    }
-  }
-
-  renderAuxDataCard() {
-
-    if(this.props.event.selected_event && this.props.event.selected_event.aux_data) {
-
-      const aux_data = this.props.event.selected_event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
-
-      aux_data.sort((a, b) => {
-        return (sortAuxDataSourceReference.indexOf(a.data_source) < sortAuxDataSourceReference.indexOf(b.data_source)) ? -1 : 1;
-      });
-
-      let return_aux_data = aux_data.map((aux_data) => {
-        const aux_data_points = aux_data.data_array.map((data, index) => {
-          return(<div key={`${aux_data.data_source}_data_point_${index}`}><span className="data-name">{data.data_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span> <span className="float-right" style={{wordWrap:'break-word'}} >{data.data_value} {data.data_uom}</span><br/></div>);
-        });
-
-        return (
-          <Col className="px-1 pb-2" key={`${aux_data.data_source}_col`} sm={6} md={4} lg={3}>
-            <Card className="event-data-card" key={`${aux_data.data_source}`}>
-              <Card.Header>{aux_data.data_source.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</Card.Header>
-              <Card.Body>
-                {aux_data_points}
-              </Card.Body>
-            </Card>
-          </Col>
-        );
-      });
-
-      return return_aux_data;
-    }
-
-    return null;
-  }
-
   renderControlsCard() {
 
-    if(this.props.cruise) {
+    if(this.props.event.selected_event) {
       const cruiseStartTime = moment(this.props.cruise.start_ts);
       const cruiseEndTime = moment(this.props.cruise.stop_ts);
       const cruiseDuration = cruiseEndTime.diff(cruiseStartTime);
@@ -456,7 +364,7 @@ class CruiseReplay extends Component {
 
           let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
           let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
-          let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
+          let eventComment = (this.props.roles && (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))) ? commentTooltip : null;
 
           return (<ListGroup.Item className="event-list-item py-1" key={event.id} active={active} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span><span className="float-right">{eventComment}</span></ListGroup.Item>);
 
@@ -481,8 +389,13 @@ class CruiseReplay extends Component {
   }
 
   render(){
-
     const cruise_id = (this.props.cruise.cruise_id)? this.props.cruise.cruise_id : "Loading...";
+
+    const framegrab_data_sources = (this.props.event.selected_event && this.props.event.selected_event.aux_data) ? this.props.event.selected_event.aux_data.filter(aux_data => IMAGES_AUX_DATA_SOURCES.includes(aux_data.data_source)) : []
+    const aux_data = (this.props.event.selected_event.aux_data) ? this.props.event.selected_event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source)) : []
+    aux_data.sort((a, b) => {
+      return (AUX_DATA_SORT_ORDER.indexOf(a.data_source) < AUX_DATA_SORT_ORDER.indexOf(b.data_source)) ? -1 : 1;
+    });
 
     return (
       <Container className="mt-2">
@@ -498,9 +411,9 @@ class CruiseReplay extends Component {
           </ButtonToolbar>
         </Row>
         <Row>
-          {this.renderImageryCard()}
-          {this.renderAuxDataCard()}
-          {this.renderEventOptionsCard()}
+          <ImageryCards framegrab_data_sources={framegrab_data_sources} onClick={this.handleImagePreviewModal} />
+          <AuxDataCards aux_data={aux_data} />
+          <EventOptionsCard event_options={this.props.event.selected_event.event_options || []}/>
         </Row>
         <Row>
           <Col className="px-1 mb-1" md={9} lg={9}>

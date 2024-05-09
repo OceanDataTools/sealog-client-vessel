@@ -1,19 +1,15 @@
 import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
-import Cookies from 'universal-cookie';
 import { Card, Col, Container, Form, ListGroup, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
-import axios from 'axios';
 import EventFilterForm from './event_filter_form';
 import EventCommentModal from './event_comment_modal';
 import DeleteEventModal from './delete_event_modal';
 import EventShowDetailsModal from './event_show_details_modal';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
+import { get_events, get_events_count } from '../api';
 import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL } from '../client_config';
-
-const cookies = new Cookies();
 
 const maxEventsPerPage = 15;
 
@@ -26,7 +22,7 @@ class EventManagement extends Component {
       hideASNAP: true,
       activePage: 1,
       fetching: false,
-      events: null,
+      events: [],
       eventCount: 0,
       eventFilter: {},
     };
@@ -38,15 +34,35 @@ class EventManagement extends Component {
   }
 
   componentDidMount(){
-    if(!this.state.events){
-      this.fetchEventsForDisplay();
-      this.fetchEventCount();
+    this.fetchEvents();
+    this.fetchEventsCount();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(prevState.activePage !== this.state.activePage) {
+      this.fetchEvents();
+    }
+
+    if(prevState.eventFilter !== this.state.eventFilter) {
+
+      if(this.state.activePage > 1) {
+        this.setState({ activePage: 1 });
+      }
+      else {
+        this.fetchEvents();
+      }
+      this.fetchEventsCount();
+    }
+
+    if(prevState.hideASNAP !== this.state.hideASNAP) {
+      this.setState({ activePage: 1 });
+      this.fetchEvents();
+      this.fetchEventsCount();
     }
   }
 
   handlePageSelect(eventKey) {
-    this.setState({activePage: eventKey});
-    this.fetchEventsForDisplay(this.state.eventFilter, eventKey);
+    this.setState({ activePage: eventKey });
   }
 
   handleEventCommentModal(event) {
@@ -54,22 +70,22 @@ class EventManagement extends Component {
   }
 
   updateEventFilter(filter = {}) {
-    this.setState({ activePage: 1, eventFilter: filter });
-    this.fetchEventsForDisplay(filter, 1);
-    this.fetchEventCount(filter);
+    this.setState({ eventFilter: filter });
   }
 
-  async handleEventUpdate(event_id, event_value, event_free_text, event_options, event_ts) {
-    const response = await this.props.updateEvent(event_id, event_value, event_free_text, event_options, event_ts);
-    if(response.response.status === 204) {
-      this.setState(prevState => ({events: prevState.events.map((event) => {
-        if(event.id === event_id) {
-          event.event_options = event_options;
-        }
-        return event;
-      })
-      }));
-    }
+  async handleEventUpdate(formProps) {
+    await this.props.updateEvent(formProps);
+    this.fetchEvents();
+    // const response = await this.props.updateEvent(formProps);
+    // if(response.response.status === 204) {
+    //   this.setState(prevState => ({ events: prevState.events.map((event) => {
+    //     if(event.id === event_id) {
+    //       event.event_options = event_options;
+    //     }
+    //     return event;
+    //   })
+    //   }));
+    // }
   }
 
   handleEventDeleteModal(event) {
@@ -78,7 +94,10 @@ class EventManagement extends Component {
 
   async handleEventDelete(id) {
     const response = await this.props.deleteEvent(id);
-    if(response.response.status === 204) {
+    if(response.success) {
+      if((this.state.events.length % maxEventsPerPage) === 0 && (this.state.events.length / maxEventsPerPage) === (this.state.activePage-1) ) {
+        this.handlePageSelect(this.state.activePage-1);
+      }
       this.setState({events: this.state.events.filter(event => event.id !== id)});
       if((this.state.events.length % maxEventsPerPage) === 0 && (this.state.events.length / maxEventsPerPage) === (this.state.activePage-1) ) {
         this.handlePageSelect(this.state.activePage-1);
@@ -90,80 +109,57 @@ class EventManagement extends Component {
     this.props.showModal('eventShowDetails', { event: event, handleUpdateEvent: this.handleEventUpdate });
   }
 
-  async fetchEventsForDisplay(eventFilter = this.state.eventFilter, activePage = this.state.activePage) {
+  async fetchEvents() {
     this.setState({fetching: true});
 
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
-    value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
-    let sort = `&sort=newest`;
-    let offset = `&offset=${(activePage-1)*maxEventsPerPage}`;
-    let limit = `&limit=${maxEventsPerPage}`;
+    let eventFilter_value = (this.state.eventFilter.value) ? this.state.eventFilter.value : (this.state.hideASNAP) ? '!ASNAP' : null;
 
-    await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}${offset}${limit}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        this.setState({events: response.data, fetching: false});
-      }).catch((error) => {
-        if(error.response.data.statusCode !== 404){
-          console.error('Problem connecting to API');
-          console.debug(error.response);
-        }
-        this.setState({events: [], fetching: false});
-      });
+    let query = { 
+      ...this.state.eventFilter,
+      value: (eventFilter_value) ? eventFilter_value.split(',') : null,
+      sort: 'newest',
+      offset: (this.state.activePage-1)*maxEventsPerPage,
+      limit: maxEventsPerPage
+    }
+    const events = await get_events(query);
+    this.setState({ events, fetching: false });
   }
 
-  async fetchEventCount(eventFilter = this.state.eventFilter) {
-    const cookies = new Cookies();
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
-    value = (this.state.hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
+  async fetchEventsCount() {
+    let eventFilter_value = (this.state.eventFilter.value) ? this.state.eventFilter.value : (this.state.hideASNAP) ? '!ASNAP' : null;
 
-    await axios.get(`${API_ROOT_URL}/api/v1/events/count?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        this.setState({eventCount: response.data.events});
-      }).catch((error)=>{
-        console.error('Problem connecting to API');
-        console.debug(error.response);
-        this.setState({eventCount: 0});
-      });
+    let query = { 
+      ...this.state.eventFilter,
+      value: (eventFilter_value) ? eventFilter_value.split(',') : null,
+      sort: 'newest',
+    }
+    const eventCount = await get_events_count(query);
+    
+    this.setState({ eventCount });
   }
+
 
   async toggleASNAP() {
     await this.setState( prevState => ({hideASNAP: !prevState.hideASNAP, activePage: 1}));
-    this.fetchEventsForDisplay();
-    this.fetchEventCount();
+    this.fetchEvents();
   }
 
   renderEventListHeader() {
-
     const Label = "Filtered Events";
-    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.state.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.props.event.fetching} label='ASNAP'/>);
+    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.state.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.state.fetching} label='ASNAP'/>);
 
     return (
       <div>
         { Label }
         <span className="float-right">
           {ASNAPToggle}
-          <ExportDropdown id="dropdown-download" disabled={this.props.event.fetching} hideASNAP={this.state.hideASNAP} eventFilter={this.state.eventFilter} />
+          <ExportDropdown id="dropdown-download" disabled={this.state.fetching} hideASNAP={this.state.hideASNAP} eventFilter={this.state.eventFilter} />
         </span>
       </div>
     );
   }
 
   renderEvents() {
-
     if(this.state.events && this.state.events.length > 0){
 
       let eventList = this.state.events.map((event) => {
@@ -198,7 +194,6 @@ class EventManagement extends Component {
   }
 
   renderEventCard() {
-
     if (!this.state.events) {
       return (
         <Card className="border-secondary">
@@ -240,8 +235,7 @@ class EventManagement extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    roles: state.user.profile.roles,
-    event: state.event,
+    roles: state.user.profile.roles
   };
 }
 

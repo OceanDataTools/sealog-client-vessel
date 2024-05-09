@@ -7,7 +7,6 @@ export const dateFormat = "YYYY-MM-DD";
 export const timeFormat = "HH:mm:ss";
 
 export const renderStaticTextField = ({ input, label, xs=12, sm=12, md=12, lg=12}) => {
-
   const labelComponent = (label)? <Form.Label>{label}</Form.Label> : null;
 
   return (
@@ -44,7 +43,6 @@ export const renderTextArea = ({ input, label, placeholder, required, meta: { to
 }
 
 export const renderSelectField = ({ input, label, placeholder, required, options, meta: { touched, error }, disabled=false, xs=12, sm=12, md=12, lg=12 }) => {
-
   let requiredField = (required)? <span className='text-danger'> *</span> : '';
   let defaultOption = ( <option key={`${input.name}.empty`} value=""></option> );
   let optionList = options.map((option, index) => {
@@ -65,7 +63,7 @@ export const renderSelectField = ({ input, label, placeholder, required, options
   );
 }
 
-export const renderDatePicker = ({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', disabled=false, xs=12, sm=12, md=12, lg=12 }) => {
+export const renderDatePicker = ({ input, label, required, meta: { error }, dateFormat='YYYY-MM-DD', disabled=false, xs=12, sm=12, md=12, lg=12 }) => {
   let requiredField = (required)? <span className='text-danger'> *</span> : '';
 
   return (
@@ -87,7 +85,7 @@ export const renderDatePicker = ({ input, label, required, meta: { touched, erro
   );
 }
 
-export const renderDateTimePicker = ({ input, label, required, meta: { touched, error }, dateFormat='YYYY-MM-DD', timeFormat='HH:mm:ss', disabled=false, xs=12, sm=12, md=12, lg=12 }) => {
+export const renderDateTimePicker = ({ input, label, required, meta: { error }, dateFormat='YYYY-MM-DD', timeFormat='HH:mm:ss', disabled=false, xs=12, sm=12, md=12, lg=12 }) => {
   let requiredField = (required)? <span className='text-danger'> *</span> : ''
 
   return (
@@ -106,7 +104,6 @@ export const renderDateTimePicker = ({ input, label, required, meta: { touched, 
 }
 
 export const renderCheckboxGroup = ({ label, options, input, required, meta: { dirty, error }, disabled=false, inline=false, indication=false }) => {
-
   const requiredField = (required)? (<span className='text-danger'> *</span>) : '';
   const checkboxList = options.map((option, index) => {
 
@@ -161,12 +158,10 @@ export const renderCheckbox = ({ input, label, meta: { dirty, error }, disabled=
 
 
 export const renderRadioGroup = ({ label, options, input, required, meta: { dirty, error }, disabled=false, inline=false, indication=false }) => {
-
   const requiredField = (required)? (<span className='text-danger'> *</span>) : '';
   const radioList = options.map((option, index) => {
 
     const tooltip = (option.description)? (<Tooltip id={`${option.value}_Tooltip`}>{option.description}</Tooltip>) : null
-
     const radio = <Form.Check
       label={(indication && input.value === option.value) ? <span className="text-warning">{option.value}</span> : option.value }
       name={`${label}`}

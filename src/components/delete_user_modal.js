@@ -43,7 +43,8 @@ class DeleteUserModal extends Component {
           </Modal.Footer>
         </Modal>
       );
-    } else {
+    }
+    else {
       return null;
     }
   }

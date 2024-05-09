@@ -33,7 +33,7 @@ class CruiseReview extends Component {
 
   componentDidMount(){
     if(!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
-      this.props.initCruiseReplay(this.props.match.params.id, this.props.event.hideASNAP);
+      this.props.initCruiseReplay(this.props.match.params.id);
     }
     else {
       const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id);
@@ -105,15 +105,13 @@ class CruiseReview extends Component {
 
   handleEventClick(event) {
     if(event) {
-      this.props.advanceCrusieReplayTo(event.id);
+      this.props.advanceCruiseReplayTo(event.id);
     }
   }
 
-  async handleEventUpdate(event_id, event_value, event_free_text, event_options, event_ts) {
-    const response = await this.props.updateEvent(event_id, event_value, event_free_text, event_options, event_ts);
-    if(response.response.status === 204) {
-      this.props.updateCrusieReplayEvent(event_id);
-    }
+  async handleEventUpdate(formProps) {
+    await this.props.updateEvent(formProps);
+    this.props.updateCruiseReplayEvent(formProps.id);
   }
 
   handleEventShowDetailsModal(event) {

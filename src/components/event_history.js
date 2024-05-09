@@ -2,22 +2,19 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { Button, ListGroup, Image, Card, Tooltip, OverlayTrigger, Row, Col, Form, FormControl } from 'react-bootstrap';
+import Moment from 'moment';
 import ImagePreviewModal from './image_preview_modal';
-import * as mapDispatchToProps from '../actions';
 import { Client } from '@hapi/nes/lib/client';
-import axios from 'axios';
-import Cookies from 'universal-cookie';
-
-import { WS_ROOT_URL, API_ROOT_URL } from '../client_config';
+import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_config';
+import { authorizationHeader, get_events, get_event_exports } from '../api';
 import { getImageUrl, handleMissingImage } from '../utils';
+import * as mapDispatchToProps from '../actions';
 
-const cookies = new Cookies();
-
-const excludeAuxDataSources = ['vesselRealtimeFramegrabberData'];
-const imageAuxDataSources = ['vesselRealtimeFramegrabberData'];
-const sortAuxDataSourceReference = ['vesselRealtimeNavData'];
+const excludeAuxDataSources = Array.from(new Set([ ...EXCLUDE_AUX_DATA_SOURCES, ...IMAGES_AUX_DATA_SOURCES]));
 
 const eventHistoryRef = "eventHistory";
+
+const maxEventsPerPage = 20;
 
 class EventHistory extends Component {
 
@@ -25,50 +22,55 @@ class EventHistory extends Component {
     super(props);
 
     this.state = {
-      page: 0,
-      event: null,
-      showASNAP: false,
+      activePage: 1,
+      event: {},
+      events: [],
+      fetching: false,
+      hideASNAP: true,
       showNewEventDetails: true,
       showEventHistory: true,
       showEventHistoryFullscreen: false,
       filterTimer: null,
-      filter: ''
+      eventFilterValue: null
     };
 
     this.client = new Client(`${WS_ROOT_URL}`);
     this.connectToWS = this.connectToWS.bind(this);
     this.handleSearchChange = this.handleSearchChange.bind(this);
+    this.handleUpdateEvent = this.handleUpdateEvent.bind(this);
+    this.fetchEventExport = this.fetchEventExport.bind(this);
+    this.fetchEvents = this.fetchEvents.bind(this);
+    this.toggleNewEventDetails = this.toggleNewEventDetails.bind(this);
+    this.toggleEventHistory = this.toggleEventHistory.bind(this);
+    this.toggleEventHistoryFullscreen = this.toggleEventHistoryFullscreen.bind(this);
 
   }
 
   componentDidMount() {
-    this.props.fetchEventHistory();
     if(this.props.authenticated) {
+      this.fetchEvents();
+      this.fetchEventExport();
       this.connectToWS();
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if(prevState.page !== this.state.page) {
-      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, this.state.page);
+    if(prevState.activePage !== this.state.activePage) {
+      this.fetchEvents();
     }
 
-    if(prevState.filter !== this.state.filter) {
-      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, 0);
-      this.setState({page: 0});
+    if(prevState.eventFilterValue !== this.state.eventFilterValue) {
+      this.setState({activePage: 1});
+      this.fetchEvents();
     }
 
-    if(prevState.showASNAP !== this.state.showASNAP) {
-      this.props.fetchEventHistory(this.state.showASNAP, this.state.filter, 0);
-      this.setState({page: 0});
+    if(prevState.hideASNAP !== this.state.hideASNAP) {
+      this.setState({activePage: 1});
+      this.fetchEvents();
     }
 
-    if(prevState.showNewEventDetails !== this.state.showNewEventDetails && this.state.showNewEventDetails && this.props.history[0]) {
-      this.fetchEventExport(this.props.history[0].id);
-    }
-
-    if(prevProps.history[0] !== this.props.history[0] && this.props.history[0] && !this.state.event && this.state.showNewEventDetails) {
-      this.fetchEventExport(this.props.history[0].id);
+    if(prevState.showNewEventDetails !== this.state.showNewEventDetails && this.state.showNewEventDetails && this.state.events[0]) {
+      this.fetchEventExport(this.state.events[0].id);
     }
   }
 
@@ -81,171 +83,105 @@ class EventHistory extends Component {
   async connectToWS() {
     try {
       await this.client.connect({
-        auth: {
-          headers: {
-            Authorization: 'Bearer ' + cookies.get('token')
-          }
-        }
+        auth: authorizationHeader
       });
 
-      const filteredEvent = (event_value) => {
-        return (this.state.filter == '') ? true : this.state.filter.split(',').reduce((answer, filter_item) => {
-          const regex = RegExp(filter_item, 'i');
-          if(event_value.match(regex)) {
-            return true;
-          }
-        }, false)
-      }
-
       const updateHandler = (update) => {
-        if(!(!this.state.showASNAP && update.event_value === "ASNAP") && filteredEvent(update.event_value)) {
-          if(this.state.page == 0) {
-            this.props.updateEventHistory(update);
+        if(this.state.events.length === 0) {
+          this.fetchEvents();
+          this.fetchEventExport();
+        }
+        else {
+          const oldest_ts = Moment(this.state.events.slice(-1)[0].ts);
+          const event_ts = Moment(this.state.event.ts);
+          const update_ts = Moment(update.ts);
+
+          if(update_ts > oldest_ts) {
+            this.fetchEvents();
           }
-          this.fetchEventExport(update.id);
+
+          if(update_ts > event_ts) {
+            this.fetchEventExport();
+          }
         }
       };
 
       const updateAuxDataHandler = (update) => {
-        if(this.state.showNewEventDetails && update.event_id === this.state.event.id) {
-          this.fetchEventExport(this.state.event.id);
+        const event = get_events({}, update.event_id) || {}
+        if(event.id) {
+          updateHandler(event);
         }
       };
 
-      const deleteHandler = (update) => {
-        if(update.id === this.state.event.id) {
-          if(this.props.history[0] && this.state.page == 0) {
-            this.fetchEventExport(this.props.history[0].id);
-          }
-          else {
-            this.fetchEventExport();
-          }
-        }
-
-        this.props.fetchEventHistory(this.state.showASNAP, this.state.page);
-      };
-
-      this.client.subscribe('/ws/status/newEvents', updateHandler);
-      this.client.subscribe('/ws/status/updateEvents', updateHandler);
-      this.client.subscribe('/ws/status/deleteEvents', deleteHandler);
-      this.client.subscribe('/ws/status/newEventAuxData', updateAuxDataHandler);
-      this.client.subscribe('/ws/status/updateEventAuxData', updateAuxDataHandler);
+      await this.client.subscribe('/ws/status/newEvents', updateHandler);
+      await this.client.subscribe('/ws/status/updateEvents', updateHandler);
+      await this.client.subscribe('/ws/status/deleteEvents', updateHandler);
+      await this.client.subscribe('/ws/status/newEventAuxData', updateAuxDataHandler);
+      await this.client.subscribe('/ws/status/updateEventAuxData', updateAuxDataHandler);
 
     } catch(error) {
       console.error("Problem connecting to websocket subscriptions")
       console.debug(error);
+
+      // await this.connectToWS();
+      // throw error;
     }
+  }
+
+  async fetchEvents() {
+    this.setState({fetching: true});
+
+    let eventFilterValue = (this.state.eventFilterValue) ? this.state.eventFilterValue : (this.state.hideASNAP) ? '!ASNAP' : null;
+
+    let query = { 
+      value: (eventFilterValue) ? eventFilterValue.split(',') : null,
+      sort: 'newest',
+      offset: (this.state.activePage-1) * maxEventsPerPage,
+      limit: maxEventsPerPage
+    }
+
+    const events = await get_events(query);
+    this.setState({events, fetching: false});
   }
 
   async fetchEventExport(event_id=null) {
     if(!event_id) {
-      let url = `${API_ROOT_URL}/api/v1/events?sort=newest&limit=1`
-      await axios.get(url,
-        {
-          headers: { Authorization: 'Bearer ' + cookies.get('token') }
-        }).then((response) => {
-          event_id = response.data[0].id;
-        }).catch((error)=>{
-          if(error.response && error.response.data.statusCode !== 404) {
-            console.error('Problem connecting to API');
-            console.debug(error);
-          }
-        });
+      const query = {
+        value: (this.state.hideASNAP) ? ['!ASNAP'] : null,
+        sort: 'newest',
+        limit: 1 
+      }
+
+      const event = await get_events(query);
+      event_id = (event.length) ? event[0].id : null;
     }
 
     if(event_id) {
-      let url = `${API_ROOT_URL}/api/v1/event_exports/${event_id}`
-      await axios.get(url,
-        {
-          headers: { Authorization: 'Bearer ' + cookies.get('token') }
-        }).then((response) => {
-          this.setState({event: response.data});
-        }).catch((error)=>{
-          if(error.response && error.response.data.statusCode !== 404) {
-            console.error('Problem connecting to API');
-            console.debug(error);
-          }
-          this.setState({ event: null });
-        });
+      const event_export = await get_event_exports({}, event_id);
+      this.setState({ event: event_export });
+    }
+    else {
+      this.setState({ event: {} });
     }
   }
 
   handleEventShowDetailsModal(event) {
-    this.props.showModal('eventShowDetails', { event: event });
+    this.props.showModal('eventShowDetails', { event });
   }
 
   handleEventCommentModal(event) {
-    this.props.showModal('eventComment', { event: event, handleUpdateEvent: this.props.updateEvent });
+    this.props.showModal('eventComment', { event, handleUpdateEvent: this.handleUpdateEvent });
   }
 
-  renderEventHistoryHeader() {
-    const Label = "Event History";
-    const expandTooltip = (<Tooltip id="expandHistoryTooltip">Expand event history</Tooltip>);
-    const compressTooltip = (<Tooltip id="compressTooltip">Compress event history</Tooltip>);
-    const showTooltip = (<Tooltip id="showHistoryTooltip">Show event history</Tooltip>);
-    const hideTooltip = (<Tooltip id="hideHistoryTooltip">Hide this card</Tooltip>);
-    const NewEventToggleIcon = (this.state.showNewEventDetails)? null : "Show Newest Event Details";
-    const NewEventToggle = (NewEventToggleIcon) ? <span className="mr-2" variant="secondary" size="sm" onClick={() => this.toggleNewEventDetails()}>{NewEventToggleIcon} </span> : null;
-
-    if(this.state.showEventHistory) {
-
-      if(this.state.showEventHistoryFullscreen) {
-        return (
-          <div>
-            { Label }
-            <Form inline className="float-right">
-              {NewEventToggle}
-              <FormControl size="sm" type="text" placeholder="Filter" className="mr-sm-2" onKeyPress={this.handleKeyDown} onChange={this.handleSearchChange}/>
-              <OverlayTrigger placement="top" overlay={compressTooltip}><span className="mr-2" variant="secondary" size="sm" onClick={ () => this.handleHideEventHistoryFullscreen() }><FontAwesomeIcon icon='compress' fixedWidth/></span></OverlayTrigger>{' '}
-              <OverlayTrigger placement="top" overlay={hideTooltip}><span variant="secondary" size="sm" onClick={ () => this.handleHideEventHistory() }><FontAwesomeIcon icon='eye-slash' fixedWidth/></span></OverlayTrigger>
-            </Form>
-          </div>
-        );
-      }
-
-      return (
-        <div>
-          { Label }
-          <Form inline className="float-right">
-            {NewEventToggle}
-            <FormControl size="sm" type="text" placeholder="Filter" className="mr-sm-2" onKeyPress={this.handleKeyDown} onChange={this.handleSearchChange}/>
-            <OverlayTrigger placement="top" overlay={expandTooltip}><span className="mr-2" variant="secondary" size="sm" onClick={ () => this.handleShowEventHistoryFullscreen() }><FontAwesomeIcon icon='compress' fixedWidth/></span></OverlayTrigger>{' '}
-            <OverlayTrigger placement="top" overlay={hideTooltip}><span variant="secondary" size="sm" onClick={ () => this.handleHideEventHistory() }><FontAwesomeIcon icon='eye-slash' fixedWidth/></span></OverlayTrigger>
-          </Form>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        { Label }
-        <div className="float-right">
-          {NewEventToggle}
-          <OverlayTrigger placement="top" overlay={showTooltip}><span variant="secondary" size="sm" onClick={ () => this.handleShowEventHistory() }><FontAwesomeIcon icon='eye' fixedWidth/></span></OverlayTrigger>
-        </div>
-      </div>
-    );
-  }
-
-  handleHideEventHistory() {
-    this.setState({showEventHistory: false});
-  }
-
-  handleShowEventHistory() {
-    this.setState({showEventHistory: true});
-  }
-
-  handleHideEventHistoryFullscreen() {
-    this.setState({showEventHistoryFullscreen: false});
+  handleUpdateEvent(event) {
+    this.props.updateEvent(event);
+    this.fetchEvents();
   }
 
   handleSearchChange(event) {
-    if(this.state.filterTimer) {
-      clearTimeout(this.state.filterTimer);
-    }
-
-    let fieldVal = event.target.value;
-    this.setState({ filterTimer: setTimeout(() => this.setState({filter: fieldVal}), 1500) })
+    let eventFilterValue = (event.target.value !== '') ? event.target.value : null;
+    clearTimeout(this.state.filterTimer);
+    this.setState({ filterTimer: setTimeout(() => this.setState({ eventFilterValue }), 500) });
   }
 
   handleKeyDown(event) {
@@ -254,12 +190,16 @@ class EventHistory extends Component {
     }
   }
 
-  handleShowEventHistoryFullscreen() {
-    this.setState({showEventHistoryFullscreen: true});
+  toggleASNAP() {
+    this.setState( prevState => ({hideASNAP: !prevState.hideASNAP}));
   }
 
-  toggleASNAP() {
-    this.setState( prevState => ({showASNAP: !prevState.showASNAP}));
+  toggleEventHistory() {
+    this.setState( prevState => ({ showEventHistory: !prevState.showEventHistory }));
+  }
+
+  toggleEventHistoryFullscreen() {
+    this.setState( prevState => ({ showEventHistoryFullscreen: !prevState.showEventHistoryFullscreen }));
   }
 
   toggleNewEventDetails() {
@@ -267,15 +207,15 @@ class EventHistory extends Component {
   }
 
   incrementPage() {
-    this.setState( prevState => ({page: prevState.page+1}));
+    this.setState( prevState => ({activePage: prevState.activePage+1}));
   }
 
   decrementPage() {
-    this.setState( prevState => ({page: prevState.page-1}));
+    this.setState( prevState => ({activePage: prevState.activePage-1}));
   }
 
   firstPage() {
-    this.setState({page: 0});
+    this.setState({activePage: 1});
   }
 
   handleImagePreviewModal(source, filepath) {
@@ -292,8 +232,8 @@ class EventHistory extends Component {
   }
 
   renderImageryCard() {
-    if(this.state.event && this.state.event.aux_data) { 
-      let frameGrabberData = this.state.event.aux_data.filter(aux_data => imageAuxDataSources.includes(aux_data.data_source))
+    if(this.state.event.aux_data) { 
+      let frameGrabberData = this.state.event.aux_data.filter(aux_data => IMAGES_AUX_DATA_SOURCES.includes(aux_data.data_source))
       let tmpData = []
 
       if(frameGrabberData.length > 0) {
@@ -341,12 +281,12 @@ class EventHistory extends Component {
   }
 
   renderAuxDataCard() {
-    if(this.state.event && this.state.event.aux_data) {
+    if(this.state.event.aux_data) {
 
       const aux_data = this.state.event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
 
       aux_data.sort((a, b) => {
-        return (sortAuxDataSourceReference.indexOf(a.data_source) < sortAuxDataSourceReference.indexOf(b.data_source)) ? -1 : 1;
+        return (AUX_DATA_SORT_ORDER.indexOf(a.data_source) < AUX_DATA_SORT_ORDER.indexOf(b.data_source)) ? -1 : 1;
       });
 
       let return_aux_data = aux_data.map((aux_data) => {
@@ -373,13 +313,13 @@ class EventHistory extends Component {
   }
 
   renderEventHistory() {
-    if(this.props.history && this.props.history.length > 0){
+    if(this.state.events && this.state.events.length > 0){
 
       let eventArray = [];
 
-      for (let i = 0; i < this.props.history.length; i++) {
+      for (let i = 0; i < this.state.events.length; i++) {
 
-        let event = this.props.history[i];
+        let event = this.state.events[i];
         let comment_exists = false;
         let eventOptionsArray = event.event_options.reduce((filtered, option) => {
           if (option.event_option_name === 'event_comment') {
@@ -407,16 +347,31 @@ class EventHistory extends Component {
     return (<ListGroup.Item className="event-list-item" key="emptyHistory" >No events found</ListGroup.Item>);
   }
 
-  renderNewestEvent() {
-    const hideTooltip = (<Tooltip id="hideHistoryTooltip">Hide this card</Tooltip>);
+  renderNewestEventCard() {
+    if(!this.state.event.id) {
+      return null;
+    }
+
+    if(!this.state.showNewEventDetails) {
+      return null;
+    }
+
+    const showNewEventTooltip = (<Tooltip id="showHistoryTooltip">{(this.state.showNewEventDetails) ? "Hide new event details" : "Show new event details"}</Tooltip>);
+    const showNewEventIcon = (this.state.showNewEventDetails) ? 'eye' : 'eye-slash'
     const event_comment = (this.state.event.event_options) ? this.state.event.event_options.find((event_option) => (event_option.event_option_name === 'event_comment' && event_option.event_option_value.length > 0)) : null
     const event_comment_card = (event_comment)?(<Card><Card.Body className="data-card-body">Comment: {event_comment.event_option_value}</Card.Body></Card>) : null;
 
     return (
       <Card className={this.props.className}>
         <ImagePreviewModal />
-        <Card.Header>{this.state.event.ts} {`<${this.state.event.event_author}>`}: {this.state.event.event_value} {(this.state.event.event_free_text) ? ` --> "${this.state.event.event_free_text}"` : null}<OverlayTrigger placement="top" overlay={hideTooltip}><span className="float-right" variant="secondary" size="sm" onClick={ () => this.toggleNewEventDetails() }><FontAwesomeIcon icon='eye-slash' fixedWidth/></span></OverlayTrigger></Card.Header>
-
+        <Card.Header>
+          {this.state.event.ts} {`<${this.state.event.event_author}>`}: {this.state.event.event_value} {(this.state.event.event_free_text) ? ` --> "${this.state.event.event_free_text}"` : null}
+          <OverlayTrigger placement="top" overlay={showNewEventTooltip}>
+            <span className="float-right" size="sm" onClick={ this.toggleNewEventDetails }>
+              <FontAwesomeIcon icon={showNewEventIcon} fixedWidth/>
+            </span>
+          </OverlayTrigger>
+        </Card.Header>
         <Card.Body className="pt-2 pb-1">
           <Row>
             {this.renderImageryCard()}
@@ -433,50 +388,76 @@ class EventHistory extends Component {
     );
   }
 
-  render() {
-    let eventHistoryCard = null;
-    let newEventDetailsCard = (this.state.showNewEventDetails && this.state.event) ? this.renderNewestEvent() : null
-    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' checked={this.state.showASNAP} disabled={this.state.filter} onChange={() => this.toggleASNAP()} label="ASNAP"/>);
+  renderEventHistoryHeader() {
+    const showHistoryFullscreenTooltip = (<Tooltip id="compressTooltip">{(this.state.showEventHistoryFullscreen) ? "Compress event history" : "Expand event history"}</Tooltip>);
+    const showHistoryFullscreenIcon = (this.state.showEventHistoryFullscreen) ? 'compress' : 'expand'
+    const showHistoryTooltip = (<Tooltip id="showHistoryTooltip">{(this.state.showEventHistory) ? "Hide event history" : "Show event history"}</Tooltip>);
+    const showHistoryIcon = (this.state.showEventHistory) ? 'eye' : 'eye-slash'
+    const showNewEventDetails = (!this.state.showNewEventDetails) ? <span className="mr-2" size="sm" onClick={ this.toggleNewEventDetails }>Show Recent Event</span> : '';
 
-    if (!this.props.history) {
-      eventHistoryCard = (
-        <Card className={this.props.className}>
-          <Card.Header>{ this.renderEventHistoryHeader() }</Card.Header>
-          <Card.Body>Loading...</Card.Body>
-        </Card>
-      );
-    }
-    else if(this.state.showEventHistory) {
+    return (
+      <Card.Header>
+        Event History
+        <Form inline className="float-right">
+          { showNewEventDetails }
+          { (this.state.showEventHistory) ?
+            <React.Fragment>
+              <FormControl size="sm" type="text" placeholder="Filter" className="mr-sm-2" onKeyPress={this.handleKeyDown} onChange={this.handleSearchChange}/>
+              <OverlayTrigger placement="top" overlay={showHistoryFullscreenTooltip}>
+                <span className="mr-2" size="sm" onClick={ this.toggleEventHistoryFullscreen }>
+                  <FontAwesomeIcon icon={showHistoryFullscreenIcon} fixedWidth/>
+                </span>
+              </OverlayTrigger>{' '}
+            </React.Fragment> : null
+          }
+          <OverlayTrigger placement="top" overlay={showHistoryTooltip}>
+            <span size="sm" onClick={ this.toggleEventHistory }>
+              <FontAwesomeIcon icon={showHistoryIcon} fixedWidth/>
+            </span>
+          </OverlayTrigger>
+        </Form>
+      </Card.Header>
+    );
+  }
 
-      eventHistoryCard = (
-        <Card className={`${this.props.className}`}>
-          <Card.Header>{ this.renderEventHistoryHeader() }</Card.Header>
-          <ListGroup className={`eventList ${(!this.state.showEventHistoryFullscreen) ? 'collapsed' : ''}`} ref={eventHistoryRef}>
-            {this.renderEventHistory()}
-          </ListGroup>
-          <Card.Footer>
-            <Button className="mr-1" size={"sm"} variant="outline-primary" onClick={() => this.firstPage()} disabled={(this.state.page === 0)}>Newest Events</Button>
-            <Button className="mr-1" size={"sm"} variant="outline-primary" onClick={() => this.decrementPage()} disabled={(this.state.page === 0)}>Newer Events</Button>
-            <Button size={"sm"} variant="outline-primary" onClick={() => this.incrementPage()} disabled={(this.props.history && this.props.history.length !== 20)}>Older Events</Button>
-            <Form className="float-right" inline>
-              {ASNAPToggle}
-            </Form>
-          </Card.Footer>
-        </Card>
-      );
-    }
-    else {
-      eventHistoryCard = (
-        <Card className={this.props.className}>
-          <Card.Header>{ this.renderEventHistoryHeader() }</Card.Header>
-        </Card>
-      );
+  renderEventHistoryBody() {
+    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' checked={this.state.hideASNAP} disabled={this.state.eventFilterValue} onChange={() => this.toggleASNAP()} label="Hide ASNAP"/>);
+
+    if(!this.state.showEventHistory) {
+      return null
     }
 
     return (
       <React.Fragment>
-        {newEventDetailsCard}
-        {eventHistoryCard}
+        <ListGroup className={`eventList ${(!this.state.showEventHistoryFullscreen) ? 'collapsed' : ''}`} ref={eventHistoryRef}>
+          {this.renderEventHistory()}
+        </ListGroup>
+        <Card.Footer>
+          <Button className="mr-1" size={"sm"} variant="outline-primary" onClick={() => this.firstPage()} disabled={(this.state.activePage === 1)}>Newest Events</Button>
+          <Button className="mr-1" size={"sm"} variant="outline-primary" onClick={() => this.decrementPage()} disabled={(this.state.activePage === 1)}>Newer Events</Button>
+          <Button size={"sm"} variant="outline-primary" onClick={() => this.incrementPage()} disabled={(this.state.events && this.state.events.length !== 20)}>Older Events</Button>
+          <Form className="float-right" inline>
+            {ASNAPToggle}
+          </Form>
+        </Card.Footer>
+      </React.Fragment>
+    )
+  }
+
+  renderEventHistoryCard() {
+    return (
+      <Card className={this.props.className}>
+        { this.renderEventHistoryHeader() }
+        { this.renderEventHistoryBody() }
+      </Card>
+    )
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        {this.renderNewestEventCard()}
+        {this.renderEventHistoryCard()}
       </React.Fragment>
     );
   }
@@ -484,8 +465,7 @@ class EventHistory extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    authenticated: state.auth.authenticated,
-    history: state.event_history.history
+    authenticated: state.auth.authenticated
   };
 }
 

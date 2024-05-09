@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { HEADER_TITLE, RECAPTCHA_SITE_KEY, DISABLE_EVENT_LOGGING } from '../client_config';
+import { get_custom_vars, update_custom_var } from '../api';
 import { _Cruises_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
 
@@ -10,7 +11,6 @@ class Header extends Component {
 
   constructor (props) {
     super(props);
-
   }
 
   componentDidMount() {
@@ -19,13 +19,21 @@ class Header extends Component {
     }
   }
 
-  handleASNAPToggle() {
-    if(this.props.asnapStatus) {
-      if(this.props.asnapStatus.custom_var_value === 'Off') {
-        this.props.updateCustomVars(this.props.asnapStatus.id, {custom_var_value: 'On'});
-      } else {
-        this.props.updateCustomVars(this.props.asnapStatus.id, {custom_var_value: 'Off'});
-      }
+  async handleASNAPToggle() {
+    const query = {
+      name: ['asnapStatus']
+    }
+
+    const response = await get_custom_vars(query);
+    const asnapStatus = (response.length) ? response[0] : null
+
+    const id = asnapStatus.id;
+    delete asnapStatus.id
+    
+    if(asnapStatus) {
+      const new_var_value = (asnapStatus.custom_var_value === 'Off') ? 'On' : 'Off'
+      asnapStatus['custom_var_value'] = new_var_value
+      await update_custom_var(asnapStatus, id);
     }
   }
 

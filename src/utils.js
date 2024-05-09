@@ -10,7 +10,7 @@ import { API_ROOT_URL, ROOT_PATH, IMAGE_PATH } from './client_config';
 //
 // Credit rgov (WHOIGit/ndsf-sealog-client)
 export const getImageUrl = (image_path) => {
-  return API_ROOT_URL + IMAGE_PATH + path.basename(image_path);
+  return `${API_ROOT_URL}${IMAGE_PATH}/${path.basename(image_path)}`;
 }
 
 export const handleMissingImage = (ev) => {

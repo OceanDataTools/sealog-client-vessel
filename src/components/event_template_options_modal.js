@@ -39,31 +39,36 @@ class EventTemplateOptionsModal extends Component {
   }
 
   async populateDefaultValues() {
-    let timestring = (this.props.event) ? this.props.event.ts : moment.utc().toISOString();
-    let eventDefaultValues = {event_ts: moment.utc(timestring)};
-    this.props.eventTemplate.event_options.forEach((option, index) => {
+    let ts = (this.props.event) ? moment.utc(this.props.event.ts) : moment.utc();
+    let event_options = this.props.eventTemplate.event_options.forEach((option, index) => {
       if(option.event_option_default_value && option.event_option_type !== 'checkboxes') {
-        eventDefaultValues[`option_${index}`] = option.event_option_default_value;
+        event_options[`option_${index}`] = option.event_option_default_value;
       }
       else if(option.event_option_default_value && option.event_option_type === 'checkboxes') {
-        eventDefaultValues[`option_${index}`] = [option.event_option_default_value];
+        event_options[`option_${index}`] = [option.event_option_default_value];
       }
     });
-    this.props.initialize(eventDefaultValues);
+
+    console.log("event_options:", event_options);
+
+    this.props.initialize({id: this.props.event.id, ts, event_options});
   }
 
   handleFormSubmit(formProps) {
 
+    console.log("formProps:", formProps)
+
     formProps.event_free_text = (formProps.event_free_text)? formProps.event_free_text : ""
+    formProps.ts = (formProps.ts)? formProps.ts.toISOString() : null;
 
-    let temp = JSON.parse(JSON.stringify(formProps));
+    let raw_event_options = JSON.parse(JSON.stringify(formProps.event_options));
 
-    delete temp.event_free_text
-    delete temp.event_ts
+    // delete raw_event_options.event_free_text
+    // delete raw_event_options.event_ts
 
-    //Convert obecjts to arrays
+    //Convert objects to arrays
     let optionValue = []
-    let optionIndex = Object.keys(temp).sort().map((value) => { optionValue.push(temp[value]); return parseInt(value.split('_')[1])});
+    let optionIndex = Object.keys(raw_event_options).sort().map((value) => { optionValue.push(raw_event_options[value]); return parseInt(value.split('_')[1])});
 
     //Remove empty fields
     optionValue.forEach((value, index) => {
@@ -74,7 +79,7 @@ class EventTemplateOptionsModal extends Component {
     });
 
     //Build event_options array
-    let event_options = optionIndex.map( (value, index) => {
+    formProps.event_options = optionIndex.map( (value, index) => {
 
       if(Array.isArray(optionValue[index])) {
         optionValue[index] = optionValue[index].join(';')
@@ -87,11 +92,23 @@ class EventTemplateOptionsModal extends Component {
       )
     });
 
-    let event_ts = (formProps.event_ts)? formProps.event_ts.toISOString() : '';
+    // console.log("event_options:", event_options);
+
+    // let event_ts = (formProps.event_ts)? formProps.event_ts.toISOString() : '';
+
+    // const response = {
+    //   id: this.state.event_id,
+    //   ts: event_ts,
+    //   event_value: this.props.eventTemplate.event_value,
+    //   free_text: formProps.event_free_text,
+    //   event_options: event_options
+    // }
+
+    console.log("formProps:", formProps)
 
     //Submit event
     if(this.state.event_id) {
-      this.props.handleUpdateEvent(this.state.event_id, this.props.eventTemplate.event_value, formProps.event_free_text, event_options, event_ts);
+      this.props.handleUpdateEvent(formProps);
     }
     this.props.handleHide();
   }
@@ -104,7 +121,6 @@ class EventTemplateOptionsModal extends Component {
   }
 
   renderEventOptions() {
-
     const {eventTemplate} = this.props;
     const {event_options} = eventTemplate;
 
@@ -113,9 +129,9 @@ class EventTemplateOptionsModal extends Component {
       if (option.event_option_type === 'dropdown') {
 
         return (
-          <div key={`option_${index}`}>
+          <div key={`event_options.option_${index}`}>
             <Field
-              name={`option_${index}`}
+              name={`event_options.option_${index}`}
               component={renderSelectField}
               label={option.event_option_name}
               required={ option.event_option_required }
@@ -132,9 +148,9 @@ class EventTemplateOptionsModal extends Component {
         });
 
         return (
-          <div key={`option_${index}`}>
+          <div key={`event_options.option_${index}`}>
             <Field
-              name={`option_${index}`}
+              name={`event_options.option_${index}`}
               component={renderCheckboxGroup}
               label={option.event_option_name}
               options={optionList}
@@ -152,9 +168,9 @@ class EventTemplateOptionsModal extends Component {
         });
 
         return (
-          <div key={`option_${index}`}>
+          <div key={`event_options.option_${index}`}>
             <Field
-              name={`option_${index}`}
+              name={`event_options.option_${index}`}
               component={renderRadioGroup}
               label={option.event_option_name}
               options={optionList}
@@ -167,9 +183,9 @@ class EventTemplateOptionsModal extends Component {
         )
       } else if (option.event_option_type === 'text') {
         return (
-          <div key={`option_${index}`}>
+          <div key={`event_options.option_${index}`}>
             <Field
-              name={`option_${index}`}
+              name={`event_options.option_${index}`}
               component={renderTextField}
               label={option.event_option_name}
               required={ option.event_option_required }
@@ -179,9 +195,9 @@ class EventTemplateOptionsModal extends Component {
         )
       } else if (option.event_option_type === 'static text') {
         return (
-          <div key={`option_${index}`}>
+          <div key={`event_options.option_${index}`}>
             <Field
-              name={`option_${index}`}
+              name={`event_options.option_${index}`}
               component={renderStaticTextField}
               label={option.event_option_name}
             />
@@ -192,7 +208,6 @@ class EventTemplateOptionsModal extends Component {
   }
 
   render() {
-
     const { show, handleSubmit, eventTemplate, submitting, valid } = this.props
 
     const footer = (this.state.event_id) ? 
@@ -222,7 +237,7 @@ class EventTemplateOptionsModal extends Component {
                 rows={2}
               />
               <Field
-                name="event_ts"
+                name="ts"
                 label="Custom Time (UTC)"
                 component={renderDateTimePicker}
                 disabled={this.props.disabled}

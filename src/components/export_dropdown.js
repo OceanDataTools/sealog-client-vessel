@@ -2,11 +2,9 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import PropTypes from 'prop-types';
-import axios from 'axios';
 import moment from 'moment';
-import Cookies from 'universal-cookie';
 import { connect } from 'react-redux';
-import { API_ROOT_URL } from '../client_config';
+import { get_event_aux_data, get_event_exports, get_events } from '../api';
 
 let fileDownload = require('js-file-download');
 
@@ -65,88 +63,48 @@ class ExportDropdown extends Component {
     }
   }
 
-  async fetchEvents(exportFormat, eventFilter, hideASNAP) {
+  async fetchEvents(exportFormat) {
+    let eventFilter_value = (this.props.eventFilter.value) ? this.props.eventFilter.value : (this.props.hideASNAP) ? '!ASNAP' : null;
+    
+    const query = { ...this.props.eventFilter,
+      format: exportFormat,
+      add_record_ids: (exportFormat==='json'),
+      value: (eventFilter_value) ? eventFilter_value.split(',') : null,
+      author: (this.props.eventFilter.author) ? this.props.eventFilter.author.split(',') : null,
+      sort: this.state.sort
+    }
 
-    const cookies = new Cookies();
-    let format = (exportFormat==='csv')? `format=${exportFormat}&add_record_ids=true` : `format=${exportFormat}`
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
-    value = (hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
-    let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
-
-    return await axios.get(`${API_ROOT_URL}/api/v1/events${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return response.data;
-      }).catch((error)=>{
-        if(error.response.data.statusCode !== 404){
-          console.error('Problem connecting to API');
-          console.debug(error.response);
-        }
-        return [];
-      });
+    return await get_events(query);
   }
 
-  async fetchEventAuxData(eventFilter, hideASNAP) {
+  async fetchEventAuxData() {
+    let eventFilter_value = (this.props.eventFilter.value) ? this.props.eventFilter.value : (this.props.hideASNAP) ? '!ASNAP' : null;
+    
+    const query = { ...this.props.eventFilter,
+      value: (eventFilter_value) ? eventFilter_value.split(',') : null,
+      author: (this.props.eventFilter.author) ? this.props.eventFilter.author.split(',') : null,
+      sort: this.state.sort
+    }
 
-    const cookies = new Cookies();
-    let startTS = (eventFilter.startTS)? `startTS=${eventFilter.startTS}` : '';
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
-    value = (hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
-    let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
-
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_aux_data${this.state.cruiseOrLowering}?${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return response.data;
-      }).catch((error)=>{
-        if(error.response.data.statusCode !== 404){
-          console.error('Problem connecting to API');
-          console.debug(error.response);
-        }
-        return [];
-      });
+    return await get_event_aux_data(query);
   }
 
-  async fetchEventsWithAuxData(exportFormat, eventFilter, hideASNAP) {
+  async fetchEventsWithAuxData(exportFormat) {
+    let eventFilter_value = (this.props.eventFilter.value) ? this.props.eventFilter.value : (this.props.hideASNAP) ? '!ASNAP' : null;
+    
+    const query = { ...this.props.eventFilter,
+      format: exportFormat,
+      add_record_ids: (exportFormat==='json'),
+      value: (eventFilter_value) ? eventFilter_value.split(',') : null,
+      author: (this.props.eventFilter.author) ? this.props.eventFilter.author.split(',') : null,
+      sort: this.state.sort
+    }
 
-    const cookies = new Cookies();
-    let format = (exportFormat==='csv')? `format=${exportFormat}&add_record_ids=true` : `format=${exportFormat}`
-    let startTS = (eventFilter.startTS)? `&startTS=${eventFilter.startTS}` : '';
-    let stopTS = (eventFilter.stopTS)? `&stopTS=${eventFilter.stopTS}` : '';
-    let value = (eventFilter.value)? `&value=${eventFilter.value.split(',').join("&value=")}` : '';
-    value = (hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (eventFilter.author)? `&author=${eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (eventFilter.freetext)? `&freetext=${eventFilter.freetext}` : '';
-    let datasource = (eventFilter.datasource)? `&datasource=${eventFilter.datasource}` : '';
-    let sort = (this.state.sort)? `&sort=${this.state.sort}` : '';
-
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports${this.state.cruiseOrLowering}?${format}${startTS}${stopTS}${value}${author}${freetext}${datasource}${sort}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return response.data;
-      }).catch((error)=>{
-        if(error.response.data.statusCode !== 404){
-          console.error('Problem connecting to API');
-          console.debug(error.response);
-        }
-        return [];
-      });
+    return await get_event_exports(query);
   }
 
   exportEventsWithAuxData(format='json') {
-    this.fetchEventsWithAuxData(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
+    this.fetchEventsWithAuxData(format).then((results) => {
       const prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
       fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_export.${format}`);
     }).catch((error) => {
@@ -155,18 +113,18 @@ class ExportDropdown extends Component {
   }
 
   exportEvents(format='json') {
-    this.fetchEvents(format, this.props.eventFilter, this.props.hideASNAP).then((results) => {
+    this.fetchEvents(format).then((results) => {
       const prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
-      fileDownload((format == 'json')? JSON.stringify(results) : results, `${this.state.prefix}_${moment.utc().format(dateFormat + "_" + timeFormat)}_sealog_eventExport.${format}`);
+      fileDownload((format == 'json')? JSON.stringify(results) : results, `${prefix}_sealog_eventExport.${format}`);
     }).catch((error) => {
       console.debug(error);
     });
   }
 
   exportAuxData() {
-    this.fetchEventAuxData(this.props.eventFilter, this.props.hideASNAP).then((results) => {
+    this.fetchEventAuxData().then((results) => {
       const prefix = (this.state.prefix)? this.state.prefix : moment.utc(results[0].ts).format(dateFormat + "_" + timeFormat);
-      fileDownload(JSON.stringify(results), `${this.state.prefix}_${moment.utc().format(dateFormat + "_" + timeFormat)}_sealog_auxDataExport.json`);
+      fileDownload(JSON.stringify(results), `${prefix}_sealog_auxDataExport.json`);
     }).catch((error) => {
       console.debug(error);
     });

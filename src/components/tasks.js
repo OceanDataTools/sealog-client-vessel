@@ -2,15 +2,14 @@ import React, { Component } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { Row, Col, Container, ListGroup } from 'react-bootstrap';
+import { delete_all_events } from '../api';
 import ImportEventsModal from './import_events_modal';
 import ImportAuxDataModal from './import_aux_data_modal';
 import DataWipeModal from './data_wipe_modal';
 import * as mapDispatchToProps from '../actions';
 
 const importEventsDescription = (<div><h5>Import Event Records</h5><p>Add new event data records from a JSON-formated file.</p></div>);
-
 const importAuxDataDescription = (<div><h5>Import Aux Data Records</h5><p>Add new aux data records from a JSON-formated file.</p></div>);
-
 const dataResetDescription = (<div><h5>Wipe Local Database</h5><p>Delete all existing events from the local database.</p></div>);
 
 class Tasks extends Component {
@@ -31,8 +30,8 @@ class Tasks extends Component {
     this.props.showModal('importAuxData');
   }
 
-  handleDataWipe() {
-    this.props.showModal('dataWipe', { handleDelete: this.props.deleteAllEvents });
+  async handleDataWipe() {
+    this.props.showModal('dataWipe', { handleDelete: delete_all_events });
   }
 
   componentDidMount() {
@@ -85,7 +84,6 @@ class Tasks extends Component {
 }
 
 const mapStateToProps = (state) => {
-
   return {
     roles: state.user.profile.roles,
   };

@@ -4,6 +4,22 @@ import { push } from 'connected-react-router';
 import { show } from 'redux-modal';
 import { change, untouch } from 'redux-form';
 import { API_ROOT_URL } from '../client_config';
+import {
+  create_cruise,
+  delete_cruise,
+  delete_event_template,
+  delete_event,
+  delete_user,
+  get_cruises,
+  get_event_exports,
+  get_event_templates,
+  get_events,
+  get_events_by_cruise,
+  get_users,
+  post_login,
+  update_cruise,
+  update_event
+} from '../api';
 
 import {
   AUTH_ERROR,
@@ -18,8 +34,6 @@ import {
   CREATE_USER_SUCCESS,
   EVENT_FETCHING,
   FETCH_CRUISES,
-  FETCH_CUSTOM_VARS,
-  FETCH_EVENT_HISTORY,
   FETCH_EVENT_TEMPLATES,
   FETCH_EVENT_TEMPLATES_FOR_MAIN,
   FETCH_EVENTS,
@@ -46,7 +60,6 @@ import {
   UPDATE_CRUISE_SUCCESS,
   UPDATE_EVENT,
   UPDATE_EVENT_FILTER_FORM,
-  UPDATE_EVENT_HISTORY,
   UPDATE_EVENT_TEMPLATE_CATEGORY,
   UPDATE_EVENT_TEMPLATE_ERROR,
   UPDATE_EVENT_TEMPLATE_SUCCESS,
@@ -72,14 +85,9 @@ export const authorizationHeader = {
 
 export const advanceCruiseReplayTo = (id) => {
   return async (dispatch) => {
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return dispatch({ type: SET_SELECTED_EVENT, payload: response.data });
-      }).catch((error) => {
-        console.debug(error);
-      });
+    const payload = await get_event_exports({}, id) || {};
+    
+    return dispatch({ type: SET_SELECTED_EVENT, payload });
   };
 }
 
@@ -102,27 +110,23 @@ export const autoLogin = ({loginToken, reCaptcha = null}) => {
   const payload = (reCaptcha !== null)? {loginToken, reCaptcha} : {loginToken};
 
   return async (dispatch) => {
-    return await axios.post(`${API_ROOT_URL}/api/v1/auth/login`, payload
-      ).then(response => {
-        // If request is good save the JWT token to a cookie
-        cookies.set('token', response.data.token, { path: '/' });
-        cookies.set('id', response.data.id, { path: '/' });
-
-        dispatch({ type: AUTH_USER });
-        return dispatch(updateProfileState());
-      }).catch((error)=>{
-
-        if(error.response && error.response.status !== 401) {
-          // If request is unauthenticated
-          return dispatch(authError(error.response.data.message));
-        }
-        else if(error.message == "Network Error") {
-          return dispatch(authError("Unable to connect to server"));
-        }
-
-        return dispatch(authError(error.response.data.message));
-
-      });
+    const response = await post_login(payload);
+    if (response.success) {
+      cookies.set('token', response.data.token, { path: '/' });
+      cookies.set('id', response.data.id, { path: '/' });
+      dispatch({ type: AUTH_USER });
+      return dispatch(updateProfileState());
+    }
+    else {
+      if(response.error.response && response.error.response.status !== 401) {
+        // If request is unauthenticated
+        return dispatch(authError(response.error.response.data.message));
+      }
+      else if(response.error.message == "Network Error") {
+        return dispatch(authError("Unable to connect to server"));
+      }
+      return dispatch(authError(response.error.response.data.message));
+    }
   };
 }
 
@@ -146,22 +150,15 @@ export const clearSelectedEvent = () => {
 
 export const createCruise = (formProps) => {
 
-  let fields = { ...formProps };
-
   return async (dispatch) => {
-    return await axios.post(`${API_ROOT_URL}/api/v1/cruises`, fields,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        dispatch(initCruise(response.data.insertedId));
+    const response = await create_cruise(formProps)
+    if(response.success) {
+      dispatch(initCruise(response.data.insertedId));
         dispatch(createCruiseSuccess('Cruise created'));
         return dispatch(fetchCruises());
-      }).catch((error) => {
-        // If request is unauthenticated
-        console.debug(error);
-        return dispatch(createCruiseError(error.response.data.message));
-      });
-  };
+    }
+    return dispatch(createCruiseError(response.error.response.data.message));
+  }
 }
 
 export const createCruiseError = (message) => {
@@ -283,45 +280,16 @@ export const createUserSuccess = (message) => {
   };
 }
 
-export const deleteAllCruises = () => {
-  return async (dispatch) => {
-    return await axios.delete(`${API_ROOT_URL}/api/v1/cruises/all`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        return dispatch(fetchCruises());
-      }).catch((error)=> {
-        console.debug(error.response);
-      });
-  };
-}
-
-export const deleteAllEvents = () => {
-  return async (dispatch) => {
-    return await axios.delete(`${API_ROOT_URL}/api/v1/events/all`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        return dispatch(fetchEventHistory());
-      }).catch((error)=> {
-        console.debug(error.response);
-      });
-  };
-}
-
 export const deleteAllNonSystemEventTemplates = () => {
   return async (dispatch) => {
-    const event_templates = await axios.get(`${API_ROOT_URL}/api/v1/event_templates?system_template=false&sort=event_name`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return response.data;
-      }).catch((error)=> {
-        console.debug(error.response);
-      });
 
+    const query = {
+      system_template: false
+    }
+
+    const event_templates = await get_event_templates(query)
     event_templates.map(async (event_template) => {
-      return await dispatch(deleteEventTemplate(event_template.id, false));
+      await dispatch(deleteEventTemplate(event_template.id, false));
     });
 
     return dispatch(fetchEventTemplates());
@@ -330,17 +298,14 @@ export const deleteAllNonSystemEventTemplates = () => {
 
 export const deleteAllNonSystemUsers = () => {
   return async (dispatch) => {
-    const users = await axios.get(`${API_ROOT_URL}/api/v1/users?system_user=false`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return response.data;
-      }).catch((error) =>{
-        console.debug(error.response);
-      });
 
+    const query = {
+      system_user: false
+    }
+
+    const users = await get_users(query)
     users.map(async (user) => {
-      return await dispatch(deleteUser(user.id, false));
+      await dispatch(deleteUser(user.id, false));
     });
 
     return dispatch(fetchUsers());
@@ -348,319 +313,154 @@ export const deleteAllNonSystemUsers = () => {
 }
 
 export const deleteCruise = (id) => {
-
   return async (dispatch, getState) => {
-    return await axios.delete(`${API_ROOT_URL}/api/v1/cruises/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        if(getState().cruise.cruise.id === id) {
-          dispatch(leaveCruiseForm());
-        }
-
-        return dispatch(fetchCruises());
-
-      }).catch((error) => {
-        console.debug(error);
-      });
-  };
-}
-
-export const deleteEvent = (event_id) => {
-
-  return async () => {
-    try {
-      return await deleteEventRequest(event_id);
-    } catch (error) {
-      console.debug(error);
+    const response = await delete_cruise(id);
+    if(response.success){
+      if(getState().cruise.cruise.id === id) {
+        dispatch(leaveCruiseForm());
+      }
+      return dispatch(fetchCruises())
     }
   };
 }
 
-export const deleteEventRequest = async (event_id) => {
+export const deleteEvent = (event_id) => {
+  return async () => {
+      return await deleteEventRequest(event_id);
+  };
+}
 
-  return await axios.delete(`${API_ROOT_URL}/api/v1/events/${event_id}`,
-    {
-      headers: { Authorization: 'Bearer ' + cookies.get('token') }
-    }).then((response) => {
-      return { response };
-    }).catch((error)=>{
-      console.debug(error);
-    });
+export const deleteEventRequest = async (event_id) => {
+  return await delete_event(event_id)
 }
 
 export const deleteEventTemplate = (id) => {
 
   return async (dispatch, getState) => {
-    return await axios.delete(`${API_ROOT_URL}/api/v1/event_templates/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        if(getState().event_template.event_template.id === id) {
-          dispatch(leaveEventTemplateForm());
-        }
+    const response = await delete_event_template(id);
 
-        return dispatch(fetchEventTemplates());
-
-      }).catch((error) => {
-        console.debug(error);
-      });
-  };
+    if(response.success) {
+      if(getState().event_template.event_template.id === id) {
+        dispatch(leaveEventTemplateForm());
+      }
+      return dispatch(fetchEventTemplates());
+    }
+  }
 }
 
 export const deleteUser = (id) => {
 
   return async (dispatch, getState) => {
-    return await axios.delete(`${API_ROOT_URL}/api/v1/users/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        if(getState().user.user.id === id) {
-          dispatch(leaveUserForm());
-        }
+    const response = await delete_user(id);
 
-        return dispatch(fetchUsers());
-
-      }).catch((error) => {
-        console.debug(error);
-      });
-  };
+    if(response.success) {
+      if(getState().user.user.id === id) {
+        dispatch(leaveUserForm());
+      }
+      return dispatch(fetchUsers());
+    }
+  }
 }
 
 export const eventUpdate = () => {
   return async (dispatch, getState) => {
-    let startTS = (getState().event.eventFilter.startTS)? `startTS=${getState().event.eventFilter.startTS}` : '';
-    let stopTS = (getState().event.eventFilter.stopTS)? `&stopTS=${getState().event.eventFilter.stopTS}` : '';
-    let value = (getState().event.eventFilter.value)? `&value=${getState().event.eventFilter.value.split(',').join("&value=")}` : '';
-    let author = (getState().event.eventFilter.author)? `&author=${getState().event.eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (getState().event.eventFilter.freetext)? `&freetext=${getState().event.eventFilter.freetext}` : '';
-    let datasource = (getState().event.eventFilter.datasource)? `&datasource=${getState().event.eventFilter.datasource}` : '';
 
     dispatch({ type: EVENT_FETCHING, payload: true});
-    return await axios.get(`${API_ROOT_URL}/api/v1/events?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        dispatch({ type: UPDATE_EVENTS, payload: response.data });
-        return dispatch({ type: EVENT_FETCHING, payload: false});
-      }).catch((error)=>{
-        console.debug(error);
-        if(error.response.data.statusCode === 404) {
-          dispatch({type: UPDATE_EVENTS, payload: []});
-        } else {
-          console.error(error.response);
-        }
-        return dispatch({ type: EVENT_FETCHING, payload: false});
-      });
+
+    const eventFilter = getState().event.eventFilter;
+    const query = { ...eventFilter,
+      value: (eventFilter.value) ? eventFilter.value.split(',') : null,
+      author: (eventFilter.author) ? eventFilter.author.split(',') : null,
+      datasource: (eventFilter.datasource) ? eventFilter.datasource.split(',') : null
+    }
+
+    const payload = await get_events(query);
+
+    dispatch({ type: UPDATE_EVENTS, payload });
+    return dispatch({ type: EVENT_FETCHING, payload: false});
   };
 }
 
-export const eventUpdateCruiseReplay = (cruise_id, hideASNAP = false) => {
+export const eventUpdateCruiseReplay = () => {
   return async (dispatch, getState) => {
 
-    let startTS = (getState().event.eventFilter.startTS)? `startTS=${getState().event.eventFilter.startTS}` : '';
-    let stopTS = (getState().event.eventFilter.stopTS)? `&stopTS=${getState().event.eventFilter.stopTS}` : '';
-    let value = (getState().event.eventFilter.value)? `&value=${getState().event.eventFilter.value.split(',').join("&value=")}` : '';
-    value = (hideASNAP)? `&value=!ASNAP${value}` : value;
-    let author = (getState().event.eventFilter.author)? `&author=${getState().event.eventFilter.author.split(',').join("&author=")}` : '';
-    let freetext = (getState().event.eventFilter.freetext)? `&freetext=${getState().event.eventFilter.freetext}` : '';
-    let datasource = (getState().event.eventFilter.datasource)? `&datasource=${getState().event.eventFilter.datasource}` : '';
-
     dispatch({ type: EVENT_FETCHING, payload: true});
-    return await axios.get(`${API_ROOT_URL}/api/v1/events/bycruise/${cruise_id}?${startTS}${stopTS}${value}${author}${freetext}${datasource}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        dispatch({ type: UPDATE_EVENTS, payload: response.data });
-        if(response.data.length > 0) {
-          dispatch(fetchSelectedEvent(response.data[0].id));
-        }
-        return dispatch({ type: EVENT_FETCHING, payload: false});
-      }).catch((error)=>{
-        if(error.response.data.statusCode === 404) {
-          dispatch({type: UPDATE_EVENTS, payload: []});
-          dispatch({ type: SET_SELECTED_EVENT, payload: {} });
 
-        } else {
-          console.debug(error);
-        }
-        return dispatch({ type: EVENT_FETCHING, payload: false});
-      });
+    const eventFilter = getState().event.eventFilter;
+    const value = (eventFilter.value) ? eventFilter.value : (getState().event.hideASNAP) ? '!ASNAP' : null;
+    const query = { ...eventFilter,
+      value: (value) ? value.split(',') : null,
+      author: (eventFilter.author) ? eventFilter.author.split(',') : null,
+      datasource: (eventFilter.datasource) ? eventFilter.datasource.split(',') : null
+    }
+
+    const payload = await get_events(query);
+    dispatch({ type: UPDATE_EVENTS, payload });
+
+    const selected_event = (payload.length) ? await get_event_exports({}, payload[0].id) : {};
+    dispatch({ type: SET_SELECTED_EVENT, payload: selected_event });
+    return dispatch({ type: EVENT_FETCHING, payload: false});
   };
 }
 
 export const fetchCruises = () => {
-
   return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/cruises',
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_CRUISES, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_CRUISES, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
-  };
-}
-
-export const fetchCustomVars = () => {
-
-  return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/custom_vars',
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_CUSTOM_VARS, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_CUSTOM_VARS, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
-  };
-}
-
-export const fetchEventHistory = (asnap=false, filter='', page=0) => {
-
-  const eventsPerPage = 20;
-
-  let url = `${API_ROOT_URL}/api/v1/events?sort=newest&limit=${eventsPerPage}&offset=${eventsPerPage*page}`;
-  if(!asnap) {
-    url += '&value=!ASNAP';
+    const payload = await get_cruises();
+    return dispatch({type: FETCH_CRUISES, payload});
   }
-
-  if(filter != '') {
-    filter.split(',').forEach((filter_item) => {
-      filter_item.trim();
-      url += '&value='+filter_item;
-    })
-  }
-
-  return async (dispatch) => {
-    return await axios.get(url,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_EVENT_HISTORY, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_EVENT_HISTORY, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
-  };
 }
 
 export const fetchEvents = () => {
-
   return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/events',
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_EVENTS, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_EVENTS, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
-  };
+    const payload = await get_events();
+    return dispatch({type: FETCH_EVENTS, payload});
+  }
 }
 
 export const fetchEventTemplates = () => {
-
   return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/event_templates?sort=event_name',
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_EVENT_TEMPLATES, payload: data});
-      }).catch((error) => {
-        if(error.response.data.statusCode === 404) {
-          return dispatch({type: FETCH_EVENT_TEMPLATES, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
+    const payload = await get_event_templates()
+    return dispatch({type: FETCH_EVENT_TEMPLATES, payload});
   };
 }
 
 export const fetchEventTemplatesForMain = () => {
 
+  const query = {
+    sort: 'event_name'
+  }
+
   return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/event_templates?sort=event_name',
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_EVENT_TEMPLATES_FOR_MAIN, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_EVENT_TEMPLATES_FOR_MAIN, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
+    const payload = await get_event_templates(query);
+    return dispatch({ type: FETCH_EVENT_TEMPLATES_FOR_MAIN, payload })
   };
 }
 
 export const fetchFilteredEvents = (filterParams={}) => {
 
-  let params = new URLSearchParams(filterParams).toString();
+  const query = { ...filterParams,
+    value: (filterParams.value) ? filterParams.value.split(',') : null,
+    author: (filterParams.author) ? filterParams.author.split(',') : null,
+    datasource: (filterParams.datasource) ? filterParams.datasource.split(',') : null
+  }
 
   return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/events' + '?' + params,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_FILTERED_EVENTS, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_FILTERED_EVENTS, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
+    const payload = await get_events(query)
+    return dispatch({type: FETCH_FILTERED_EVENTS, payload});
   };
 }
 
 export const fetchSelectedEvent = (id) => {
-
   return async (dispatch) => {
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_exports/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return dispatch({type: SET_SELECTED_EVENT, payload: response.data});
-      }).catch((error) => {
-        console.debug(error);
-        return dispatch({type: SET_SELECTED_EVENT, payload: {}});
-      });
-  };
+    const payload = await get_event_exports({}, id) || {};
+    return dispatch({type: SET_SELECTED_EVENT, payload});
+  }
 }
 
 export const fetchUsers = () => {
-
   return async (dispatch) => {
-    return await axios.get(API_ROOT_URL + '/api/v1/users',
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(({data}) => {
-        return dispatch({type: FETCH_USERS, payload: data});
-      }).catch((error) => {
-        if(error.response.status === 404) {
-          return dispatch({type: FETCH_USERS, payload: []});
-        } else {
-          console.debug(error);
-        }
-      });
+    const payload = await get_users();
+    return dispatch({type: FETCH_USERS, payload});
   };
 }
 
@@ -683,88 +483,72 @@ export const forgotPassword = ({email, reCaptcha = null}) => {
 }
 
 export const gotoCruiseGallery = (id) => {
-
   return (dispatch) => {
-    dispatch(initCruise(id));
     return dispatch(push(`/cruise_gallery/${id}`));
   };
 }
 
 export const gotoCruiseMap = (id) => {
-
   return (dispatch) => {
-    dispatch(initCruise(id));
     return dispatch(push(`/cruise_map/${id}`));
   };
 }
 
 export const gotoCruiseMenu = () => {
-
   return (dispatch) => {
     return dispatch(push(`/cruise_menu`));
   };
 }
 
 export const gotoCruiseReplay = (id) => {
-
   return (dispatch) => {
-    dispatch(initCruise(id));
     return dispatch(push(`/cruise_replay/${id}`));
   };
 }
 
 export const gotoCruiseReview = (id) => {
-
   return (dispatch) => {
-    dispatch(initCruise(id));
     return dispatch(push(`/cruise_review/${id}`));
   };
 }
 
 export const gotoCruises = () => {
-
   return (dispatch) => {
     return dispatch(push(`/cruises`));
   };
 }
 
 export const gotoEventManagement = () => {
-
   return (dispatch) => {
     return dispatch(push(`/event_management`));
   };
 }
 
 export const gotoEventTemplates = () => {
-
   return (dispatch) => {
     return dispatch(push(`/event_templates`));
   };
 }
 
 export const gotoHome = () => {
-
   return (dispatch) => {
     return dispatch(push(`/`));
   };
 }
 
 export const gotoProfile = () => {
-
   return (dispatch) => {
     return dispatch(push(`/profile`));
   };
 }
 
 export const gotoTasks = () => {
-
   return (dispatch) => {
     return dispatch(push(`/tasks`));
   };
 }
 
 export const gotoUsers = () => {
-
   return (dispatch) => {
     return dispatch(push(`/users`));
   };
@@ -795,70 +579,45 @@ export const hideCruise = (id) => {
 
 export const initCruise = (id) => {
   return async (dispatch) => {
-    return await axios.get(`${API_ROOT_URL}/api/v1/cruises/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return dispatch({ type: INIT_CRUISE, payload: response.data });
-      }).catch((error)=>{
-        console.debug(error);
-      });
+    const payload = await get_cruises({}, id) || {}
+    return dispatch({ type: INIT_CRUISE, payload });
   };
 }
 
-export const initCruiseReplay = (id, hideASNAP = false) => {
-  return async (dispatch) => {
-    dispatch(initCruise(id));
+export const initCruiseReplay = (id) => {
+  return async (dispatch, getState) => {
     dispatch({ type: EVENT_FETCHING, payload: true});
+    dispatch(initCruise(id));
 
-    let url = (hideASNAP)? `${API_ROOT_URL}/api/v1/events/bycruise/${id}?value=!ASNAP`: `${API_ROOT_URL}/api/v1/events/bycruise/${id}`;
+    const eventFilter_value = (getState().event.eventFilter.value) ? getState().event.eventFilter.value : (getState().event.hideASNAP) ? '!ASNAP' : null;
 
-    return await axios.get(url,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        dispatch({ type: INIT_EVENT, payload: response.data });
-        if (response.data.length > 0){
-          dispatch(advanceCruiseReplayTo(response.data[0].id));
-        }
-        return dispatch({ type: EVENT_FETCHING, payload: false});
-      }).catch((error)=>{
-        if(error.response.data.statusCode !== 404) {
-          console.debug(error);
-        }
-        return dispatch({ type: EVENT_FETCHING, payload: false});
-      });
+    const query = { ...getState().event.eventFilter,
+      value: (eventFilter_value) ? eventFilter_value.split(',') : null,
+    }
+
+    const payload = await get_events_by_cruise(query, id);
+    dispatch({ type: INIT_EVENT, payload });
+
+    if(payload.length) {
+      dispatch(advanceCruiseReplayTo(payload[0].id));
+    }
+
+    return dispatch({ type: EVENT_FETCHING, payload: false});
   };
 }
 
 export const initEventTemplate = (id) => {
   return async (dispatch) => {
-    return await axios.get(`${API_ROOT_URL}/api/v1/event_templates/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        response.data.event_options = response.data.event_options.map(event_option => {
-          event_option.event_option_values = event_option.event_option_values.join(',');
-          return event_option;
-        });
 
-        return dispatch({ type: INIT_EVENT_TEMPLATE, payload: response.data });
-      }).catch((error)=>{
-        console.debug(error);
-      });
+    const payload = await get_event_templates({}, id)
+    return dispatch({ type: INIT_EVENT_TEMPLATE, payload })
   };
 }
 
 export const initUser = (id) => {
   return async (dispatch) => {
-    return await axios.get(`${API_ROOT_URL}/api/v1/users/${id}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        return dispatch({ type: INIT_USER, payload: response.data });
-      }).catch((error)=>{
-        console.debug(error);
-      });
+    const payload = await get_users({}, id)
+    return dispatch({ type: INIT_USER, payload });
   };
 }
 
@@ -1046,16 +805,14 @@ export const updateCruise = (formProps) => {
   delete fields.id;
 
   return async (dispatch) => {
-    await axios.patch(`${API_ROOT_URL}/api/v1/cruises/${formProps.id}`, fields,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        dispatch(fetchCruises());
-        return dispatch(updateCruiseSuccess('Cruise updated'));
-      }).catch((error) => {
-        console.debug(error);
-        return dispatch(updateCruiseError(error.response.data.message));
-      });
+    const response = await update_cruise(fields, formProps.id);
+    if(response.success) {
+      dispatch(fetchCruises());      
+      return dispatch(updateCruiseSuccess('Cruise updated'));
+    }
+    else {
+      return dispatch(updateCruiseError(response.error.response.data.message));      
+    }
   };
 }
 
@@ -1066,20 +823,10 @@ export const updateCruiseError = (message) => {
   };
 }
 
-export const updateCruiseReplayEvent = (event_id) => {
-
+export const updateCruiseReplayEvent = (id) => {
   return async (dispatch) => {
-
-    return await axios.get(API_ROOT_URL + '/api/v1/events/' + event_id,
-    {
-      headers: { Authorization: 'Bearer ' + cookies.get('token') }
-    }).then(({data}) => {
-      return dispatch({type: UPDATE_EVENT, payload: data});
-    }).catch((error) => {
-      if(error.response.status !== 404) {
-        console.debug(error);
-      }
-    });
+    const payload = await get_events({}, id);
+    return dispatch({type: UPDATE_EVENT, payload});
   };
 }
 
@@ -1090,29 +837,14 @@ export const updateCruiseSuccess = (message) => {
   };
 }
 
-export const updateCustomVars = (id, value) => {
+export const updateEvent = (formProps) => {
 
   return async (dispatch) => {
-    return await axios.patch(`${API_ROOT_URL}/api/v1/custom_vars/${id}`, value,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        return dispatch(fetchCustomVars());
-      }).catch((error) => {
-        console.debug(error);
-      });
-  };
-}
-
-export const updateEvent = (event_id, eventValue, eventFreeText = '', eventOptions = [], eventTS = '') => {
-
-  return async () => {
-    try {
-      return await updateEventRequest(event_id, eventValue, eventFreeText, eventOptions, eventTS);
-    } catch (error) {
-      console.debug(error);
+    const response = await updateEventRequest(formProps);
+    if(response.success) {
+      return dispatch({ type: UPDATE_EVENT, payload: formProps });      
     }
-  };
+  }
 }
 
 export const updateEventFilterForm = (formProps) => {
@@ -1121,34 +853,11 @@ export const updateEventFilterForm = (formProps) => {
   };
 }
 
-export const updateEventHistory = (update) => {
-  return (dispatch) => {
-    return dispatch({type: UPDATE_EVENT_HISTORY, payload: update});
-  };
-}
+export const updateEventRequest = async (formProps) => {
 
-export const updateEventRequest = async (event_id, eventValue, eventFreeText = '', eventOptions = [], eventTS = '') => {
-
-  let payload = {
-    event_value: eventValue,
-    event_free_text: eventFreeText,
-    event_options: eventOptions
-  };
-
-  if(eventTS.length > 0){
-    payload.ts = eventTS;
-  }
-
-  return await axios.patch(`${API_ROOT_URL}/api/v1/events/${event_id}`,
-    payload,
-    {
-      headers: { Authorization: 'Bearer ' + cookies.get('token') }
-    }).then((response) => {
-      return { response };
-    })
-    .catch((error)=>{
-      console.debug(error);
-    });
+  let fields = { ...formProps }
+  delete fields.id
+  return await update_event(fields, formProps.id);
 }
 
 export const updateEventTemplate = (formProps) => {

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { compose } from 'redux';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import { Link } from 'react-router-dom';

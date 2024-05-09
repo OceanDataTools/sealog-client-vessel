@@ -77,7 +77,6 @@ class EventTemplateForm extends Component {
   }
 
   renderOptionOptions(prefix, index) {
-
     if(this.props.event_options && this.props.event_options.length > 0) {
       if(this.props.event_options[index].event_option_type === 'static text') {
         return (
@@ -161,7 +160,6 @@ class EventTemplateForm extends Component {
   }
 
   renderOptions({ fields, meta: { touched, error } }) {
-
     const promote = (index, fields) => {
       if(index > 0) {
         return(<FontAwesomeIcon className="text-primary float-right" icon='chevron-up' fixedWidth onClick={() => fields.swap(index, index-1)}/>);
@@ -246,7 +244,6 @@ class EventTemplateForm extends Component {
   }
 
   render() {
-
     const { handleSubmit, pristine, reset, submitting, valid } = this.props;
     const formHeader = (<div>{(this.props.event_template.id) ? "Update" : "Add"} Event Template</div>);
 
@@ -310,7 +307,6 @@ class EventTemplateForm extends Component {
 }
 
 const validate = (formProps) => {
-
   const errors = {};
 
   if (!formProps.event_name) {
@@ -411,7 +407,6 @@ const validate = (formProps) => {
 
 
 const mapStateToProps = (state) => {
-
   let initialValues = { ...state.event_template.event_template }
 
   return {

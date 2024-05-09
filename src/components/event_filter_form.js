@@ -32,17 +32,6 @@ class EventFilterForm extends Component {
   componentWillUnmount() {
   }
 
-
-  async populateDefaultValues() {
-    let eventDefaultValues = {event_ts: moment.utc()};
-    this.props.eventTemplate.event_options.forEach((option, index) => {
-      if(option.event_option_default_value) {
-        eventDefaultValues[`option_${index}`] = option.event_option_default_value;
-      }
-    });
-    this.props.initialize(eventDefaultValues);
-  }
-
   handleFormSubmit(formProps) {
 
       if(formProps.startTS && typeof(formProps.startTS) === "object") {
@@ -81,11 +70,10 @@ class EventFilterForm extends Component {
       freetext: '',
       datasource: ''
     });
-    this.props.handlePostSubmit();
+    this.props.handlePostSubmit({});
   }
 
   render() {
-
     const { handleSubmit, submitting, valid } = this.props;
     const eventFilterFormHeader = (<div>Event Filter</div>);
     const startTS = (this.props.minDate)? moment(this.props.minDate): null
@@ -156,7 +144,6 @@ export default compose(
   connect(mapStateToProps, mapDispatchToProps),
   reduxForm({
     form: 'eventFilterForm',
-    // enableReinitialize: true,
     validate: validate
   })
 )(EventFilterForm);

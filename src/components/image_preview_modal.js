@@ -24,7 +24,6 @@ class ImagePreviewModal extends Component {
   }
 
   render() {
-
     const { show, handleHide, name } = this.props
 
     if (name) {

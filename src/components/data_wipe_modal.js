@@ -16,8 +16,8 @@ class DataWipeModal extends Component {
     handleHide: PropTypes.func.isRequired
   };
 
-  handleConfirm() {
-    this.props.handleDelete();
+  async handleConfirm() {
+    await this.props.handleDelete();
     this.props.handleHide();
   }
 

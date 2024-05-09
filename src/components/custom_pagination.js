@@ -22,14 +22,12 @@ class CustomPagination extends Component {
   };
 
   componentDidUpdate(prevProps) {
-
     if(prevProps.maxPerPage !== this.props.maxPerPage) {
       this.setState({maxPerPage: this.props.maxPerPage})
     }
   }
 
   render() {
-
     const count = (this.props.count)? this.props.count : 0;
 
     if(count > this.state.maxPerPage) {
@@ -72,9 +70,5 @@ class CustomPagination extends Component {
     return null;
   }
 }
-
-// const mapStateToProps = (state) => {
-//   return {};
-// }
 
 export default connect(null, null)(CustomPagination);

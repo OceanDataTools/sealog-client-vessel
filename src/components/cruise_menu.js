@@ -1,20 +1,14 @@
-import axios from 'axios';
 import React, { Component } from 'react';
-import Cookies from 'universal-cookie';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Accordion, Button, Card, Col, Container, Row } from 'react-bootstrap';
-import FileDownload from 'js-file-download';
 import ExportDropdown from './export_dropdown';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
-import { API_ROOT_URL, MAIN_SCREEN_HEADER, MAIN_SCREEN_TXT } from '../client_config';
+import { MAIN_SCREEN_HEADER, MAIN_SCREEN_TXT } from '../client_config';
+import { handleCruiseFileDownload } from '../api';
 import { _Cruise_, _cruises_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
-
-const CRUISE_ROUTE = "/files/cruises";
-
-const cookies = new Cookies();
 
 class CruiseMenu extends Component {
 
@@ -30,8 +24,6 @@ class CruiseMenu extends Component {
 
     this.handleYearSelect = this.handleYearSelect.bind(this);
     this.handleCruiseSelect = this.handleCruiseSelect.bind(this);
-    this.handleCruiseFileDownload = this.handleCruiseFileDownload.bind(this);
-
   }
 
   componentDidMount() {
@@ -109,22 +101,9 @@ class CruiseMenu extends Component {
     }
   }
 
-  async handleCruiseFileDownload(filename) {
-    await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.state.activeCruise.id}/${filename}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') },
-        responseType: 'arraybuffer'
-      }).then((response) => {
-        FileDownload(response.data, filename);
-      }).catch((error)=>{
-        console.error('Problem connecting to API');
-        console.debug(error);
-      });
-  }
-
   renderCruiseFiles(files) {
     let output = files.map((file, index) => {
-      return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => this.handleCruiseFileDownload(file)}>{file}</a></div>
+      return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => handleCruiseFileDownload(file, this.state.activeCruise.id)}>{file}</a></div>
     });
     return <div>{output}</div>;
   }

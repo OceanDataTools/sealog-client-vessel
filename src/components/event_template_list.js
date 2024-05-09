@@ -3,26 +3,29 @@ import { connect } from 'react-redux';
 import { Alert, Button, Tab, Tabs } from 'react-bootstrap';
 import EventTemplateOptionsModal from './event_template_options_modal';
 import { Client } from '@hapi/nes/lib/client';
-import Cookies from 'universal-cookie';
-
+import { authorizationHeader } from '../api';
 import { WS_ROOT_URL } from '../client_config';
 import * as mapDispatchToProps from '../actions';
-
-const cookies = new Cookies();
 
 class EventTemplateList extends Component {
 
   constructor (props) {
     super(props);
 
+    this.state = {
+      active_template_category: null,
+      fetching: false
+    }
+
     this.client = new Client(`${WS_ROOT_URL}`);
     this.connectToWS = this.connectToWS.bind(this);
+    this.fetchEventTemplates = this.fetchEventTemplates.bind(this);
     this.renderEventTemplates = this.renderEventTemplates.bind(this);
   }
 
   componentDidMount() {
     if(this.props.authenticated) {
-      this.props.fetchEventTemplatesForMain();
+      this.fetchEventTemplates();
       this.connectToWS();
     }
   }
@@ -36,11 +39,7 @@ class EventTemplateList extends Component {
   async connectToWS() {
     try {
       await this.client.connect({
-        auth: {
-          headers: {
-            Authorization: 'Bearer ' + cookies.get('token')
-          }
-        }
+        auth: authorizationHeader
       });
 
       const deleteHandler = () => {
@@ -80,6 +79,16 @@ class EventTemplateList extends Component {
     }
   }
 
+  async fetchEventTemplates() {
+    this.setState({ fetching: true });
+    this.props.fetchEventTemplates();
+    this.setState({ fetching: false }); 
+  }
+
+  updateEventTemplateCategory(category) {
+    this.setState({ active_template_category: category });
+  }
+
   renderEventTemplates() {
     const template_categories = [...new Set(this.props.event_templates.reduce((flat, event_template) => {
         return flat.concat(event_template.template_categories);
@@ -89,7 +98,7 @@ class EventTemplateList extends Component {
     if(this.props.event_templates){
       if(template_categories.length > 0) {
         return (
-          <Tabs className="category-tab" variant="pills" activeKey={(this.props.event_template_category)? this.props.event_template_category : template_categories[0]} id="event-template-tabs" onSelect={(category) => this.props.updateEventTemplateCategory(category)}>
+          <Tabs className="category-tab" variant="pills" transition={false} activeKey={(this.state.active_template_category)? this.state.active_template_category : template_categories[0]} id="event-template-tabs" onSelect={(category) => this.updateEventTemplateCategory(category)}>
             {
               template_categories.map((template_category) => {
                 return (
@@ -134,7 +143,7 @@ class EventTemplateList extends Component {
   }
 
   render() {
-    if (!this.props.event_templates) {
+    if (this.state.fetching) {
       return (
         <div style={this.props.style} >Loading...</div>
       );
@@ -158,8 +167,7 @@ class EventTemplateList extends Component {
 const mapStateToProps = (state) => {
   return {
     authenticated: state.auth.authenticated,
-    event_templates: state.event_history.event_templates,
-    event_template_category: state.event_history.event_template_category
+    event_templates: state.event_template.event_templates
   };
 }
 

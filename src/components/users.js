@@ -148,7 +148,6 @@ class Users extends Component {
   }
 
   renderUsers() {
-
     const editTooltip = (<Tooltip id="editTooltip">Edit this user.</Tooltip>);
     const tokenTooltip = (<Tooltip id="tokenTooltip">Show user&apos;s JWT token.</Tooltip>);
     const deleteTooltip = (<Tooltip id="deleteTooltip">Delete this user.</Tooltip>);
@@ -178,7 +177,6 @@ class Users extends Component {
   }
 
   renderSystemUsers() {
-
     const editTooltip = (<Tooltip id="editTooltip">Edit this user.</Tooltip>);
     const tokenTooltip = (<Tooltip id="tokenTooltip">Show user&apos;s JWT token.</Tooltip>);
     const deleteTooltip = (<Tooltip id="deleteTooltip">Delete this user.</Tooltip>);
@@ -208,7 +206,6 @@ class Users extends Component {
   }
 
   renderUserTable() {
-
     if(this.props.users.filter(user => user.system_user === false).length > 0){
       return (
         <Table responsive bordered striped size="sm">
@@ -255,7 +252,6 @@ class Users extends Component {
   }
 
   renderUsersHeader() {
-
     const Label = "Users";
 
     const exportTooltip = (<Tooltip id="exportTooltip">Export Users</Tooltip>);
@@ -278,11 +274,8 @@ class Users extends Component {
   }
 
   renderSystemUsersHeader() {
-
     const Label = "System Users";
-
     const exportTooltip = (<Tooltip id="exportTooltip">Export System Users</Tooltip>);
-
     let export_icon = (this.props.roles.includes("admin"))? (<OverlayTrigger placement="top" overlay={exportTooltip}><FontAwesomeIcon onClick={ () => this.exportSystemUsersToJSON() } icon='download' fixedWidth/></OverlayTrigger>) : null;
 
     return (
@@ -313,7 +306,7 @@ class Users extends Component {
           <DeleteUserModal />
           <ImportUsersModal handleExit={this.handleUserImportClose}/>
           <NonSystemUsersWipeModal />
-          <UserPermissionsModal />
+          <UserPermissionsModal onClose={this.props.fetchCruises} />
           <Row>
             <Col className="px-1" sm={12} md={7} lg={{span:6, offset:1}} xl={{span:5, offset:2}}>
               <Card className="border-secondary" key="system_users_card">

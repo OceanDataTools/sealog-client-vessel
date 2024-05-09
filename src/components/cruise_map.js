@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import moment from 'moment';
-import axios from 'axios';
-import Cookies from 'universal-cookie';
 import { Map, TileLayer, WMSTileLayer, Marker, Polyline, Popup, LayersControl, ScaleControl } from 'react-leaflet';
 import L from 'leaflet';
 import { ButtonToolbar, Container, Row, Col, Card, Tooltip, OverlayTrigger, ListGroup, Form } from 'react-bootstrap';
@@ -14,22 +12,17 @@ import EventCommentModal from './event_comment_modal';
 import CruiseModeDropdown from './cruise_mode_dropdown';
 import CustomPagination from './custom_pagination';
 import ExportDropdown from './export_dropdown';
-import * as mapDispatchToProps from '../actions';
-import { API_ROOT_URL } from '../client_config';
-import { _Cruises_ } from '../vocab';
+import { get_event_aux_data_by_cruise } from '../api';
+import { POSITION_DATASOURCES } from '../client_config';
 import { TILE_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers';
+import { _Cruises_ } from '../vocab';
+import * as mapDispatchToProps from '../actions';
 
 const { BaseLayer } = LayersControl;
-
-const cookies = new Cookies();
 
 const SliderWithTooltip = createSliderWithTooltip(Slider);
 
 const maxEventsPerPage = 10;
-
-const initCenterPosition = DEFAULT_LOCATION;
-
-const positionAuxDataSources = ['vesselRealtimeNavData'];
 
 class CruiseMap extends Component {
 
@@ -49,13 +42,11 @@ class CruiseMap extends Component {
       activePage: 1,
 
       zoom: 13,
-      center:initCenterPosition,
-      position:initCenterPosition,
+      center:DEFAULT_LOCATION,
+      position:DEFAULT_LOCATION,
       showMarker: false,
       height: "480px"
     };
-
-    this.auxDatasourceFilters = positionAuxDataSources;
 
     this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
@@ -72,10 +63,10 @@ class CruiseMap extends Component {
   }
 
   componentDidMount() {
-
     if(!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
-      this.props.initCruiseReplay(this.props.match.params.id, this.props.event.hideASNAP);
-    } else {
+      this.props.initCruiseReplay(this.props.match.params.id);
+    }
+    else {
       const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id);
       this.setState(
         {
@@ -84,17 +75,13 @@ class CruiseMap extends Component {
         }
       );
     }
-
-    this.initCruiseTrackline(this.props.match.params.id);
-
     this.divFocus.focus();
+    this.initCruiseTrackline(this.props.match.params.id);
   }
 
   componentDidUpdate() {
     this.map.leafletElement.invalidateSize();
   }
-
-  componentWillUnmount(){}
 
   handleKeyPress(event) {
     if(event.key === "ArrowRight" && this.state.activePage < Math.ceil(this.props.event.events.length / maxEventsPerPage)) {
@@ -138,46 +125,40 @@ class CruiseMap extends Component {
 
     let tracklines = {};
 
-    for (let index=0;index<this.auxDatasourceFilters.length;index++) {
+    for (const datasource of POSITION_DATASOURCES) {
 
       let trackline = {
         eventIDs: [],
         polyline: L.polyline([]),
       };
 
-      let url = `${API_ROOT_URL}/api/v1/event_aux_data/bycruise/${id}?datasource=${this.auxDatasourceFilters[index]}`;
-      await axios.get(url, {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then((response) => {
-        response.data.forEach((r_data) => {
-          const latLng = [ parseFloat(r_data['data_array'].find(data => data['data_name'] == 'latitude')['data_value']), parseFloat(r_data['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])];
-          if(latLng[0] != 0 && latLng[1] != 0) {
-            trackline.polyline.addLatLng(latLng);
-            trackline.eventIDs.push(r_data['event_id']);
-          }
-        });
+      const aux_data = await get_event_aux_data_by_cruise({ datasource }, id);
 
-      }).catch((error)=>{
-        if(error.response && error.response.data.statusCode === 404) {
-          console.warn("No", this.auxDatasourceFilters[index], "data found")
-        } else {
-          console.error('Problem connecting to API');
-          console.debug(error);
+      if(!aux_data.length) {
+        console.debug(`No data found for ${datasource}`);
+        continue;
+      }
+
+      aux_data.forEach((r_data) => {
+        const latLng = [ 
+          parseFloat(r_data['data_array'].find(data => data['data_name'] == 'latitude')['data_value']),
+          parseFloat(r_data['data_array'].find(data => data['data_name'] == 'longitude')['data_value'])
+        ];
+
+        if(latLng[0] != 0 && latLng[1] != 0) {
+          trackline.polyline.addLatLng(latLng);
+          trackline.eventIDs.push(r_data['event_id']);
         }
       });
 
-      if(trackline.eventIDs.length > 0) {
-        tracklines[this.auxDatasourceFilters[index]] = trackline
-      }
-    }
-
-    for (let index=0;index<this.auxDatasourceFilters.length;index++) {
-      if (tracklines[this.auxDatasourceFilters[index]]) {
-        this.setState({ tracklines: tracklines, fetching: false, posDataSource: this.auxDatasourceFilters[index] });
+      if(trackline.eventIDs) {
+        tracklines[datasource] = trackline;
+        this.setState({ tracklines, posDataSource: datasource});
         break;
       }
     }
 
+    this.setState({ fetching: false });
     this.initMapView();
   }
 
@@ -277,7 +258,6 @@ class CruiseMap extends Component {
   }
 
   renderControlsCard() {
-
     if(this.props.cruise) {
       const cruiseStartTime = moment(this.props.cruise.start_ts);
       const cruiseEndTime = moment(this.props.cruise.stop_ts);
@@ -306,27 +286,46 @@ class CruiseMap extends Component {
   }
 
   renderEventListHeader() {
-
     const Label = "Filtered Events";
-    const ASNAPToggle = (<Form.Check id="ASNAP" type='switch' inline checked={!this.props.event.hideASNAP} onChange={() => this.toggleASNAP()} disabled={this.props.event.fetching} label='ASNAP'/>);
+    const ASNAPToggle = (
+      <Form.Check
+        id="ASNAP"
+        type='switch'
+        inline checked={!this.props.event.hideASNAP}
+        onChange={() => this.toggleASNAP()}
+        disabled={this.props.event.fetching}
+        label='ASNAP'
+      />
+    );
 
     return (
       <div>
         { Label }
         <span className="float-right">
           {ASNAPToggle}
-          <ExportDropdown id="dropdown-download" disabled={this.props.event.fetching} hideASNAP={this.props.event.hideASNAP} eventFilter={this.props.event.eventFilter} cruiseID={this.props.cruise.id} prefix={this.props.cruise.cruise_id}/>
+          <ExportDropdown
+            id="dropdown-download"
+            disabled={this.props.event.fetching}
+            hideASNAP={this.props.event.hideASNAP}
+            eventFilter={this.props.event.eventFilter}
+            cruiseID={this.props.cruise.id}
+            prefix={this.props.cruise.cruise_id}
+          />
         </span>
       </div>
     );
   }
 
   renderEventCard() {
-
     return (
       <Card className="mt-2 border-secondary">
         <Card.Header>{ this.renderEventListHeader() }</Card.Header>
-        <ListGroup className="eventList" tabIndex="-1" onKeyDown={this.handleKeyPress} ref={(div) => { this.divFocus = div }}>
+        <ListGroup
+          className="eventList"
+          tabIndex="-1"
+          onKeyDown={this.handleKeyPress}
+          ref={(div) => { this.divFocus = div }}
+        >
           {this.renderEvents()}
         </ListGroup>
       </Card>
@@ -335,13 +334,13 @@ class CruiseMap extends Component {
 
   renderEvents() {
 
+    if(!this.props.event.selected_event) { return null }
     if(this.props.event.events && this.props.event.events.length > 0){
 
       let eventList = this.props.event.events.map((event, index) => {
         if(index >= (this.state.activePage-1) * maxEventsPerPage && index < (this.state.activePage * maxEventsPerPage)) {
 
           let comment_exists = false;
-
           let eventOptionsArray = event.event_options.reduce((filtered, option) => {
             if(option.event_option_name === 'event_comment') {
               comment_exists = (option.event_option_value !== '')? true : false;
@@ -355,16 +354,57 @@ class CruiseMap extends Component {
             eventOptionsArray.push(`free_text: "${event.event_free_text}"`);
           }
           let active = (this.props.event.selected_event.id === event.id)? true : false;
-
           let eventOptions = (eventOptionsArray.length > 0)? '--> ' + eventOptionsArray.join(', '): '';
+          let commentIcon = (comment_exists) ? <FontAwesomeIcon
+              onClick={() => this.handleEventCommentModal(index)}
+              icon='comment'
+              fixedWidth transform="grow-4"
+            />
+            : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw">
+                <FontAwesomeIcon icon='comment'
+                  fixedWidth
+                  transform="grow-4"
+                />
+                <FontAwesomeIcon
+                  className={(active) ? "text-primary" : "text-secondary" }
+                  icon='plus'
+                  fixedWidth
+                  transform="shrink-4"
+                />
+              </span>;
+          let commentTooltip = (comment_exists)? (
+              <OverlayTrigger
+                placement="left"
+                overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}
+              </OverlayTrigger>
+            ) : (
+              <OverlayTrigger
+                placement="top"
+                overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}
+              </OverlayTrigger>
+            );
 
-          let commentIcon = (comment_exists)? <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform="grow-4"/> : <span onClick={() => this.handleEventCommentModal(index)} className="fa-layers fa-fw"><FontAwesomeIcon icon='comment' fixedWidth transform="grow-4"/><FontAwesomeIcon className={(active)? "text-primary" : "text-secondary" } icon='plus' fixedWidth transform="shrink-4"/></span>;
-          let commentTooltip = (comment_exists)? (<OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>{commentIcon}</OverlayTrigger>) : (<OverlayTrigger placement="top" overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>{commentIcon}</OverlayTrigger>);
-          let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin"))? commentTooltip : null;
+          let eventComment = (this.props.roles.includes("event_logger") || this.props.roles.includes("admin")) ? commentTooltip : null;
+          let eventDetails = <OverlayTrigger
+              placement="left"
+              overlay={
+                <Tooltip id={`commentTooltip_${event.id}`}>View Details</Tooltip>}>
+                  <FontAwesomeIcon
+                    onClick={() => this.handleEventShowDetailsModal(index)}
+                    icon='window-maximize'
+                    fixedWidth
+                  />
+            </OverlayTrigger>;
 
-          let eventDetails = <OverlayTrigger placement="left" overlay={<Tooltip id={`commentTooltip_${event.id}`}>View Details</Tooltip>}><FontAwesomeIcon onClick={() => this.handleEventShowDetailsModal(index)} icon='window-maximize' fixedWidth/></OverlayTrigger>;
-
-          return (<ListGroup.Item className="py-1 event-list-item" key={event.id} active={active} ><span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span><span className="float-right">{eventDetails} {eventComment}</span></ListGroup.Item>);
+          return (
+            <ListGroup.Item
+              className="py-1 event-list-item"
+              key={event.id}
+              active={active}
+            >
+              <span onClick={() => this.handleEventClick(index)} >{`${event.ts} <${event.event_author}>: ${event.event_value} ${eventOptions}`}</span>
+              <span className="float-right">{eventDetails} {eventComment}</span>
+            </ListGroup.Item>);
 
         }
       });
@@ -376,6 +416,8 @@ class CruiseMap extends Component {
   }
 
   renderMarker() {
+
+    if(!this.props.event.selected_event) { return null }
 
     if(this.props.event.selected_event.aux_data && typeof this.props.event.selected_event.aux_data.find((data) => data['data_source'] === this.state.posDataSource) !== 'undefined') {
 
@@ -428,9 +470,9 @@ class CruiseMap extends Component {
 
     let trackLine = null;
 
-    for (let index=0;index<this.auxDatasourceFilters.length;index++) {
-      if (this.state.tracklines[this.auxDatasourceFilters[index]] && !this.state.tracklines[this.auxDatasourceFilters[index]].polyline.isEmpty()) {
-        trackLine = <Polyline color="lime" positions={this.state.tracklines[this.auxDatasourceFilters[index]].polyline.getLatLngs()} />
+    for (const datasource of POSITION_DATASOURCES) {
+      if (this.state.tracklines[datasource] && !this.state.tracklines[datasource].polyline.isEmpty()) {
+        trackLine = <Polyline color="lime" positions={this.state.tracklines[datasource].polyline.getLatLngs()} />
         break;
       }
     }

@@ -38,7 +38,6 @@ class EventTemplates extends Component {
   }
 
   componentDidMount() {
-
     this.props.fetchEventTemplates();
   }
 
@@ -51,38 +50,31 @@ class EventTemplates extends Component {
   }
 
   handleEventTemplateDelete(id) {
-
     this.props.showModal('deleteEventTemplate', { id: id, handleDelete: this.props.deleteEventTemplate });
   }
 
   handleEventTemplateSelect(id) {
-
     this.props.leaveEventTemplateForm();
     this.props.initEventTemplate(id);
   }
 
   handleEventTemplateCreate() {
-
     this.props.leaveEventTemplateForm();
   }
 
   handleEventTemplateImport() {
-
     this.props.showModal('importEventTemplates');
   }
 
   handleEventTemplateImportClose() {
-
     this.props.fetchEventTemplates();
   }
 
   handleNonSystemEventTemplatesWipe() {
-
     this.props.showModal('nonSystemEventTemplatesWipe', { handleDelete: this.props.deleteAllNonSystemEventTemplates });
   }
 
   handleEventTemplateTest(event_template) {
-
     this.props.showModal('eventOptions', { eventTemplate: event_template, event: null, handleUpdateEvent: null, handleDeleteEvent: null });
   }
 
@@ -124,17 +116,14 @@ class EventTemplates extends Component {
 
 
   exportTemplatesToJSON() {
-
     fileDownload(JSON.stringify(this.props.event_templates.filter(template => template.system_template === false), null, 2), 'sealog_eventTemplateExport.json');
   }
 
   exportSystemTemplatesToJSON() {
-
     fileDownload(JSON.stringify(this.props.event_templates.filter(template => template.system_template === true), null, 2), 'sealog_systemEventTemplateExport.json');
   }
 
   renderAddEventTemplateButton() {
-
     if (!this.props.showform && this.props.roles && (this.props.roles.includes('admin') || this.props.roles.includes('event_manager'))) {
       return (
         <Button variant="primary" size="sm" disabled={!this.props.event_templateid} onClick={ () => this.handleEventTemplateCreate()}>Add Event Template</Button>
@@ -143,7 +132,6 @@ class EventTemplates extends Component {
   }
 
   renderImportEventTemplatesButton() {
-
     if(this.props.roles.includes("admin")) {
       return (
         <Button className="mr-1" variant="primary" size="sm" onClick={ () => this.handleEventTemplateImport()}>Import From File</Button>
@@ -153,7 +141,6 @@ class EventTemplates extends Component {
 
 
   renderEventTemplates() {
-
     const editTooltip = (<Tooltip id="editTooltip">Edit this template.</Tooltip>);
     const deleteTooltip = (<Tooltip id="deleteTooltip">Delete this template.</Tooltip>);
     const testTooltip = (<Tooltip id="testTooltip">Test this template.</Tooltip>);
@@ -181,7 +168,6 @@ class EventTemplates extends Component {
   }
 
   renderSystemEventTemplates() {
-
     const editTooltip = (<Tooltip id="editTooltip">Edit this template.</Tooltip>);
     const deleteTooltip = (<Tooltip id="deleteTooltip">Delete this template.</Tooltip>);
     const testTooltip = (<Tooltip id="testTooltip">Test this template.</Tooltip>);
@@ -221,7 +207,6 @@ class EventTemplates extends Component {
   }
 
   renderEventTemplatesTable() {
-
     if(this.props.event_templates && this.props.event_templates.filter(template => template.system_template === false).length > 0){
       return (
         <Table responsive bordered striped size="sm">
@@ -246,7 +231,6 @@ class EventTemplates extends Component {
   }
 
   renderSystemEventTemplatesTable() {
-
     if(this.props.event_templates && this.props.event_templates.filter(template => template.system_template === true).length > 0){
       return (
         <Table responsive bordered striped size="sm">
@@ -270,17 +254,13 @@ class EventTemplates extends Component {
   }
 
   renderEventTemplatesHeader() {
-
-    const Label = "Event Templates";
-
-    // const importTooltip = (<Tooltip id="importTooltip">Import Event Templates</Tooltip>)
     const exportTooltip = (<Tooltip id="exportTooltip">Export Event Templates</Tooltip>);
     const deleteAllNonSystemTooltip = (<Tooltip id="deleteAllNonSystemTooltip">Delete ALL non-system Event Templates</Tooltip>);
     const disableBtn = (this.props.event_templates.filter(event_template => event_template.system_template === false).length > 0)? false : true;
 
     return (
       <div>
-        { Label }
+        Event Templates
         <div className="float-right">
           <Form inline>
             <FormControl size="sm" type="text" placeholder="Search" className="mr-sm-2" onChange={this.handleSearchChange}/>
@@ -293,15 +273,12 @@ class EventTemplates extends Component {
   }
 
   renderSystemEventTemplatesHeader() {
-
-    const Label = "System Templates";
-
     const exportTooltip = (<Tooltip id="exportTooltip">Export System Event Templates</Tooltip>);
     const disableBtn = (this.props.event_templates.filter(event_template => event_template.system_template === false).length > 0)? false : true;
 
     return (
       <div>
-        { Label }
+        System Templates
         <span className="float-right">
           <Form inline>
             <FormControl size="sm" type="text" placeholder="Search" className="mr-sm-2" onChange={this.handleSystemSearchChange}/>

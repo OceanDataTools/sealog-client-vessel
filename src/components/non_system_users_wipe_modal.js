@@ -22,7 +22,6 @@ class NonSystemUsersWipeModal extends Component {
   }
 
   render() {
-
     const { show, handleHide, handleDelete } = this.props
 
     if( handleDelete ) {

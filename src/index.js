@@ -94,6 +94,7 @@ if (token) {
   store.dispatch({ type: AUTH_USER });
 }
 
+// eslint-disable-next-line react/no-deprecated
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>

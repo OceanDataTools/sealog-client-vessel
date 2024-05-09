@@ -3,21 +3,18 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { reduxForm, Field, change } from 'redux-form';
 import { Button, Card, Form } from 'react-bootstrap';
-import { renderAlert, renderDatePicker, renderHidden, renderMessage, renderTextField, renderTextArea, dateFormat } from './form_elements';
-import axios from 'axios';
+import { renderAlert, renderDatePicker, renderMessage, renderTextField, renderTextArea, dateFormat } from './form_elements';
 import Cookies from 'universal-cookie';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import FileDownload from 'js-file-download';
 import { FilePond } from 'react-filepond';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
+import { handleCruiseFileDelete, handleCruiseFileDownload, CRUISE_ROUTE } from '../api';
 import { API_ROOT_URL, CRUISE_ID_PLACEHOLDER, CRUISE_ID_REGEX, DEFAULT_VESSEL } from '../client_config';
 import { _Cruise_, _cruise_ } from '../vocab';
 
 import * as mapDispatchToProps from '../actions';
-
-const CRUISE_ROUTE = "/files/cruises";
 
 const cookies = new Cookies();
 
@@ -29,50 +26,38 @@ class CruiseForm extends Component {
     this.state = {
       filepondPristine: true
     }
-
-    this.handleFileDownload = this.handleFileDownload.bind(this);
-    this.handleFileDelete = this.handleFileDelete.bind(this);
   }
 
   static propTypes = {
     handleFormSubmit: PropTypes.func.isRequired
   };
 
-  componentDidMount() {
-    this.populateDefaultValues();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if(this.props.cruise !== prevProps.cruise && Object.keys(this.props.cruise).length === 0) {
-      this.populateDefaultValues();
-    }
-  }
-
   componentWillUnmount() {
     this.props.leaveCruiseForm();
   }
 
-  populateDefaultValues() {
-    this.props.initialize({cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL }});
-  }
-
   handleFileDeleteModal(file) {
-    this.props.showModal('deleteFile', { file: file, handleDelete: this.handleFileDelete });
+    this.props.showModal('deleteFile',
+      {
+        file: file,
+        handleDelete: (file) => handleCruiseFileDelete(file, this.props.cruise.id, () => { this.props.initCruise(this.props.cruise.id) })
+      });
   }
 
   handleFormSubmit(formProps) {
 
     formProps.cruise_additional_meta.cruise_name = formProps.cruise_additional_meta.cruise_name || '';
     formProps.cruise_location = formProps.cruise_location || '';
-    formProps.cruise_additional_meta.cruise_description = formProps.cruise_additional_meta.cruise_description || '';
     formProps.cruise_hidden = formProps.cruise_hidden || false;
+    formProps.cruise_access_list = formProps.cruise_access_list || [];
+    formProps.cruise_additional_meta.cruise_description = formProps.cruise_additional_meta.cruise_description || '';
 
     formProps.cruise_tags = formProps.cruise_tags || [];
     if(typeof formProps.cruise_tags === 'string') {
-      formProps.cruise_tags = formProps.cruise_tags.split(',');
-      formProps.cruise_tags = formProps.cruise_tags.map(string => {
-        return string.trim();
-      });
+      formProps.cruise_tags = formProps.cruise_tags
+        .trim()
+        .split(',')
+        .map(string => { return string.trim() })
     }
 
     const end_of_stop_ts = moment.utc(formProps.stop_ts);
@@ -83,12 +68,12 @@ class CruiseForm extends Component {
     });
     formProps.stop_ts = end_of_stop_ts.toISOString();
 
-    formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants  || [];
+    formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants || []
     if(typeof formProps.cruise_additional_meta.cruise_participants === 'string') {
-      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants.split(',');
-      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants.map(string => {
-        return string.trim();
-      });
+      formProps.cruise_additional_meta.cruise_participants = formProps.cruise_additional_meta.cruise_participants
+        .trim()
+        .split(',')
+        .map(string => { return string.trim() })
     }
 
     formProps.cruise_additional_meta.cruise_files = this.pond.getFiles().map(file => file.serverId)
@@ -104,35 +89,10 @@ class CruiseForm extends Component {
     this.props.handleFormSubmit()
   }
 
-  async handleFileDownload(filename) {
-    await axios.get(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') },
-        responseType: 'arraybuffer'
-      }).then((response) => {
-          FileDownload(response.data, filename);
-       }).catch((error)=>{
-        console.error('Problem connecting to API');
-        console.debug(error);
-      });
-  }
-
-  async handleFileDelete(filename) {
-    await axios.delete(`${API_ROOT_URL}${CRUISE_ROUTE}/${this.props.cruise.id}/${filename}`,
-      {
-        headers: { Authorization: 'Bearer ' + cookies.get('token') }
-      }).then(() => {
-        this.props.initCruise(this.props.cruise.id)
-      }).catch((error)=>{
-        console.error('Problem connecting to API');
-        console.debug(error);
-      });
-  }
-
   renderFiles() {
     if(this.props.cruise.cruise_additional_meta && this.props.cruise.cruise_additional_meta.cruise_files) {
       let files = this.props.cruise.cruise_additional_meta.cruise_files.map((file, index) => {
-        return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => this.handleFileDownload(file)}>{file}</a> <FontAwesomeIcon onClick={() => this.handleFileDeleteModal(file)} className='text-danger' icon='trash' fixedWidth /></div>
+        return <div className="pl-2" key={`file_${index}`}><a className="text-decoration-none" href="#"  onClick={() => handleCruiseFileDownload(file, this.props.cruise.id)}>{file}</a> <FontAwesomeIcon onClick={() => this.handleFileDeleteModal(file)} className='text-danger' icon='trash' fixedWidth /></div>
       })
 
       return (
@@ -157,14 +117,6 @@ class CruiseForm extends Component {
           <Card.Header>{formHeader}</Card.Header>
           <Card.Body>
             <Form onSubmit={ handleSubmit(this.handleFormSubmit.bind(this)) }>
-              <Field
-                name="id"
-                component={renderHidden}
-              />
-              <Field
-                name="cruise_hidden"
-                component={renderHidden}
-              />
               <Form.Row>
                 <Field
                   name="cruise_id"
@@ -298,7 +250,7 @@ class CruiseForm extends Component {
               {renderMessage(this.props.message)}
               <div className="float-right">
                 <Button className="mr-1" variant="secondary" size="sm" disabled={pristine || submitting} onClick={reset}>Reset Values</Button>
-                <Button variant="primary" size="sm" type="submit" disabled={(submitting || !valid || pristine) && this.state.filepondPristine}>Update</Button>
+                <Button variant="primary" size="sm" type="submit" disabled={(submitting || !valid || pristine) && this.state.filepondPristine}>{(this.props.cruise.id) ? "Update" : "Add"}</Button>
               </div>
             </Form>
           </Card.Body>
@@ -390,10 +342,12 @@ const warn = (formProps) => {
 
 const mapStateToProps = (state) => {
 
+  let initialValues = { ...{ cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL }}, ...state.cruise.cruise }
+
   return {
     errorMessage: state.cruise.cruise_error,
     message: state.cruise.cruise_message,
-    initialValues: state.cruise.cruise,
+    initialValues: initialValues,
     cruise: state.cruise.cruise,
     roles: state.user.profile.roles
   };

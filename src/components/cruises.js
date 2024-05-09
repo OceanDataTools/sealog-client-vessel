@@ -10,7 +10,7 @@ import ImportCruisesModal from './import_cruises_modal';
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard';
 import CruisePermissionsModal from './cruise_permissions_modal';
 import CustomPagination from './custom_pagination';
-import { USE_ACCESS_CONTROL, DEFAULT_VESSEL } from '../client_config';
+import { USE_ACCESS_CONTROL } from '../client_config';
 import { _Cruises_, _Cruise_, _cruise_ } from '../vocab';
 import * as mapDispatchToProps from '../actions';
 
@@ -37,6 +37,11 @@ class Cruises extends Component {
 
   componentDidMount() {
     this.props.fetchCruises();
+    this.props.clearSelectedCruise();
+  }
+
+  componentWillUnmount() {
+    this.props.clearSelectedCruise();
   }
 
   handlePageSelect(eventKey) {
@@ -124,13 +129,11 @@ class Cruises extends Component {
   }
 
   renderCruises() {
-
     const editTooltip = (<Tooltip id="editTooltip">Edit this {_cruise_}.</Tooltip>);
     const deleteTooltip = (<Tooltip id="deleteTooltip">Delete this {_cruise_}.</Tooltip>);
     const showTooltip = (<Tooltip id="showTooltip">{_Cruise_} is hidden, click to show.</Tooltip>);
     const hideTooltip = (<Tooltip id="hideTooltip">{_Cruise_} is visible, click to hide.</Tooltip>);
     const permissionTooltip = (<Tooltip id="permissionTooltip">User permissions.</Tooltip>);
-
     const cruises = (Array.isArray(this.state.filteredCruises)) ? this.state.filteredCruises : this.props.cruises;
 
     return cruises.map((cruise, index) => {
@@ -190,7 +193,6 @@ class Cruises extends Component {
   }
 
   renderCruiseHeader() {
-
     const exportTooltip = (<Tooltip id="exportTooltip">Export {_Cruises_}</Tooltip>);
 
     return (
@@ -219,7 +221,7 @@ class Cruises extends Component {
         <Container className="mt-2">
           <DeleteCruiseModal />
           <DeleteFileModal />
-          <CruisePermissionsModal />
+          <CruisePermissionsModal onClose={this.props.fetchCruises}/>
           <ImportCruisesModal handleExit={this.handleCruiseImportClose} />
           <Row>
             <Col className="px-1" sm={12} md={7} lg={6} xl={{span:5, offset:1}}>

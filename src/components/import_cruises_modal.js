@@ -38,7 +38,6 @@ class ImportCruisesModal extends Component {
   }
 
   async insertCruise({ id, cruise_id, start_ts, stop_ts, cruise_location = '', cruise_tags = [], cruise_hidden = false, cruise_additional_meta = {} }) {
-
     const cruiseExists = await axios.get(`${API_ROOT_URL}/api/v1/cruises/${id}`,
       {
         headers: {
@@ -65,7 +64,7 @@ class ImportCruisesModal extends Component {
             Authorization: 'Bearer ' + cookies.get('token'),
             'content-type': 'application/json'
           }
-        }).then((response) => {
+        }).then(() => {
           this.setState( prevState => (
             {
               imported: prevState.imported + 1,
@@ -73,7 +72,7 @@ class ImportCruisesModal extends Component {
             }
           ))
         }).catch((error) => {
-          if(error.response.data.statusCode !== 400) {
+          if(error.response && error.response.data.statusCode !== 400) {
             console.debug(error);
           } else {
             console.error('Problem connecting to API');
@@ -133,7 +132,6 @@ class ImportCruisesModal extends Component {
   }
 
   handleCruiseRecordImport = files => {
-
     this.setState(
       {
         pending: "Calculating..."
@@ -146,7 +144,6 @@ class ImportCruisesModal extends Component {
   }
 
   render() {
-
     const { show, handleExit } = this.props
 
     if (handleExit) {

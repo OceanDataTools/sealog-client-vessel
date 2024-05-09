@@ -37,7 +37,6 @@ class ImportEventTemplatesModal extends Component {
   }
 
   async insertEventTemplate({id, event_name, event_value, event_free_text_required = false, event_options = [], system_template = false, template_categories = [] }) {
-
     const templateExists = await axios.get(`${API_ROOT_URL}/api/v1/event_templates/${id}`,
       {
         headers: {
@@ -64,7 +63,7 @@ class ImportEventTemplatesModal extends Component {
             Authorization: 'Bearer ' + cookies.get('token'),
             'content-type': 'application/json'
           }
-        }).then((response) => {
+        }).then(() => {
           this.setState( prevState => (
             {
               imported: prevState.imported + 1,
@@ -72,7 +71,7 @@ class ImportEventTemplatesModal extends Component {
             }
           ))
         }).catch((error) => {
-          if(error.response.data.statusCode !== 400) {
+          if(error.response && error.response.data.statusCode !== 400) {
             console.error('Problem connecting to API');
             console.debug(error);
           }
@@ -115,14 +114,12 @@ class ImportEventTemplatesModal extends Component {
   }
 
   handleEventTemplateImport = files => {
-
     let reader = new FileReader();
     reader.onload = this.importEventTemplatesFromFile
     reader.readAsText(files[0]);
   }
 
   render() {
-
     const { show } = this.props
 
     return (

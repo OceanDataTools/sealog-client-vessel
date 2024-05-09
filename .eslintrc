@@ -7,10 +7,11 @@
     extends: [
         "eslint:recommended",
         "plugin:react/recommended",
-        "plugin:react-redux/recommended"
+        "plugin:react-redux/recommended",
+        "prettier"
     ],
     "parserOptions": {
-        ecmaVersion: 9,
+        ecmaVersion: 12,
         sourceType: "module",
         ecmaFeatures: {
             jsx: true,
@@ -19,10 +20,10 @@
         }
     },
     env: {
-        es6: true,
         node: true,
         browser: true,
-        jest: true
+        jest: true,
+        es2021: true
     },
     rules: {
         "react/jsx-no-target-blank": 0,
@@ -39,5 +40,10 @@
             "args": "after-used",
             "argsIgnorePattern": "options"
         }]
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
     }
 }

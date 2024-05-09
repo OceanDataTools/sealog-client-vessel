@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import axios from 'axios';
 import { Button, Modal } from 'react-bootstrap';
 import { connectModal } from 'redux-modal';
-import Cookies from 'universal-cookie';
-import { API_ROOT_URL } from '../client_config';
-
-const cookies = new Cookies();
+import { get_user_token } from '../api';
 
 class DisplayUserTokenModal extends Component {
 
@@ -30,19 +26,8 @@ class DisplayUserTokenModal extends Component {
   }
 
   async getUserJWT() {
-    await axios.get(`${API_ROOT_URL}/api/v1/users/${this.props.id}/token`,
-      {
-        headers: {
-          Authorization: 'Bearer ' + cookies.get('token'),
-          'content-type': 'application/json'
-        }
-      }).then((response) => {
-        this.setState({ token: response.data.token });
-      }).catch((error) => {
-        console.error('Problem connecting to API');
-        console.debug(error);
-        this.setState({ token: null });
-      })
+    const token = await get_user_token(this.props.id)
+    this.setState({ token });
   }
 
   handleConfirm() {

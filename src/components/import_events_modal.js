@@ -34,11 +34,7 @@ class ImportEventsModal extends Component {
     this.props.handleHide()
   }
 
-  // importEventsFromFile = async (e) => {
-  // async insertEvent({id, ts, event_author, event_value, event_free_text = '', event_options = []}) {
-
   async insertEvent({id, ts, event_author, event_value, event_free_text = '', event_options = []}) {
-
     const eventExists = await axios.get(`${API_ROOT_URL}/api/v1/events/${id}`,
       {
         headers: {
@@ -65,7 +61,7 @@ class ImportEventsModal extends Component {
             Authorization: 'Bearer ' + cookies.get('token'),
             'content-type': 'application/json'
           }
-        }).then((response) => {
+        }).then(() => {
           this.setState( prevState => (
             {
               imported: prevState.imported + 1,
@@ -73,7 +69,7 @@ class ImportEventsModal extends Component {
             }
           ))
         }).catch((error) => {
-          if(error.response.data.statusCode !== 400) {
+          if(error.response && error.response.data.statusCode !== 400) {
             console.error('Problem connecting to API');
             console.debug(error);
           }
@@ -117,14 +113,12 @@ class ImportEventsModal extends Component {
   }
 
   handleEventRecordImport = files => {
-
     let reader = new FileReader();
     reader.onload = this.importEventsFromFile
     reader.readAsText(files[0]);
   }
 
   render() {
-
     const { show } = this.props
 
     return (

@@ -37,7 +37,6 @@ class ImportUsersModal extends Component {
   }
 
   async insertUser({id, username, fullname, email, password = '', roles, system_user = false}) {
-
     const userExists = await axios.get(`${API_ROOT_URL}/api/v1/users/${id}`,
     {
       headers: {
@@ -64,7 +63,7 @@ class ImportUsersModal extends Component {
             Authorization: 'Bearer ' + cookies.get('token'),
             'content-type': 'application/json'
           }
-        }).then((response) => {
+        }).then(() => {
           this.setState( prevState => (
             {
               imported: prevState.imported + 1,
@@ -72,7 +71,7 @@ class ImportUsersModal extends Component {
             }
           ))
         }).catch((error) => {
-          if(error.response.data.statusCode !== 400) {
+          if(error.response && error.response.data.statusCode !== 400) {
             console.error('Problem connecting to API');
             console.debug(error);
           }
@@ -115,7 +114,6 @@ class ImportUsersModal extends Component {
   }
 
   handleUserRecordImport = files => {
-
     let reader = new FileReader();
     reader.onload = this.importUsersFromFile
     reader.readAsText(files[0]);

@@ -37,9 +37,6 @@ export const SET_SELECTED_EVENT = 'set_selected_event';
 export const CLEAR_SELECTED_EVENT = 'clear_selected_event';
 export const FETCH_FILTERED_EVENTS = 'fetch_filtered_events';
 
-export const FETCH_EVENT_HISTORY = 'fetch_event_history';
-export const UPDATE_EVENT_HISTORY = 'update_event_history';
-
 export const INIT_EVENT_TEMPLATE = 'init_event_template';
 export const UPDATE_EVENT_TEMPLATE = 'update_event_template';
 export const UPDATE_EVENT_TEMPLATE_SUCCESS = 'update_event_template_success';
@@ -51,7 +48,6 @@ export const CREATE_EVENT_TEMPLATE_SUCCESS = 'create_event_template_success';
 export const CREATE_EVENT_TEMPLATE_ERROR = 'create_event_template_error';
 
 export const FETCH_EVENT_TEMPLATES = 'fetch_event_templates';
-
 export const DELETE_DEFINITION = 'destory_event_template';
 
 export const INIT_EVENT = 'init_event';
@@ -62,9 +58,6 @@ export const UPDATE_EVENT = 'update_event';
 export const UPDATE_EVENTS = 'update_events';
 export const HIDE_ASNAP = 'hide_asnap';
 export const SHOW_ASNAP = 'show_asnap';
-
-export const FETCH_CUSTOM_VARS = 'fetch_custom_vars';
-export const UPDATE_CUSTOM_VAR = 'update_custom_var';
 
 export const INIT_CRUISE = 'init_cruise';
 export const UPDATE_CRUISE = 'update_cruise';

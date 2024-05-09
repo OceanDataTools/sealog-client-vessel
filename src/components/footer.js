@@ -3,25 +3,28 @@ import { connect } from 'react-redux';
 import { Client } from '@hapi/nes/lib/client';
 import { Link } from 'react-router-dom';
 import prettyBytes from 'pretty-bytes';
-import Cookies from 'universal-cookie';
-
+import { authorizationHeader, get_custom_vars } from '../api';
 import { WS_ROOT_URL, DISABLE_EVENT_LOGGING } from '../client_config';
 import * as mapDispatchToProps from '../actions';
-
-const cookies = new Cookies();
 
 class Footer extends Component {
 
   constructor (props) {
     super(props);
 
-    this.handleASNAPNotification = this.handleASNAPNotification.bind(this);
+    this.state = {
+      asnapStatus: null,
+      freeSpaceInBytes: null
+    }
+
     this.client = new Client(`${WS_ROOT_URL}`);
     this.connectToWS = this.connectToWS.bind(this);
   }
 
   componentDidMount() {
-    this.handleASNAPNotification();
+    if(this.props.authenticated) {
+      this.fetchCustomVars();
+    }
 
     if ( !DISABLE_EVENT_LOGGING && this.props.authenticated ) {
       this.connectToWS();
@@ -37,15 +40,11 @@ class Footer extends Component {
   async connectToWS() {
     try {
       await this.client.connect({
-        auth: {
-          headers: {
-            Authorization: 'Bearer ' + cookies.get('token')
-          }
-        }
+        auth: authorizationHeader
       });
 
       const updateHandler = () => {
-        this.handleASNAPNotification();
+        this.fetchCustomVars();
       };
 
       this.client.subscribe('/ws/status/updateCustomVars', updateHandler);
@@ -56,11 +55,18 @@ class Footer extends Component {
     }
   }
 
-
-  handleASNAPNotification() {
-    if(this.props.authenticated) {
-      this.props.fetchCustomVars();
+  async fetchCustomVars() {
+    const query = {
+      name: [ 'asnapStatus','freeSpaceInBytes' ]
     }
+
+    const response = await get_custom_vars(query);
+    const new_state = response.reduce((acc, obj) => {
+        acc[obj.custom_var_name] = obj.custom_var_value;
+        return acc;
+    }, {});
+
+    this.setState(new_state);
   }
 
   render () {
@@ -70,25 +76,25 @@ class Footer extends Component {
     if ( DISABLE_EVENT_LOGGING ) {
       freeSpaceStatus = null;
     }
-    else if(this.props.authenticated && this.props.freeSpaceInBytes) {
-      if(parseInt(this.props.freeSpaceInBytes) < 10737418240) {
+    else if(this.props.authenticated && this.state.freeSpaceInBytes) {
+      if(parseInt(this.state.freeSpaceInBytes) < 10737418240) {
         freeSpaceStatus =  (
           <span className="ml-2">
-            Free Space: <span  className="text-danger">{prettyBytes(parseInt(this.props.freeSpaceInBytes))}</span>
+            Free Space: <span  className="text-danger">{prettyBytes(parseInt(this.state.freeSpaceInBytes))}</span>
           </span>
         );
       }
-      else if(parseInt(this.props.freeSpaceInBytes) < 21474836480) {
+      else if(parseInt(this.state.freeSpaceInBytes) < 21474836480) {
         freeSpaceStatus =  (
           <span className="ml-2">
-            Free Space: <span  className="text-warning">{prettyBytes(parseInt(this.props.freeSpaceInBytes))}</span>
+            Free Space: <span  className="text-warning">{prettyBytes(parseInt(this.state.freeSpaceInBytes))}</span>
           </span>
         );
       }
       else {
         freeSpaceStatus =  (
           <span className="ml-2">
-            Free Space: <span  className="text-success">{prettyBytes(parseInt(this.props.freeSpaceInBytes))}</span>
+            Free Space: <span  className="text-success">{prettyBytes(parseInt(this.state.freeSpaceInBytes))}</span>
           </span>
         );
       }
@@ -97,20 +103,20 @@ class Footer extends Component {
     if ( DISABLE_EVENT_LOGGING ) {
       asnapStatus = null;
     }
-    else if(this.props.authenticated && this.props.asnapStatus === "Off") {
-      asnapStatus =  (
+    else if(this.props.authenticated && this.state.asnapStatus === "Off") {
+      asnapStatus = (
         <span>
           ASNAP: <span className="text-danger">Off</span>
         </span>
       );
-    } else if(this.props.authenticated && this.props.asnapStatus === "On") {
-      asnapStatus =  (
+    } else if(this.props.authenticated && this.state.asnapStatus === "On") {
+      asnapStatus = (
         <span>
           ASNAP: <span className="text-success">On</span>
         </span>
       );
     } else if(this.props.authenticated) {
-      asnapStatus =  (
+      asnapStatus = (
         <span>
           ASNAP: <span className="text-warning">Unknown</span>
         </span>

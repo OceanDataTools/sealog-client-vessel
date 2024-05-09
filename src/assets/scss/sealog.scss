@@ -22,7 +22,7 @@
     text-transform: uppercase;
 
     &:hover {
-      background-color: $gray-700;
+      color: $warning;
     }
 
     &.disabled,
@@ -34,6 +34,7 @@
     &.active {
       color: $warning;
       background-color: transparent;
+      border: none;
     }
   }
 }
@@ -56,7 +57,7 @@
 }
 
 .event-data-card {
-
+  width: 100%;
   border-color: $secondary;
   .card-header {
     padding-left: .5rem !important;
@@ -73,6 +74,13 @@
       text-transform: capitalize;
     }
   }
+}
+
+.event-data-col {
+  padding-bottom: 0.5rem !important;
+  padding-right: 0.25rem !important;
+  padding-left: 0.25rem !important;
+  display: flex;
 }
 
 .event-image-data-card {
