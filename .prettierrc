@@ -6,15 +6,15 @@
   "insertPragma": false,
   "jsxBracketSameLine": false,
   "jsxSingleQuote": true,
+  "printWidth": 140,
   "proseWrap": "preserve",
   "quoteProps": "as-needed",
+  "rangeStart": 0,
   "requirePragma": false,
   "semi": false,
   "singleQuote": true,
+  "tabWidth": 2,
   "trailingComma": "none",
   "useTabs": false,
   "vueIndentScriptAndStyle": false,
-  "printWidth": 140,
-  "tabWidth": 2,
-  "rangeStart": 0
 }

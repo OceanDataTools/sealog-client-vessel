@@ -28,11 +28,11 @@
     rules: {
         "react/jsx-no-target-blank": 0,
         "react/jsx-filename-extension": [1, { extensions: [".js", ".jsx"] }],
-        "react/prop-types": 0,
+        "react/prop-types": 1,
         "react-redux/connect-prefer-named-arguments": 2,
         "react-redux/prefer-separate-component-file": 0,
         "quotes": 0,
-        "no-console": 0,
+        "no-console": ["error", { allow: ["warn", "error", "debug"] }],
         "no-trailing-spaces": 1,
         "eol-last": 1,
         "no-unused-vars": [1, {

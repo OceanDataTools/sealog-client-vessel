@@ -6,8 +6,7 @@ import {
   LEAVE_EVENT_FILTER_FORM,
   SET_SELECTED_EVENT,
   EVENT_FETCHING,
-  HIDE_ASNAP,
-  SHOW_ASNAP
+  TOGGLE_ASNAP,
 
 } from '../actions/types';
 
@@ -52,11 +51,9 @@ export default ( state={ selected_event: {}, events: [], eventFilter: {}, hideAS
     case EVENT_FETCHING:
       return { ...state, fetching: action.payload };
 
-    case HIDE_ASNAP:
-      return { ...state, hideASNAP: true };
-
-    case SHOW_ASNAP:
-      return { ...state, hideASNAP: false };
+    case TOGGLE_ASNAP:
+      const newASNAP = !state.hideASNAP
+      return { ...state, hideASNAP: newASNAP};
   }
 
   return state;
