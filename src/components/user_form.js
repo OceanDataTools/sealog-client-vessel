@@ -10,7 +10,6 @@ import { standardUserRoleOptions } from '../standard_user_role_options'
 import { systemUserRoleOptions } from '../system_user_role_options'
 
 class UserForm extends Component {
-
   componentWillUnmount() {
     this.props.leaveUserForm()
   }
