@@ -19,8 +19,6 @@ class UserProfile extends Component {
     }
   }
 
-  componentDidUpdate() {}
-
   componentWillUnmount() {
     this.props.leaveUpdateProfileForm()
   }
