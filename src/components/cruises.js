@@ -27,7 +27,8 @@ class Cruises extends Component {
 
     this.state = {
       activePage: 1,
-      filteredCruises: null
+      filteredCruises: null,
+      previouslySelectedCruise: null
     }
 
     this.handlePageSelect = this.handlePageSelect.bind(this)
@@ -36,12 +37,16 @@ class Cruises extends Component {
   }
 
   componentDidMount() {
+    this.setState({ previouslySelectedCruise: this.props.cruise_id })
     this.props.fetchCruises()
     this.props.clearSelectedCruise()
   }
 
   componentWillUnmount() {
     this.props.clearSelectedCruise()
+    if (this.state.previouslySelectedCruise) {
+      this.props.initCruise(this.state.previouslySelectedCruise)
+    }
   }
 
   handlePageSelect(eventKey) {
@@ -131,7 +136,7 @@ class Cruises extends Component {
   renderAddCruiseButton() {
     if (!this.props.showform && this.props.roles && this.props.roles.includes('admin')) {
       return (
-        <Button variant='primary' size='sm' onClick={() => this.handleCruiseCreate()} disabled={!this.props.cruiseid}>
+        <Button variant='primary' size='sm' onClick={() => this.handleCruiseCreate()} disabled={!this.props.cruise_id}>
           Add {_Cruise_}
         </Button>
       )
@@ -206,8 +211,8 @@ class Cruises extends Component {
 
         return (
           <tr key={cruise.id}>
-            <td className={this.props.cruiseid === cruise.id ? 'text-warning' : ''}>{cruise.cruise_id}</td>
-            <td className={`cruise-details ${this.props.cruiseid === cruise.id ? 'text-warning' : ''}`}>
+            <td className={this.props.cruise_id === cruise.id ? 'text-warning' : ''}>{cruise.cruise_id}</td>
+            <td className={`cruise-details ${this.props.cruise_id === cruise.id ? 'text-warning' : ''}`}>
               {cruiseName}
               {cruiseLocation}
               {cruisePi}
@@ -321,7 +326,7 @@ class Cruises extends Component {
 
 Cruises.propTypes = {
   clearSelectedCruise: PropTypes.func.isRequired,
-  cruiseid: PropTypes.string,
+  cruise_id: PropTypes.string,
   cruises: PropTypes.array,
   deleteCruise: PropTypes.func.isRequired,
   fetchCruises: PropTypes.func.isRequired,
@@ -336,7 +341,7 @@ Cruises.propTypes = {
 const mapStateToProps = (state) => {
   return {
     cruises: state.cruise.cruises,
-    cruiseid: state.cruise.cruise.id,
+    cruise_id: state.cruise.cruise.id,
     roles: state.user.profile.roles
   }
 }

@@ -62,8 +62,6 @@ class CruiseMenu extends Component {
     }
   }
 
-  componentWillUnmount() {}
-
   handleYearSelect(activeYear) {
     this.setState({ activeYear })
   }

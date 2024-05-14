@@ -33,8 +33,6 @@ class EventTemplateOptionsModal extends Component {
     this.populateDefaultValues()
   }
 
-  componentWillUnmount() {}
-
   async populateDefaultValues() {
     const ts = this.props.event ? moment.utc(this.props.event.ts) : moment.utc()
     let event_options = {}

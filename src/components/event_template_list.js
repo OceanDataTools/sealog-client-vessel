@@ -34,8 +34,6 @@ class EventTemplateList extends Component {
     this.client.disconnect()
   }
 
-  componentDidUpdate() {}
-
   async connectToWS() {
     try {
       await this.client.connect({

@@ -5,8 +5,8 @@
 @import "~bootstrap/scss/bootstrap.scss";
 
 // Import fonts
-@import "~@fontsource/open-sans/300.css"; // Weight 400.
-@import "~@fontsource/open-sans/index.css"; // Weight 400.
+@import "~@fontsource/open-sans/300.css"; // Weight 300.
+@import "~@fontsource/open-sans/400.css"; // Weight 400.
 @import "~@fontsource/open-sans/700.css"; // Weight 700.
 
 // Import FontAwesome
@@ -88,7 +88,6 @@
   background-color: transparent;
   text-transform: capitalize;
 }
-
 
 // Utility class to hide arrow from dropdown
 

@@ -15,8 +15,6 @@ class EventLogging extends Component {
     super(props)
   }
 
-  componentDidMount() {}
-
   render() {
     if (this.props.roles && this.props.roles.includes('event_logger') && this.props.roles.includes('event_watcher')) {
       return (

@@ -4,7 +4,17 @@ import { Dropdown, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import { connect } from 'react-redux'
-import { get_event_aux_data, get_event_exports, get_events } from '../api'
+import {
+  get_event_aux_data,
+  get_event_aux_data_by_cruise,
+  get_event_aux_data_by_lowering,
+  get_event_exports,
+  get_event_exports_by_cruise,
+  get_event_exports_by_lowering,
+  get_events,
+  get_events_by_cruise,
+  get_events_by_lowering
+} from '../api'
 
 let fileDownload = require('js-file-download')
 
@@ -15,31 +25,14 @@ class ExportDropdown extends Component {
   constructor(props) {
     super(props)
 
-    let cruiseOrLowering = ''
-    if (this.props.cruiseID) {
-      cruiseOrLowering = `/bycruise/${this.props.cruiseID}`
-    } else if (this.props.loweringID) {
-      cruiseOrLowering = `/bylowering/${this.props.loweringID}`
-    }
-
     this.state = {
       id: this.props.id ? this.props.id : 'dropdown-download',
       prefix: this.props.prefix ? this.props.prefix : null,
-      sort: this.props.sort ? this.props.sort : null,
-      cruiseOrLowering: cruiseOrLowering
+      sort: this.props.sort ? this.props.sort : null
     }
   }
 
   componentDidUpdate(prevProps) {
-    // Typical usage (don't forget to compare props):
-    if (this.props.cruiseID !== prevProps.cruiseID) {
-      const cruiseOrLowering = `/bycruise/${this.props.cruiseID}`
-      this.setState({ cruiseOrLowering: cruiseOrLowering })
-    } else if (this.props.loweringID !== prevProps.loweringID) {
-      const cruiseOrLowering = `/bylowering/${this.props.loweringID}`
-      this.setState({ cruiseOrLowering: cruiseOrLowering })
-    }
-
     if (this.props.prefix !== prevProps.prefix) {
       this.setState({ prefix: this.props.prefix })
     }
@@ -61,6 +54,11 @@ class ExportDropdown extends Component {
       sort: this.state.sort
     }
 
+    if (this.props.cruiseID) {
+      return await get_events_by_cruise(query, this.props.cruiseID)
+    } else if (this.props.loweringID) {
+      return await get_events_by_lowering(query, this.props.loweringID)
+    }
     return await get_events(query)
   }
 
@@ -74,6 +72,11 @@ class ExportDropdown extends Component {
       sort: this.state.sort
     }
 
+    if (this.props.cruiseID) {
+      return await get_event_aux_data_by_cruise(query, this.props.cruiseID)
+    } else if (this.props.loweringID) {
+      return await get_event_aux_data_by_lowering(query, this.props.loweringID)
+    }
     return await get_event_aux_data(query)
   }
 
@@ -89,6 +92,11 @@ class ExportDropdown extends Component {
       sort: this.state.sort
     }
 
+    if (this.props.cruiseID) {
+      return await get_event_exports_by_cruise(query, this.props.cruiseID)
+    } else if (this.props.loweringID) {
+      return await get_event_exports_by_lowering(query, this.props.loweringID)
+    }
     return await get_event_exports(query)
   }
 

@@ -45,8 +45,6 @@ class CruiseGallery extends Component {
     this.props.eventUpdateCruiseReplay()
   }
 
-  componentWillUnmount() {}
-
   async initCruiseImages(id, auxDatasourceFilter = IMAGES_AUX_DATA_SOURCES) {
     this.setState({ fetching: true })
 

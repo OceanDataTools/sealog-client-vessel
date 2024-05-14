@@ -69,8 +69,6 @@ class UserPermissionsModal extends Component {
     }
   }
 
-  componentWillUnmount() {}
-
   async fetchCruises() {
     const cruises = await get_cruises()
     this.setState({ cruises })

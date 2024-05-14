@@ -23,8 +23,6 @@ class EventFilterForm extends Component {
     }
   }
 
-  componentWillUnmount() {}
-
   handleFormSubmit(formProps) {
     if (formProps.startTS && typeof formProps.startTS === 'object') {
       if (this.props.minDate && formProps.startTS.isBefore(moment(this.props.minDate))) {
@@ -121,7 +119,7 @@ EventFilterForm.propTypes = {
   handlePostSubmit: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
   initialize: PropTypes.func.isRequired,
-  initialValues: PropTypes.object.isRequired,
+  initialValues: PropTypes.object,
   maxDate: PropTypes.string,
   minDate: PropTypes.string,
   resetFields: PropTypes.func.isRequired,

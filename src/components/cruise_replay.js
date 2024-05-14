@@ -72,8 +72,6 @@ class CruiseReplay extends Component {
     this.divFocus.focus()
   }
 
-  componentDidUpdate() {}
-
   componentWillUnmount() {
     if (this.state.replayTimer) {
       clearInterval(this.state.replayTimer)

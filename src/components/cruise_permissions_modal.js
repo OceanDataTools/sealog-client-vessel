@@ -32,8 +32,6 @@ class CruisePermissionsModal extends Component {
     this.fetchCruise()
   }
 
-  componentWillUnmount() {}
-
   async fetchCruise() {
     const cruise = await get_cruises({}, this.props.cruise_id)
     this.setState({ cruise })

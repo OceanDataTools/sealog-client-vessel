@@ -2,6 +2,7 @@ import Cookies from 'universal-cookie'
 import { push } from 'connected-react-router'
 import { show } from 'redux-modal'
 import { change, untouch } from 'redux-form'
+import { _Cruise_ } from '../vocab'
 import {
   create_cruise,
   create_event,
@@ -157,7 +158,7 @@ export const createCruise = (formProps) => {
     const response = await create_cruise(formProps)
     if (response.success) {
       dispatch(initCruise(response.data.insertedId))
-      dispatch(createCruiseSuccess('Cruise created'))
+      dispatch(createCruiseSuccess(`${_Cruise_} created`))
       return dispatch(fetchCruises())
     }
     return dispatch(createCruiseError(response.error.response.data.message))
@@ -734,12 +735,13 @@ export const toggleASNAP = () => {
 export const updateCruise = (formProps) => {
   let fields = { ...formProps }
   delete fields.id
+  delete fields.cruise_access_list
 
   return async (dispatch) => {
     const response = await update_cruise(fields, formProps.id)
     if (response.success) {
       dispatch(fetchCruises())
-      return dispatch(updateCruiseSuccess('Cruise updated'))
+      return dispatch(updateCruiseSuccess(`${_Cruise_} updated`))
     } else {
       return dispatch(updateCruiseError(response.error.response.data.message))
     }

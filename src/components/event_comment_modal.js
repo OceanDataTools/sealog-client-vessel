@@ -23,8 +23,6 @@ class EventCommentModal extends Component {
     }
   }
 
-  componentWillUnmount() {}
-
   async populateDefaultValues() {
     const event_option_comment = this.props.event
       ? this.props.event.event_options.find((event_option) => event_option.event_option_name === 'event_comment')

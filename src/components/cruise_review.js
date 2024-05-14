@@ -41,10 +41,6 @@ class CruiseReview extends Component {
     this.divFocus.focus()
   }
 
-  componentDidUpdate() {}
-
-  componentWillUnmount() {}
-
   updateEventFilter(filter = {}) {
     this.setState({ activePage: 1 })
     this.props.updateEventFilterForm(filter)

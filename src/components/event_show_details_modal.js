@@ -26,8 +26,6 @@ class EventShowDetailsModal extends Component {
     this.initEvent()
   }
 
-  componentWillUnmount() {}
-
   componentDidUpdate(prevProps) {
     if (prevProps.event !== this.props.event) {
       if (this.props.event && this.props.event.id) {

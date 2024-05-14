@@ -6,7 +6,6 @@ import { API_ROOT_URL } from './client_config'
 const cookies = new Cookies()
 
 export const CRUISE_ROUTE = '/files/cruises'
-export const LOWERING_ROUTE = '/files/lowerings'
 
 export const authorizationHeader = () => {
   return {
@@ -485,14 +484,6 @@ export const handleCruiseFileDelete = async (filename, cruise_id, callback) => {
   await _handleFileDelete(filename, CRUISE_ROUTE, cruise_id, callback)
 }
 
-export const handleLoweringFileDelete = async (filename, lowering_id, callback) => {
-  await _handleFileDelete(filename, LOWERING_ROUTE, lowering_id, callback)
-}
-
 export const handleCruiseFileDownload = async (filename, cruise_id) => {
   await _handleFileDownload(filename, CRUISE_ROUTE, cruise_id)
-}
-
-export const handleLoweringFileDownload = async (filename, lowering_id) => {
-  await _handleFileDownload(filename, LOWERING_ROUTE, lowering_id)
 }

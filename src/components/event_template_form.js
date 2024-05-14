@@ -17,8 +17,6 @@ class EventTemplateForm extends Component {
     this.renderOptionOptions = this.renderOptionOptions.bind(this)
   }
 
-  componentDidMount() {}
-
   componentWillUnmount() {
     this.props.leaveEventTemplateForm()
   }

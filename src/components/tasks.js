@@ -49,8 +49,6 @@ class Tasks extends Component {
     this.props.showModal('dataWipe', { handleDelete: delete_all_events })
   }
 
-  componentDidMount() {}
-
   renderTaskTable() {
     return (
       <ListGroup>
