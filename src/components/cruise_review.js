@@ -91,9 +91,11 @@ class CruiseReview extends Component {
     })
   }
 
-  handleEventClick(event) {
-    if (event) {
-      this.props.advanceCruiseReplayTo(event.id)
+  handleEventClick(index) {
+    this.setState({ replayEventIndex: index })
+    if (this.props.event.events && this.props.event.events.length > index) {
+      this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+      this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
     }
   }
 
@@ -129,7 +131,7 @@ class CruiseReview extends Component {
   toggleASNAP() {
     this.props.toggleASNAP()
     this.props.eventUpdateCruiseReplay()
-    this.handleEventClick(this.props.event.events[0])
+    this.handleEventClick(0)
   }
 
   renderEventListHeader() {

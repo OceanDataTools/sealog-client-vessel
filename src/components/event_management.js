@@ -13,6 +13,7 @@ import { get_events, get_events_count } from '../api'
 import * as mapDispatchToProps from '../actions'
 
 const maxEventsPerPage = 15
+const maxEventDownload = 15000
 
 class EventManagement extends Component {
   constructor(props) {
@@ -77,16 +78,6 @@ class EventManagement extends Component {
   async handleEventUpdate(formProps) {
     await this.props.updateEvent(formProps)
     this.fetchEvents()
-    // const response = await this.props.updateEvent(formProps);
-    // if(response.response.status === 204) {
-    //   this.setState(prevState => ({ events: prevState.events.map((event) => {
-    //     if(event.id === event_id) {
-    //       event.event_options = event_options;
-    //     }
-    //     return event;
-    //   })
-    //   }));
-    // }
   }
 
   handleEventDeleteModal(event) {
@@ -176,7 +167,7 @@ class EventManagement extends Component {
           {ASNAPToggle}
           <ExportDropdown
             id='dropdown-download'
-            disabled={this.state.fetching}
+            disabled={this.state.fetching || this.state.eventCount > maxEventDownload}
             hideASNAP={this.state.hideASNAP}
             eventFilter={this.state.eventFilter}
           />

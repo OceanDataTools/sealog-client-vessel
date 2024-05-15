@@ -43,7 +43,8 @@ class CruiseReplay extends Component {
       replayTimer: null,
       replayState: PAUSE,
       replayEventIndex: 0,
-      activePage: 1
+      activePage: 1,
+      sliderTimer: null
     }
 
     this.handleKeyPress = this.handleKeyPress.bind(this)
@@ -103,12 +104,27 @@ class CruiseReplay extends Component {
     return ''
   }
 
+  handleSearchChange(event) {
+    let eventFilterValue = event.target.value !== '' ? event.target.value : null
+    clearTimeout(this.state.filterTimer)
+    this.setState({
+      filterTimer: setTimeout(() => this.setState({ eventFilterValue }), 500)
+    })
+  }
+
+
+
   handleSliderChange(index) {
     if (this.props.event.events && this.props.event.events[index]) {
       this.handleCruiseReplayPause()
       this.setState({ replayEventIndex: index })
-      this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
-      this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
+      clearTimeout(this.state.sliderTimer)
+      this.setState({
+        sliderTimer: setTimeout(() => {
+          this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+          this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage)})
+        }, 500)
+      })
     }
   }
 

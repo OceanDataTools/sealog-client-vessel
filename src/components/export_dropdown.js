@@ -7,13 +7,10 @@ import { connect } from 'react-redux'
 import {
   get_event_aux_data,
   get_event_aux_data_by_cruise,
-  get_event_aux_data_by_lowering,
   get_event_exports,
   get_event_exports_by_cruise,
-  get_event_exports_by_lowering,
   get_events,
   get_events_by_cruise,
-  get_events_by_lowering
 } from '../api'
 
 let fileDownload = require('js-file-download')
@@ -56,8 +53,6 @@ class ExportDropdown extends Component {
 
     if (this.props.cruiseID) {
       return await get_events_by_cruise(query, this.props.cruiseID)
-    } else if (this.props.loweringID) {
-      return await get_events_by_lowering(query, this.props.loweringID)
     }
     return await get_events(query)
   }
@@ -74,8 +69,6 @@ class ExportDropdown extends Component {
 
     if (this.props.cruiseID) {
       return await get_event_aux_data_by_cruise(query, this.props.cruiseID)
-    } else if (this.props.loweringID) {
-      return await get_event_aux_data_by_lowering(query, this.props.loweringID)
     }
     return await get_event_aux_data(query)
   }
@@ -94,8 +87,6 @@ class ExportDropdown extends Component {
 
     if (this.props.cruiseID) {
       return await get_event_exports_by_cruise(query, this.props.cruiseID)
-    } else if (this.props.loweringID) {
-      return await get_event_exports_by_lowering(query, this.props.loweringID)
     }
     return await get_event_exports(query)
   }
@@ -137,8 +128,8 @@ class ExportDropdown extends Component {
     const exportTooltip = <Tooltip id='exportTooltip'>Export these events</Tooltip>
 
     return (
-      <Dropdown as={'span'} disabled={this.props.disabled} id={this.state.id}>
-        <Dropdown.Toggle as={'span'}>
+      <Dropdown as={'span'} id={this.state.id}>
+        <Dropdown.Toggle variant="link"  disabled={this.props.disabled}>
           <OverlayTrigger placement='top' overlay={exportTooltip}>
             <FontAwesomeIcon icon='download' fixedWidth />
           </OverlayTrigger>
@@ -179,7 +170,6 @@ ExportDropdown.propTypes = {
   hideASNAP: PropTypes.bool.isRequired,
   eventFilter: PropTypes.object.isRequired,
   cruiseID: PropTypes.string,
-  loweringID: PropTypes.string,
   sort: PropTypes.string
 }
 
