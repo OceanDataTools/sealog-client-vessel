@@ -339,7 +339,7 @@ export const eventUpdate = () => {
     const eventFilter = getState().event.eventFilter
     const query = {
       ...eventFilter,
-      value: eventFilter.value ? eventFilter.value.split(',') : null,
+      fulltext: eventFilter.fulltext ? eventFilter.fulltext.split(',') : null,
       author: eventFilter.author ? eventFilter.author.split(',') : null,
       datasource: eventFilter.datasource ? eventFilter.datasource.split(',') : null
     }
@@ -356,10 +356,10 @@ export const eventUpdateCruiseReplay = () => {
     dispatch({ type: EVENT_FETCHING, payload: true })
 
     const eventFilter = getState().event.eventFilter
-    const value = eventFilter.value ? eventFilter.value : getState().event.hideASNAP ? '!ASNAP' : null
+    const fulltext = eventFilter.fulltext ? eventFilter.fulltext : getState().event.hideASNAP ? '!ASNAP' : null
     const query = {
       ...eventFilter,
-      value: value ? value.split(',') : null,
+      fulltext: fulltext ? fulltext.split(',') : null,
       author: eventFilter.author ? eventFilter.author.split(',') : null,
       datasource: eventFilter.datasource ? eventFilter.datasource.split(',') : null
     }
@@ -408,7 +408,7 @@ export const fetchEventTemplatesForMain = () => {
 export const fetchFilteredEvents = (filterParams = {}) => {
   const query = {
     ...filterParams,
-    value: filterParams.value ? filterParams.value.split(',') : null,
+    fulltext: filterParams.fulltext ? filterParams.fulltext.split(',') : null,
     author: filterParams.author ? filterParams.author.split(',') : null,
     datasource: filterParams.datasource ? filterParams.datasource.split(',') : null
   }
@@ -541,15 +541,15 @@ export const initCruiseReplay = (id) => {
     dispatch({ type: EVENT_FETCHING, payload: true })
     dispatch(initCruise(id))
 
-    const eventFilter_value = getState().event.eventFilter.value
-      ? getState().event.eventFilter.value
+    const eventFilter_fulltext = getState().event.eventFilter.fulltext
+      ? getState().event.eventFilter.fulltext
       : getState().event.hideASNAP
         ? '!ASNAP'
         : null
 
     const query = {
       ...getState().event.eventFilter,
-      value: eventFilter_value ? eventFilter_value.split(',') : null
+      fulltext: eventFilter_fulltext ? eventFilter_fulltext.split(',') : null
     }
 
     const payload = await get_events_by_cruise(query, id)
