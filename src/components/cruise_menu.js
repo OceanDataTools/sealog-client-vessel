@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import ExportDropdown from './export_dropdown'
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard'
 import { MAIN_SCREEN_HEADER, MAIN_SCREEN_TXT } from '../client_config'
-import { handleCruiseFileDownload } from '../api'
+import { handle_cruise_file_download } from '../api'
 import { _Cruise_, _cruises_ } from '../vocab'
 import * as mapDispatchToProps from '../actions'
 
@@ -108,7 +108,7 @@ class CruiseMenu extends Component {
     let output = files.map((file, index) => {
       return (
         <div className='pl-2' key={`file_${index}`}>
-          <a className='text-decoration-none' href='#' onClick={() => handleCruiseFileDownload(file, this.state.activeCruise.id)}>
+          <a className='text-decoration-none' href='#' onClick={() => handle_cruise_file_download(file, this.state.activeCruise.id)}>
             {file}
           </a>
         </div>
