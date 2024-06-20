@@ -39,9 +39,9 @@ class ImportCruisesModal extends Component {
     cruise_hidden = false,
     cruise_additional_meta = {}
   }) {
-    const template = await get_cruises({}, id)
+    const cruise = await get_cruises({}, id)
 
-    if(template) {
+    if(cruise) {
       this.setState((prevState) => ({
         skipped: prevState.skipped + 1,
         pending: prevState.pending - 1
@@ -98,7 +98,7 @@ class ImportCruisesModal extends Component {
       } catch (error) {
         console.error('Error when trying to parse json = ' + error)
       }
-      this.setState({ pending: (this.state.quit) ? 'Quit Early!' : 'Complete' })
+      this.setState({ pending: this.state.quit ? 'Quit Early!' : 'Complete' })
     }
     reader.readAsText(files[0])
   }

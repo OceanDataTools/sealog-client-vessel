@@ -96,7 +96,7 @@ class ImportEventTemplatesModal extends Component {
       } catch (error) {
         console.error('Error when trying to parse json = ' + error)
       }
-      this.setState({ pending: (this.state.quit) ? 'Quit Early!' : 'Complete' })
+      this.setState({ pending: this.state.quit ? 'Quit Early!' : 'Complete' })
     }
     reader.readAsText(files[0])
   }
