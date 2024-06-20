@@ -80,7 +80,7 @@ import {
 } from './types'
 
 const port = window.location.port ? ':' + window.location.port : ''
-const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/'
+export const resetURL = window.location.protocol + '//' + window.location.hostname + port + '/resetPassword/'
 
 // export const authorizationHeader = {
 //   headers: {
