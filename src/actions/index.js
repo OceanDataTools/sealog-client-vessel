@@ -443,12 +443,6 @@ export const forgotPassword = ({ email, reCaptcha = null }) => {
   }
 }
 
-export const gotoCruiseGallery = (id) => {
-  return (dispatch) => {
-    return dispatch(push(`/cruise_gallery/${id}`))
-  }
-}
-
 export const gotoCruiseMap = (id) => {
   return (dispatch) => {
     return dispatch(push(`/cruise_map/${id}`))
@@ -464,12 +458,6 @@ export const gotoCruiseMenu = () => {
 export const gotoCruiseReplay = (id) => {
   return (dispatch) => {
     return dispatch(push(`/cruise_replay/${id}`))
-  }
-}
-
-export const gotoCruiseReview = (id) => {
-  return (dispatch) => {
-    return dispatch(push(`/cruise_review/${id}`))
   }
 }
 

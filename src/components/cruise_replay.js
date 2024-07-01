@@ -2,21 +2,17 @@ import React, { Component } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import moment from 'moment'
 import { connect } from 'react-redux'
-import { ButtonToolbar, Container, Row, Col, Card, ListGroup, Image, OverlayTrigger, Tooltip, Form } from 'react-bootstrap'
+import { ButtonToolbar, Container, Row, Col, Card, ListGroup, OverlayTrigger, Tooltip, Form } from 'react-bootstrap'
 import Slider, { createSliderWithTooltip } from 'rc-slider'
 import PropTypes from 'prop-types'
 import EventFilterForm from './event_filter_form'
 import AuxDataCards from './aux_data_cards'
 import EventOptionsCard from './event_options_card'
-import ImageryCards from './imagery_cards'
-import ImagePreviewModal from './image_preview_modal'
 import EventCommentModal from './event_comment_modal'
 import CruiseModeDropdown from './cruise_mode_dropdown'
 import CustomPagination from './custom_pagination'
 import ExportDropdown from './export_dropdown'
-import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_config'
-import { handle_image_file_download } from '../api'
-import { handleMissingImage } from '../utils'
+import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_config'
 import { _Cruises_ } from '../vocab'
 import * as mapDispatchToProps from '../actions'
 
@@ -30,7 +26,7 @@ const FREV = 3
 
 const maxEventsPerPage = 10
 
-const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES, ...IMAGES_AUX_DATA_SOURCES]))
+const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES]))
 
 const SliderWithTooltip = createSliderWithTooltip(Slider)
 
@@ -48,17 +44,16 @@ class CruiseReplay extends Component {
       sliderTimer: null
     }
 
-    this.handleKeyPress = this.handleKeyPress.bind(this)
-    this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this)
-    this.handleSliderChange = this.handleSliderChange.bind(this)
-    this.handleEventClick = this.handleEventClick.bind(this)
-    this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this)
-    this.handlePageSelect = this.handlePageSelect.bind(this)
-    this.replayAdvance = this.replayAdvance.bind(this)
-    this.handleCruiseReplayPause = this.handleCruiseReplayPause.bind(this)
-    this.replayReverse = this.replayReverse.bind(this)
-    this.updateEventFilter = this.updateEventFilter.bind(this)
     this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this)
+    this.handleCruiseReplayPause = this.handleCruiseReplayPause.bind(this)
+    this.handleEventClick = this.handleEventClick.bind(this)
+    this.handleKeyPress = this.handleKeyPress.bind(this)
+    this.handlePageSelect = this.handlePageSelect.bind(this)
+    this.handleSliderChange = this.handleSliderChange.bind(this)
+    this.replayAdvance = this.replayAdvance.bind(this)
+    this.replayReverse = this.replayReverse.bind(this)
+    this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this)
+    this.updateEventFilter = this.updateEventFilter.bind(this)
   }
 
   componentDidMount() {
@@ -122,8 +117,8 @@ class CruiseReplay extends Component {
       this.setState({
         sliderTimer: setTimeout(() => {
           this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
-          this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage)})
-        }, 500)
+          this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
+        }, 250)
       })
     }
   }
@@ -135,11 +130,6 @@ class CruiseReplay extends Component {
       this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
       this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
     }
-  }
-
-  handleImagePreviewModal(source, filepath) {
-    this.handleCruiseReplayPause()
-    this.props.showModal('imagePreview', { name: source, filepath: filepath })
   }
 
   handleEventCommentModal(index) {
@@ -192,11 +182,7 @@ class CruiseReplay extends Component {
   }
 
   handleCruiseModeSelect(mode) {
-    if (mode === 'Review') {
-      this.props.gotoCruiseReview(this.props.match.params.id)
-    } else if (mode === 'Gallery') {
-      this.props.gotoCruiseGallery(this.props.match.params.id)
-    } else if (mode === 'Map') {
+    if (mode === 'Map') {
       this.props.gotoCruiseMap(this.props.match.params.id)
     } else if (mode === 'Replay') {
       this.props.gotoCruiseReplay(this.props.match.params.id)
@@ -371,6 +357,7 @@ class CruiseReplay extends Component {
         onChange={() => this.toggleASNAP()}
         disabled={this.props.event.fetching}
         label='Hide ASNAP'
+        className='m-0'
       />
     )
 
@@ -460,7 +447,7 @@ class CruiseReplay extends Component {
       <Card className='border-secondary mt-2'>
         <Card.Header>{this.renderEventListHeader()}</Card.Header>
         <ListGroup
-          className='eventList'
+          variant='flush'
           tabIndex='-1'
           onKeyDown={this.handleKeyPress}
           ref={(div) => {
@@ -476,10 +463,6 @@ class CruiseReplay extends Component {
   render() {
     const cruise_id = this.props.cruise.cruise_id ? this.props.cruise.cruise_id : 'Loading...'
 
-    const framegrab_data_sources =
-      this.props.event.selected_event && this.props.event.selected_event.aux_data
-        ? this.props.event.selected_event.aux_data.filter((aux_data) => IMAGES_AUX_DATA_SOURCES.includes(aux_data.data_source))
-        : []
     const aux_data = this.props.event.selected_event.aux_data
       ? this.props.event.selected_event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
       : []
@@ -489,7 +472,6 @@ class CruiseReplay extends Component {
 
     return (
       <Container className='mt-2'>
-        <ImagePreviewModal handleDownload={handle_image_file_download}/>
         <EventCommentModal />
         <Row>
           <ButtonToolbar className='mb-2 ml-1 align-items-center'>
@@ -499,11 +481,10 @@ class CruiseReplay extends Component {
             <FontAwesomeIcon icon='chevron-right' fixedWidth />
             <span className='text-warning'>{cruise_id}</span>
             <FontAwesomeIcon icon='chevron-right' fixedWidth />
-            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={'Replay'} modes={['Review', 'Map', 'Gallery']} />
+            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={'Replay'} modes={['Map']} />
           </ButtonToolbar>
         </Row>
         <Row>
-          <ImageryCards framegrab_data_sources={framegrab_data_sources} onClick={this.handleImagePreviewModal} />
           <AuxDataCards aux_data={aux_data} />
           <EventOptionsCard event_options={this.props.event.selected_event.event_options || []} />
         </Row>
@@ -540,11 +521,9 @@ CruiseReplay.propTypes = {
   cruise: PropTypes.object.isRequired,
   event: PropTypes.object.isRequired,
   eventUpdateCruiseReplay: PropTypes.func.isRequired,
-  gotoCruiseGallery: PropTypes.func.isRequired,
   gotoCruiseMap: PropTypes.func.isRequired,
   gotoCruiseMenu: PropTypes.func.isRequired,
   gotoCruiseReplay: PropTypes.func.isRequired,
-  gotoCruiseReview: PropTypes.func.isRequired,
   initCruiseReplay: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired,
   roles: PropTypes.array,

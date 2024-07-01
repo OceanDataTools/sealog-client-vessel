@@ -10,7 +10,7 @@ import {
   get_event_exports,
   get_event_exports_by_cruise,
   get_events,
-  get_events_by_cruise,
+  get_events_by_cruise
 } from '../api'
 
 let fileDownload = require('js-file-download')
@@ -126,10 +126,11 @@ class ExportDropdown extends Component {
 
   render() {
     const exportTooltip = <Tooltip id='exportTooltip'>Export these events</Tooltip>
+    const className = this.props.className ? this.props.className + ' no-arrow' : 'no-arrow'
 
     return (
-      <Dropdown as={'span'} id={this.state.id}>
-        <Dropdown.Toggle variant="link"  disabled={this.props.disabled}>
+      <Dropdown className={className} as={'span'} id={this.state.id}>
+        <Dropdown.Toggle variant='link' disabled={this.props.disabled}>
           <OverlayTrigger placement='top' overlay={exportTooltip}>
             <FontAwesomeIcon icon='download' fixedWidth />
           </OverlayTrigger>
@@ -170,7 +171,8 @@ ExportDropdown.propTypes = {
   hideASNAP: PropTypes.bool.isRequired,
   eventFilter: PropTypes.object.isRequired,
   cruiseID: PropTypes.string,
-  sort: PropTypes.string
+  sort: PropTypes.string,
+  className: PropTypes.string
 }
 
 export default connect(null, null)(ExportDropdown)

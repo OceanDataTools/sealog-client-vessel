@@ -45,7 +45,7 @@ CruiseModeDropdownMenu.propTypes = {
 class CruiseModeDropdown extends Component {
   render() {
     return (
-      <Dropdown className='no-arrow' id='dropdown-custom-menu'>
+      <Dropdown id='dropdown-custom-menu'>
         <Dropdown.Toggle as={CruiseModeDropdownToggle}>{this.props.active_mode ? this.props.active_mode : 'Loading...'}</Dropdown.Toggle>
         <Dropdown.Menu as={CruiseModeDropdownMenu}>
           {this.props.modes.map((mode, index) => (

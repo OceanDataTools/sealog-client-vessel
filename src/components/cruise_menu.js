@@ -29,7 +29,7 @@ class CruiseMenu extends Component {
 
   componentDidMount() {
     this.props.fetchCruises()
-    this.setState({fetching: false})
+    this.setState({ fetching: false })
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -83,24 +83,10 @@ class CruiseMenu extends Component {
     }
   }
 
-  handleCruiseSelectForReview() {
-    if (this.state.activeCruise) {
-      this.props.clearEvents()
-      this.props.gotoCruiseReview(this.state.activeCruise.id)
-    }
-  }
-
   handleCruiseSelectForMap() {
     if (this.state.activeCruise) {
       this.props.clearEvents()
       this.props.gotoCruiseMap(this.state.activeCruise.id)
-    }
-  }
-
-  handleCruiseSelectForGallery() {
-    if (this.state.activeCruise) {
-      this.props.clearEvents()
-      this.props.gotoCruiseGallery(this.state.activeCruise.id)
     }
   }
 
@@ -139,7 +125,7 @@ class CruiseMenu extends Component {
         </span>
       ) : null
       let cruiseDescription = this.state.activeCruise.cruise_additional_meta.cruise_description ? (
-        <p className='text-justify'>
+        <p className='text-justify' style={{whiteSpace: "pre-wrap"}}>
           <strong>Description:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_description}
           <br />
         </p>
@@ -215,14 +201,8 @@ class CruiseMenu extends Component {
               <Button className='mb-1 mr-1' size='sm' variant='outline-primary' onClick={() => this.handleCruiseSelectForReplay()}>
                 Replay
               </Button>
-              <Button className='mb-1 mr-1' size='sm' variant='outline-primary' onClick={() => this.handleCruiseSelectForReview()}>
-                Review
-              </Button>
               <Button className='mb-1 mr-1' size='sm' variant='outline-primary' onClick={() => this.handleCruiseSelectForMap()}>
                 Map
-              </Button>
-              <Button className='mb-1 mr-1' size='sm' variant='outline-primary' onClick={() => this.handleCruiseSelectForGallery()}>
-                Gallery
               </Button>
             </Row>
           </Card.Body>
@@ -395,7 +375,7 @@ class CruiseMenu extends Component {
 
     return (
       <Card className='border-secondary'>
-        <Card.Body>{ (this.state.fetching) ? 'Fetching...' : `No ${_cruises_} found!`}</Card.Body>
+        <Card.Body>{this.state.fetching ? 'Fetching...' : `No ${_cruises_} found!`}</Card.Body>
       </Card>
     )
   }
@@ -410,7 +390,7 @@ class CruiseMenu extends Component {
 
     return (
       <Card className='border-secondary'>
-        <Card.Body>{ (this.state.fetching) ? 'Fetching...' : `No ${_cruises_} found!`}</Card.Body>
+        <Card.Body>{this.state.fetching ? 'Fetching...' : `No ${_cruises_} found!`}</Card.Body>
       </Card>
     )
   }
@@ -440,10 +420,8 @@ CruiseMenu.propTypes = {
   cruise: PropTypes.object.isRequired,
   cruises: PropTypes.array.isRequired,
   fetchCruises: PropTypes.func.isRequired,
-  gotoCruiseGallery: PropTypes.func.isRequired,
   gotoCruiseMap: PropTypes.func.isRequired,
-  gotoCruiseReplay: PropTypes.func.isRequired,
-  gotoCruiseReview: PropTypes.func.isRequired
+  gotoCruiseReplay: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => {

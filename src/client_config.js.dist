@@ -11,9 +11,6 @@ const WS_ROOT_URL = `${(server_protocol === 'https')? 'wss' : 'ws'}://${server_h
 // Change this if not hosting the client at the webserver's document root i.e. '/sealog/'
 const ROOT_PATH = process.env.SEALOG_ROOT_PATH || '/sealog/'
 
-// Where the images are hosted on the webserver.
-const IMAGE_PATH = '/files/images'
-
 // Site customization
 // Add a reCaptcha site kit to enable recaptcha bot protection
 const RECAPTCHA_SITE_KEY = process.env.SEALOG_RECAPTCHA_SITE_KEY || ''
@@ -60,15 +57,14 @@ const POSITION_DATASOURCES = ['vesselRealtimeNavData']
 
 const EXCLUDE_AUX_DATA_SOURCES = []
 
-const IMAGES_AUX_DATA_SOURCES = ['framegrabber']
-
 const AUX_DATA_SORT_ORDER = ['vesselRealtimeNavData']
+
+const AUX_DATA_DATASOURCE_REPLACE = []
 
 module.exports = {
   API_ROOT_URL,
   WS_ROOT_URL,
   ROOT_PATH,
-  IMAGE_PATH,
   RECAPTCHA_SITE_KEY,
   LOGIN_SCREEN_TXT,
   LOGIN_IMAGE,
@@ -84,6 +80,6 @@ module.exports = {
   CUSTOM_CRUISE_NAME,
   POSITION_DATASOURCES,
   EXCLUDE_AUX_DATA_SOURCES,
-  IMAGES_AUX_DATA_SOURCES,
-  AUX_DATA_SORT_ORDER
+  AUX_DATA_SORT_ORDER,
+  AUX_DATA_DATASOURCE_REPLACE
 }

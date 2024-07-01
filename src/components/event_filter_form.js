@@ -54,7 +54,6 @@ class EventFilterForm extends Component {
         .join(',')
     }
 
-    console.log(formProps)
     this.props.handlePostSubmit(formProps)
   }
 

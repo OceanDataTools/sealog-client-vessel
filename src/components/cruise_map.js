@@ -39,6 +39,7 @@ class CruiseMap extends Component {
 
       replayEventIndex: 0,
       activePage: 1,
+      sliderTimer: null,
 
       zoom: 13,
       center: DEFAULT_LOCATION,
@@ -47,13 +48,12 @@ class CruiseMap extends Component {
       height: '480px'
     }
 
-    this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this)
-    this.handleSliderChange = this.handleSliderChange.bind(this)
     this.handleEventClick = this.handleEventClick.bind(this)
     this.handleKeyPress = this.handleKeyPress.bind(this)
     this.handlePageSelect = this.handlePageSelect.bind(this)
+    this.handleSliderChange = this.handleSliderChange.bind(this)
+    this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this)
     this.updateEventFilter = this.updateEventFilter.bind(this)
-
     this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this)
     this.handleMoveEnd = this.handleMoveEnd.bind(this)
     this.handleZoomEnd = this.handleZoomEnd.bind(this)
@@ -77,6 +77,12 @@ class CruiseMap extends Component {
 
   componentDidUpdate() {
     this.map.leafletElement.invalidateSize()
+  }
+
+  componentWillUnmount() {
+    if (this.state.replayTimer) {
+      clearInterval(this.state.replayTimer)
+    }
   }
 
   handleKeyPress(event) {
@@ -185,8 +191,15 @@ class CruiseMap extends Component {
   handleSliderChange(index) {
     if (this.props.event.events && this.props.event.events[index]) {
       this.setState({ replayEventIndex: index })
-      this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
-      this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
+      clearTimeout(this.state.sliderTimer)
+      this.setState({
+        sliderTimer: setTimeout(() => {
+          this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+          this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
+        }, 250)
+      })
+      // this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+      // this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
     }
   }
 
@@ -238,11 +251,7 @@ class CruiseMap extends Component {
   }
 
   handleCruiseModeSelect(mode) {
-    if (mode === 'Review') {
-      this.props.gotoCruiseReview(this.props.match.params.id)
-    } else if (mode === 'Gallery') {
-      this.props.gotoCruiseGallery(this.props.match.params.id)
-    } else if (mode === 'Map') {
+    if (mode === 'Map') {
       this.props.gotoCruiseMap(this.props.match.params.id)
     } else if (mode === 'Replay') {
       this.props.gotoCruiseReplay(this.props.match.params.id)
@@ -288,6 +297,7 @@ class CruiseMap extends Component {
         onChange={() => this.toggleASNAP()}
         disabled={this.props.event.fetching}
         label='Hide ASNAP'
+        className='m-0'
       />
     )
 
@@ -314,7 +324,7 @@ class CruiseMap extends Component {
       <Card className='mt-2 border-secondary'>
         <Card.Header>{this.renderEventListHeader()}</Card.Header>
         <ListGroup
-          className='eventList'
+          variant='flush'
           tabIndex='-1'
           onKeyDown={this.handleKeyPress}
           ref={(div) => {
@@ -469,7 +479,7 @@ class CruiseMap extends Component {
             <FontAwesomeIcon icon='chevron-right' fixedWidth />
             <span className='text-warning'>{cruise_id}</span>
             <FontAwesomeIcon icon='chevron-right' fixedWidth />
-            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={'Map'} modes={['Replay', 'Review', 'Gallery']} />
+            <CruiseModeDropdown onClick={this.handleCruiseModeSelect} active_mode={'Map'} modes={['Replay']} />
           </ButtonToolbar>
         </Row>
         <Row>
@@ -524,11 +534,9 @@ CruiseMap.propTypes = {
   advanceCruiseReplayTo: PropTypes.func.isRequired,
   event: PropTypes.object.isRequired,
   eventUpdateCruiseReplay: PropTypes.func.isRequired,
-  gotoCruiseGallery: PropTypes.func.isRequired,
   gotoCruiseMap: PropTypes.func.isRequired,
   gotoCruiseMenu: PropTypes.func.isRequired,
   gotoCruiseReplay: PropTypes.func.isRequired,
-  gotoCruiseReview: PropTypes.func.isRequired,
   initCruiseReplay: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired,
   roles: PropTypes.array,

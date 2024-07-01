@@ -70,7 +70,7 @@ class CopyCruiseToClipboard extends Component {
     return (
       <OverlayTrigger placement='top' overlay={<Tooltip id='copyToClipboardTooltip'>Copy to clipboard</Tooltip>}>
         <CopyToClipboard text={this.state.text}>
-          <FontAwesomeIcon icon='clipboard' fixedWidth />
+          <FontAwesomeIcon icon='clipboard' className='text-primary' fixedWidth />
         </CopyToClipboard>
       </OverlayTrigger>
     )

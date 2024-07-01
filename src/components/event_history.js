@@ -6,14 +6,12 @@ import Moment from 'moment'
 import PropTypes from 'prop-types'
 import AuxDataCards from './aux_data_cards'
 import EventOptionsCard from './event_options_card'
-import ImageryCards from './imagery_cards'
-import ImagePreviewModal from './image_preview_modal'
 import { Client } from '@hapi/nes/lib/client'
-import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_config'
-import { authorizationHeader, get_events, get_event_exports, handle_image_file_download } from '../api'
+import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_config'
+import { authorizationHeader, get_events, get_event_exports } from '../api'
 import * as mapDispatchToProps from '../actions'
 
-const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES, ...IMAGES_AUX_DATA_SOURCES]))
+const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES]))
 
 const eventHistoryRef = 'eventHistory'
 
@@ -40,7 +38,6 @@ class EventHistory extends Component {
     this.connectToWS = this.connectToWS.bind(this)
     this.fetchEventExport = this.fetchEventExport.bind(this)
     this.fetchEvents = this.fetchEvents.bind(this)
-    this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this)
     this.handleSearchChange = this.handleSearchChange.bind(this)
     this.handleUpdateEvent = this.handleUpdateEvent.bind(this)
     this.toggleEventHistory = this.toggleEventHistory.bind(this)
@@ -228,10 +225,6 @@ class EventHistory extends Component {
     this.setState({ activePage: 1 })
   }
 
-  handleImagePreviewModal(source, filepath) {
-    this.props.showModal('imagePreview', { name: source, filepath: filepath })
-  }
-
   renderEventHistory() {
     if (this.state.events && this.state.events.length > 0) {
       let eventArray = []
@@ -313,9 +306,6 @@ class EventHistory extends Component {
       </Col>
     ) : null
 
-    const framegrab_data_sources = this.state.event.aux_data
-      ? this.state.event.aux_data.filter((aux_data) => IMAGES_AUX_DATA_SOURCES.includes(aux_data.data_source))
-      : []
     const aux_data = this.state.event.aux_data
       ? this.state.event.aux_data.filter((data) => !excludeAuxDataSources.includes(data.data_source))
       : []
@@ -325,7 +315,6 @@ class EventHistory extends Component {
 
     return (
       <Card className={this.props.className}>
-        <ImagePreviewModal handleDownload={handle_image_file_download} />
         <Card.Header>
           {this.state.event.ts} {`<${this.state.event.event_author}>`}: {this.state.event.event_value}{' '}
           {this.state.event.event_free_text ? ` --> "${this.state.event.event_free_text}"` : null}
@@ -337,7 +326,6 @@ class EventHistory extends Component {
         </Card.Header>
         <Card.Body className='pt-2 pb-1'>
           <Row>
-            <ImageryCards framegrab_data_sources={framegrab_data_sources} onClick={this.handleImagePreviewModal} md={4} lg={3} />
             <AuxDataCards aux_data={aux_data} md={4} lg={3} />
             <EventOptionsCard event_options={this.state.event.event_options} md={4} lg={3} />
           </Row>
@@ -414,7 +402,11 @@ class EventHistory extends Component {
 
     return (
       <React.Fragment>
-        <ListGroup className={`eventList ${!this.state.showEventHistoryFullscreen ? 'collapsed' : ''}`} ref={eventHistoryRef}>
+        <ListGroup
+          variant='flush'
+          className={`eventList ${!this.state.showEventHistoryFullscreen ? 'collapsed' : ''}`}
+          ref={eventHistoryRef}
+        >
           {this.renderEventHistory()}
         </ListGroup>
         <Card.Footer>

@@ -27,7 +27,7 @@ class Cruises extends Component {
 
     this.state = {
       activePage: 1,
-      filteredCruises: null,
+      filteredCruises: [],
       previouslySelectedCruise: null
     }
 
@@ -40,6 +40,32 @@ class Cruises extends Component {
     this.setState({ previouslySelectedCruise: this.props.cruise_id })
     this.props.fetchCruises()
     this.props.clearSelectedCruise()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.cruises !== prevProps.cruises)
+      if (!this.props.roles.includes('admin')) {
+        const currentCruise = this.props.cruises
+          ? this.props.cruises.find((cruise) => {
+              const now = moment.utc()
+              return now.isBetween(moment.utc(cruise.start_ts), moment.utc(cruise.stop_ts))
+            })
+          : null
+
+        // There is an active cruise, auto select it
+        if (currentCruise && currentCruise.id !== this.props.cruise_id) {
+          this.props.initCruise(currentCruise.id)
+        }
+
+        // Update the filtered list of cruise to only include the active cruise
+        this.setState({
+          filteredCruises: currentCruise ? [currentCruise] : []
+        })
+      } else {
+        this.setState({
+          filteredCruises: this.props.cruises
+        })
+      }
   }
 
   componentWillUnmount() {
@@ -124,7 +150,7 @@ class Cruises extends Component {
         })
       })
     } else {
-      this.setState({ filteredCruises: null })
+      this.setState({ filteredCruises: [] })
     }
     this.handlePageSelect(1)
   }
@@ -159,9 +185,8 @@ class Cruises extends Component {
     const showTooltip = <Tooltip id='showTooltip'>{_Cruise_} is hidden, click to show.</Tooltip>
     const hideTooltip = <Tooltip id='hideTooltip'>{_Cruise_} is visible, click to hide.</Tooltip>
     const permissionTooltip = <Tooltip id='permissionTooltip'>User permissions.</Tooltip>
-    const cruises = Array.isArray(this.state.filteredCruises) ? this.state.filteredCruises : this.props.cruises
 
-    return cruises.map((cruise, index) => {
+    return this.state.filteredCruises.map((cruise, index) => {
       if (index >= (this.state.activePage - 1) * maxCruisesPerPage && index < this.state.activePage * maxCruisesPerPage) {
         let deleteLink = this.props.roles.includes('admin') ? (
           <OverlayTrigger placement='top' overlay={deleteTooltip}>
@@ -220,9 +245,9 @@ class Cruises extends Component {
               <FontAwesomeIcon icon='arrow-right' fixedWidth />
               {moment.utc(cruise.stop_ts).format('L')}
             </td>
-            <td>
+            <td className='text-center'>
               <OverlayTrigger placement='top' overlay={editTooltip}>
-                <FontAwesomeIcon className='text-primary' onClick={() => this.handleCruiseUpdate(cruise.id)} icon='pencil-alt' fixedWidth />
+                <FontAwesomeIcon className='text-warning' onClick={() => this.handleCruiseUpdate(cruise.id)} icon='pencil-alt' fixedWidth />
               </OverlayTrigger>
               {USE_ACCESS_CONTROL && this.props.roles.includes('admin') ? (
                 <OverlayTrigger placement='top' overlay={permissionTooltip}>
@@ -246,19 +271,23 @@ class Cruises extends Component {
   }
 
   renderCruiseTable() {
-    if (this.props.cruises && this.props.cruises.length > 0) {
+    if (this.state.filteredCruises.length) {
       return (
         <Table responsive bordered striped size='sm'>
           <thead>
             <tr>
               <th>{_Cruise_}</th>
               <th>Details</th>
-              <th style={tableHeaderStyle}>Actions</th>
+              <th className='text-center' style={tableHeaderStyle}>
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>{this.renderCruises()}</tbody>
         </Table>
       )
+    } else if (!this.props.roles.includes('admin')) {
+      return <Card.Body>Sorry, you can only edit active {_Cruises_}!</Card.Body>
     } else {
       return <Card.Body>No {_Cruises_} found!</Card.Body>
     }
@@ -272,7 +301,9 @@ class Cruises extends Component {
         {_Cruises_}
         <span className='float-right'>
           <Form inline>
-            <FormControl size='sm' type='text' placeholder='Search' className='mr-sm-2' onChange={this.handleSearchChange} />
+            {this.props.roles.includes('admin') ? (
+              <FormControl size='sm' type='text' placeholder='Search' className='mr-sm-2' onChange={this.handleSearchChange} />
+            ) : null}
             <OverlayTrigger placement='top' overlay={exportTooltip}>
               <FontAwesomeIcon onClick={() => this.exportCruisesToJSON()} icon='download' fixedWidth />
             </OverlayTrigger>
@@ -287,7 +318,7 @@ class Cruises extends Component {
       return <div>Loading...</div>
     }
 
-    if (this.props.roles.includes('admin') || this.props.roles.includes('cruise_manager')) {
+    if (this.props.roles.some((item) => ['admin', 'cruise_manager'].includes(item))) {
       return (
         <Container className='mt-2'>
           <DeleteCruiseModal />
@@ -303,7 +334,7 @@ class Cruises extends Component {
               <CustomPagination
                 className='mt-2'
                 page={this.state.activePage}
-                count={this.state.filteredCruises ? this.state.filteredCruises.length : this.props.cruises.length}
+                count={this.state.filteredCruises.length}
                 pageSelectFunc={this.handlePageSelect}
                 maxPerPage={maxCruisesPerPage}
               />

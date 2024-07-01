@@ -14,7 +14,7 @@ export default ( state={ selected_event: {}, events: [], eventFilter: {}, hideAS
   switch(action.type){
 
     case INIT_EVENT:
-      return { ...state, events: action.payload, selected_event: action.payload[0] };
+      return { ...state, events: action.payload, selected_event: action.payload[0] || {} };
 
     case UPDATE_EVENT:
       let updateEventEvent = action.payload;

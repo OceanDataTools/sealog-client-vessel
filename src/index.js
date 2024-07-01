@@ -25,9 +25,7 @@ import EventLogging from './components/event_logging'
 import EventManagement from './components/event_management'
 import EventTemplates from './components/event_templates'
 import CruiseMap from './components/cruise_map'
-import CruiseGallery from './components/cruise_gallery'
 import CruiseReplay from './components/cruise_replay'
-import CruiseReview from './components/cruise_review'
 import Cruises from './components/cruises'
 import ForgotPassword from './components/auth/forgot_password'
 import ResetPassword from './components/auth/reset_password'
@@ -148,10 +146,8 @@ ReactDOM.render(
         <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
         <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
         <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
-        <Route path={`/cruise_gallery/:id`} exact={true} component={RequireAuth(CruiseGallery)} />
         <Route path={`/cruise_map/:id`} exact={true} component={RequireAuth(CruiseMap)} />
         <Route path={`/cruise_replay/:id`} exact={true} component={RequireAuth(CruiseReplay)} />
-        <Route path={`/cruise_review/:id`} exact={true} component={RequireAuth(CruiseReview)} />
         <Route path={`/event_management`} exact={true} component={RequireAuth(EventManagement)} />
         <Route path={`/event_templates`} exact={true} component={RequireAuth(EventTemplates)} />
       </Switch>
