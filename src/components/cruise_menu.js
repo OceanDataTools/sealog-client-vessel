@@ -125,7 +125,7 @@ class CruiseMenu extends Component {
         </span>
       ) : null
       let cruiseDescription = this.state.activeCruise.cruise_additional_meta.cruise_description ? (
-        <p className='text-justify' style={{whiteSpace: "pre-wrap"}}>
+        <p className='text-justify' style={{ whiteSpace: 'pre-wrap' }}>
           <strong>Description:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_description}
           <br />
         </p>
