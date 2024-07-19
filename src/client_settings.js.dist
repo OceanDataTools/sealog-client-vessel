@@ -31,7 +31,7 @@ const RECAPTCHA_SITE_KEY = null
 
 // Text show on the login page to the right of the login form.
 const LOGIN_SCREEN_TXT =
-  'Sealog provides the Oceanographic Research community with an open-source tool for recording, reviewing, and exporting insitu scientific and operational observations.'
+  'Sealog provides the Oceanographic Research community with an open-source tool for recording, reviewing, and exporting in-situ scientific and operational observations.'
 
 // Optional image file shown on login page. Will appear under the
 // LOGIN_SCREEN_TXT. This image must end in ".jpg", "jpeg", ".png" format and
