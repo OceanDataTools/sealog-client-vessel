@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import AuxDataCards from './aux_data_cards'
 import EventOptionsCard from './event_options_card'
 import { Client } from '@hapi/nes/lib/client'
-import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_config'
+import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_settings'
 import { authorizationHeader, get_events, get_event_exports } from '../api'
 import * as mapDispatchToProps from '../actions'
 

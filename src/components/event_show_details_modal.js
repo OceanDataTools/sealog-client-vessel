@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import { Row, Col, Card, Modal } from 'react-bootstrap'
 import AuxDataCards from './aux_data_cards'
 import EventOptionsCard from './event_options_card'
-import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_config'
+import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_settings'
 import { get_event_exports } from '../api'
 import * as mapDispatchToProps from '../actions'
 

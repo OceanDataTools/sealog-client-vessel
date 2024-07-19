@@ -1,7 +1,7 @@
 import axios from 'axios'
 import cookies from './cookies'
 import FileDownload from 'js-file-download'
-import { API_ROOT_URL } from './client_config'
+import { API_ROOT_URL } from './client_settings'
 
 export const CRUISE_ROUTE = '/files/cruises'
 

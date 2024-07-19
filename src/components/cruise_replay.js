@@ -12,7 +12,7 @@ import EventCommentModal from './event_comment_modal'
 import CruiseModeDropdown from './cruise_mode_dropdown'
 import CustomPagination from './custom_pagination'
 import ExportDropdown from './export_dropdown'
-import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_config'
+import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_settings'
 import { _Cruises_ } from '../vocab'
 import * as mapDispatchToProps from '../actions'
 
