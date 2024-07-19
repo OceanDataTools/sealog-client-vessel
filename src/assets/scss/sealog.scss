@@ -5,8 +5,8 @@
 @import "~bootstrap/scss/bootstrap.scss";
 
 // Import fonts
-@import "~@fontsource/open-sans/300.css"; // Weight 400.
-@import "~@fontsource/open-sans/index.css"; // Weight 400.
+@import "~@fontsource/open-sans/300.css"; // Weight 300.
+@import "~@fontsource/open-sans/400.css"; // Weight 400.
 @import "~@fontsource/open-sans/700.css"; // Weight 700.
 
 // Import FontAwesome
@@ -20,9 +20,9 @@
     background-color: transparent;
     color: $primary;
     text-transform: uppercase;
-  
+
     &:hover {
-      background-color: $gray-700;
+      color: $warning;
     }
 
     &.disabled,
@@ -34,6 +34,7 @@
     &.active {
       color: $warning;
       background-color: transparent;
+      border: none;
     }
   }
 }
@@ -42,7 +43,7 @@
   font-size: .85rem;
 }
 
-.cruise-details, .lowering-details {
+.cruise-details {
   font-size: .75rem;
 }
 
@@ -56,7 +57,7 @@
 }
 
 .event-data-card {
-
+  width: 100%;
   border-color: $secondary;
   .card-header {
     padding-left: .5rem !important;
@@ -75,12 +76,12 @@
   }
 }
 
-.event-image-data-card {
-  border: none;
-  background-color: transparent;
-  text-transform: capitalize;
+.event-data-col {
+  padding-bottom: 0.5rem !important;
+  padding-right: 0.25rem !important;
+  padding-left: 0.25rem !important;
+  display: flex;
 }
-
 
 // Utility class to hide arrow from dropdown
 

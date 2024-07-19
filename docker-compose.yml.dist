@@ -1,0 +1,8 @@
+services:
+  sealog-client-vessel:
+    image: sealog-client-vessel
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8081:80"
