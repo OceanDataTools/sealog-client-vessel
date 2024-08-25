@@ -151,8 +151,7 @@ class CruiseMap extends Component {
             }
             trackline.endPoint = latLng
           }
-        }
-        catch {
+        } catch {
           console.error('Problem parsing', r_data['data_array'])
         }
       })
