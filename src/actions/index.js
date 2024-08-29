@@ -84,12 +84,6 @@ import { ROOT_PATH } from '../client_settings'
 const port = window.location.port ? ':' + window.location.port : ''
 export const resetURL = window.location.protocol + '//' + window.location.hostname + port + ROOT_PATH + 'resetPassword/'
 
-// export const authorizationHeader = {
-//   headers: {
-//     Authorization: 'Bearer ' + cookies.get('token')
-//   }
-// }
-
 export const advanceCruiseReplayTo = (id) => {
   return async (dispatch) => {
     const payload = (await get_event_exports({}, id)) || {}
