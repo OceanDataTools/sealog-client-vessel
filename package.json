@@ -3,13 +3,11 @@
     "version": "2.3.2",
     "license": "MIT",
     "description": "Sealog Client intended for use with research vessels",
-    "bugs":
-    {
+    "bugs": {
         "url": "https://github.com/oceandatatools/sealog-client-vessel/issues"
     },
     "main": "index.js",
-    "scripts":
-    {
+    "scripts": {
         "start": "webpack serve --mode development --node-env development",
         "start-devel": "concurrently \"npm run start\" \"npm run lint\"",
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -20,24 +18,21 @@
     "author": "Webb Pinner",
     "homepage": "https://github.com/oceandatatools/",
     "private": false,
-    "repository":
-    {
+    "repository": {
         "type": "git",
         "url": "https://github.com/oceandatatools/sealog-client-vessel.git"
     },
-    "keywords":
-    [
+    "keywords": [
         "react",
         "redux",
         "eventlogging"
     ],
-    "dependencies":
-    {
+    "dependencies": {
         "@hapi/nes": "^13.0.1",
-        "axios": "^1.7.3",
+        "axios": "^1.7.5",
         "bootstrap": "^4.6.2",
         "connected-react-router": "^6.9.3",
-        "filepond": "^4.31.1",
+        "filepond": "^4.31.2",
         "jquery": "^3.7.1",
         "js-file-download": "^0.4.12",
         "leaflet": "^1.9.4",
@@ -64,16 +59,15 @@
         "redux-thunk": "^2.4.2",
         "universal-cookie": "^7.2.0"
     },
-    "devDependencies":
-    {
+    "devDependencies": {
         "@babel/core": "^7.25.2",
         "@babel/eslint-parser": "^7.25.1",
-        "@babel/plugin-transform-class-properties": "^7.24.7",
-        "@babel/plugin-transform-runtime": "^7.24.7",
-        "@babel/preset-env": "^7.25.3",
+        "@babel/plugin-transform-class-properties": "^7.25.4",
+        "@babel/plugin-transform-runtime": "^7.25.4",
+        "@babel/preset-env": "^7.25.4",
         "@babel/preset-react": "^7.24.7",
-        "@babel/runtime": "^7.25.0",
-        "@fontsource/open-sans": "^5.0.28",
+        "@babel/runtime": "^7.25.6",
+        "@fontsource/open-sans": "^5.0.29",
         "@fortawesome/fontawesome-common-types": "^6.5.2",
         "@fortawesome/fontawesome-free": "^6.6.0",
         "@fortawesome/fontawesome-svg-core": "^6.6.0",
@@ -91,12 +85,12 @@
         "eslint-plugin-react-hooks": "^4.6.2",
         "eslint-plugin-react-redux": "^4.1.0",
         "html-webpack-plugin": "^5.6.0",
-        "mini-css-extract-plugin": "^2.9.0",
+        "mini-css-extract-plugin": "^2.9.1",
         "prettier": "3.2.5",
         "sass": "1.77.6",
         "sass-loader": "^12.6.0",
         "style-loader": "^4.0.0",
-        "webpack": "^5.93.0",
+        "webpack": "^5.94.0",
         "webpack-cli": "^5.1.4",
         "webpack-dev-server": "^5.0.4"
     }

@@ -56,6 +56,18 @@
   &.collapsed { height: 220px; }
 }
 
+.event-header-card {
+  width: 100%;
+  border-color: $secondary;
+  .card-header {
+    padding-left: .5rem !important;
+    padding-right: .5rem !important;
+    padding-bottom: .25rem !important;
+    padding-top: .25rem !important;
+    border-bottom: none;
+  }
+}
+
 .event-data-card {
   width: 100%;
   border-color: $secondary;
@@ -68,7 +80,10 @@
 
   .card-body {
     font-size: .8rem;
-    padding: .5rem;
+    padding-left: .5rem !important;
+    padding-right: .5rem;
+    padding-bottom: .25rem !important;
+    padding-top: .25rem;
 
     .data-name {
       text-transform: capitalize;
@@ -81,6 +96,13 @@
   padding-right: 0.25rem !important;
   padding-left: 0.25rem !important;
   display: flex;
+}
+
+.event-list-item {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  padding-bottom: 0.125rem !important;
+  padding-top: 0.125rem !important;
 }
 
 // Utility class to hide arrow from dropdown
