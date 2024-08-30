@@ -5,6 +5,7 @@ import { Button, ListGroup, Card, Tooltip, OverlayTrigger, Row, Col, Form, FormC
 import Moment from 'moment'
 import PropTypes from 'prop-types'
 import AuxDataCards from './aux_data_cards'
+import EventCommentCard from './event_comment_card'
 import EventOptionsCard from './event_options_card'
 import { Client } from '@hapi/nes/lib/client'
 import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_settings'
@@ -266,7 +267,7 @@ class EventHistory extends Component {
         )
 
         eventArray.push(
-          <ListGroup.Item className='event-list-item py-1' key={event.id}>
+          <ListGroup.Item className='event-list-item' key={event.id}>
             <span onClick={() => this.handleEventShowDetailsModal(event)}>
               {event.ts} {`<${event.event_author}>`}: {event.event_value} {eventOptions}
             </span>
@@ -299,9 +300,10 @@ class EventHistory extends Component {
     const showNewEventIcon = this.state.showNewEventDetails ? 'eye' : 'eye-slash'
 
     const event_free_text_card = this.state.event.event_free_text ? (
-      <Col className='px-1 pb-2' xs={12}>
+      <Col className='event-data-col' sm={6} md={4} lg={3}>
         <Card className='event-data-card'>
-          <Card.Body>Free-form Text: {this.state.event.event_free_text}</Card.Body>
+          <Card.Header>Free-form Text</Card.Header>
+          <Card.Body>{this.state.event.event_free_text}</Card.Body>
         </Card>
       </Col>
     ) : null
@@ -316,20 +318,25 @@ class EventHistory extends Component {
     return (
       <Card className={this.props.className}>
         <Card.Header>
-          {this.state.event.ts} {`<${this.state.event.event_author}>`}: {this.state.event.event_value}{' '}
-          {this.state.event.event_free_text ? ` --> "${this.state.event.event_free_text}"` : null}
-          <OverlayTrigger placement='top' overlay={showNewEventTooltip}>
-            <span className='float-right' size='sm' onClick={this.toggleNewEventDetails}>
-              <FontAwesomeIcon icon={showNewEventIcon} fixedWidth />
-            </span>
-          </OverlayTrigger>
+          <span>{this.state.event.event_value}</span>
+          <span className='float-right'>
+            {this.state.event.event_author}
+            {' @ '}
+            {this.state.event.ts}
+            <OverlayTrigger placement='top' overlay={showNewEventTooltip}>
+              <span className='float-right pl-2' size='sm' onClick={this.toggleNewEventDetails}>
+                <FontAwesomeIcon icon={showNewEventIcon} fixedWidth />
+              </span>
+            </OverlayTrigger>
+          </span>
         </Card.Header>
         <Card.Body className='pt-2 pb-1'>
           <Row>
             <AuxDataCards aux_data={aux_data} md={4} lg={3} />
-            <EventOptionsCard event_options={this.state.event.event_options} md={4} lg={3} />
+            <EventOptionsCard event={this.state.event} md={4} lg={3} />
+            {event_free_text_card}
+            <EventCommentCard event={this.state.event} md={4} lg={3} />
           </Row>
-          <Row>{event_free_text_card}</Row>
         </Card.Body>
       </Card>
     )
