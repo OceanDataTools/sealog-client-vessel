@@ -44,7 +44,6 @@ import {
   EVENT_FETCHING,
   FETCH_CRUISES,
   FETCH_EVENT_TEMPLATES,
-  FETCH_EVENT_TEMPLATES_FOR_MAIN,
   FETCH_EVENTS,
   FETCH_FILTERED_EVENTS,
   FETCH_USERS,
@@ -381,21 +380,12 @@ export const fetchEvents = () => {
   }
 }
 
-export const fetchEventTemplates = () => {
-  return async (dispatch) => {
-    const payload = await get_event_templates()
-    return dispatch({ type: FETCH_EVENT_TEMPLATES, payload })
-  }
-}
-
-export const fetchEventTemplatesForMain = () => {
-  const query = {
-    sort: 'event_name'
-  }
+export const fetchEventTemplates = (sort = 'event_name') => {
+  const query = { sort }
 
   return async (dispatch) => {
     const payload = await get_event_templates(query)
-    return dispatch({ type: FETCH_EVENT_TEMPLATES_FOR_MAIN, payload })
+    return dispatch({ type: FETCH_EVENT_TEMPLATES, payload })
   }
 }
 
