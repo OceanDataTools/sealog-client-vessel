@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import moment from 'moment'
 import { connect } from 'react-redux'
 import { ButtonToolbar, Container, Row, Col, Card, ListGroup, OverlayTrigger, Tooltip, Form } from 'react-bootstrap'
-import Slider, { createSliderWithTooltip } from 'rc-slider'
+import Slider from 'rc-slider'
 import PropTypes from 'prop-types'
 import EventFilterForm from './event_filter_form'
 import AuxDataCards from './aux_data_cards'
@@ -17,6 +17,10 @@ import { EXCLUDE_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_setting
 import { _Cruises_ } from '../vocab'
 import * as mapDispatchToProps from '../actions'
 
+const SliderWithTooltip = Slider.createSliderWithTooltip(Slider)
+
+const maxEventsPerPage = 10
+
 const playTimer = 3000
 const ffwdTimer = 1000
 
@@ -25,32 +29,31 @@ const PAUSE = 1
 const FFWD = 2
 const FREV = 3
 
-const maxEventsPerPage = 10
-
 const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES]))
 
-const SliderWithTooltip = createSliderWithTooltip(Slider)
 
 class CruiseReplay extends Component {
   constructor(props) {
     super(props)
 
-    this.divFocus = null
-
     this.state = {
       replayTimer: null,
       replayState: PAUSE,
+
       replayEventIndex: 0,
       activePage: 1,
       sliderTimer: null
     }
 
+    this.sliderRef = React.createRef() // Reference to the slider
+
     this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this)
     this.handleCruiseReplayPause = this.handleCruiseReplayPause.bind(this)
     this.handleEventClick = this.handleEventClick.bind(this)
-    this.handleKeyPress = this.handleKeyPress.bind(this)
+    this.handleKeyDown = this.handleKeyDown.bind(this)
     this.handlePageSelect = this.handlePageSelect.bind(this)
     this.handleSliderChange = this.handleSliderChange.bind(this)
+    this.handleSliderChangeComplete = this.handleSliderChangeComplete.bind(this)
     this.replayAdvance = this.replayAdvance.bind(this)
     this.replayReverse = this.replayReverse.bind(this)
     this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this)
@@ -68,25 +71,32 @@ class CruiseReplay extends Component {
       })
     }
 
-    this.divFocus.focus()
+    document.addEventListener('keydown', this.handleKeyDown)
   }
+
+  componentDidUpdate() {}
 
   componentWillUnmount() {
     if (this.state.replayTimer) {
       clearInterval(this.state.replayTimer)
     }
+
+    document.removeEventListener('keydown', this.handleKeyDown)
   }
 
   updateEventFilter(filter) {
-    this.setState({ activePage: 1, replayEventIndex: 0 })
     this.handleCruiseReplayPause()
+    this.setState({ activePage: 1, replayEventIndex: 0 })
+    this.props.advanceCruiseReplayTo(this.props.event.events[0].id)
     this.props.updateEventFilterForm(filter)
     this.props.eventUpdateCruiseReplay()
   }
 
   toggleASNAP() {
-    this.props.toggleASNAP()
     this.handleCruiseReplayPause()
+    this.props.toggleASNAP()
+    this.setState({ replayEventIndex: 0 })
+    this.props.advanceCruiseReplayTo(this.props.event.events[0].id)
     this.props.eventUpdateCruiseReplay()
     this.handleEventClick(0)
   }
@@ -102,23 +112,17 @@ class CruiseReplay extends Component {
     return ''
   }
 
-  handleSearchChange(event) {
-    let eventFilterValue = event.target.value !== '' ? event.target.value : null
-    clearTimeout(this.state.filterTimer)
-    this.setState({
-      filterTimer: setTimeout(() => this.setState({ eventFilterValue }), 500)
-    })
-  }
-
   handleSliderChange(index) {
+    this.handleCruiseReplayPause()
     if (this.props.event.events && this.props.event.events[index]) {
-      this.handleCruiseReplayPause()
       this.setState({ replayEventIndex: index })
       clearTimeout(this.state.sliderTimer)
       this.setState({
         sliderTimer: setTimeout(() => {
           this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
-          this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
+          this.setState({
+            activePage: Math.ceil((index + 1) / maxEventsPerPage)
+          })
         }, 250)
       })
     }
@@ -127,8 +131,8 @@ class CruiseReplay extends Component {
   handleEventClick(index) {
     this.handleCruiseReplayPause()
     this.setState({ replayEventIndex: index })
+    this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
     if (this.props.event.events && this.props.event.events.length > index) {
-      this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
       this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
     }
   }
@@ -143,50 +147,55 @@ class CruiseReplay extends Component {
     })
   }
 
-  handlePageSelect(eventKey, updateReplay = true) {
+  handlePageSelect(page, updateReplay = true) {
     this.handleCruiseReplayPause()
     this.setState({
-      activePage: eventKey,
-      replayEventIndex: (eventKey - 1) * maxEventsPerPage
+      activePage: page,
+      replayEventIndex: (page - 1) * maxEventsPerPage
     })
-    if (updateReplay) {
-      this.props.advanceCruiseReplayTo(this.props.event.events[(eventKey - 1) * maxEventsPerPage].id)
-    }
-    this.divFocus.focus()
+    this.props.advanceCruiseReplayTo(this.props.event.events[(page - 1) * maxEventsPerPage].id)
   }
 
-  handleKeyPress(event) {
-    if (event.key === 'ArrowRight' && this.state.activePage < Math.ceil(this.props.event.events.length / maxEventsPerPage)) {
-      this.handlePageSelect(this.state.activePage + 1)
-    } else if (event.key === 'ArrowLeft' && this.state.activePage > 1) {
-      this.handlePageSelect(this.state.activePage - 1)
-    } else if (event.key === 'ArrowDown') {
-      const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id)
-      if (eventIndex < this.props.event.events.length - 1) {
-        if (Math.ceil((eventIndex + 2) / maxEventsPerPage) !== this.state.activePage) {
-          this.handlePageSelect(Math.ceil((eventIndex + 2) / maxEventsPerPage))
-        } else {
-          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex + 1].id)
-        }
-      }
-    } else if (event.key === 'ArrowUp') {
-      const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id)
-      if (eventIndex > 0) {
-        if (Math.ceil(eventIndex / maxEventsPerPage) !== this.state.activePage) {
-          this.handlePageSelect(Math.ceil(eventIndex / maxEventsPerPage), false)
-          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex - 1].id)
-        } else {
-          this.props.advanceCruiseReplayTo(this.props.event.events[eventIndex - 1].id)
-        }
-      }
+  handleKeyDown(event) {
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      return
     }
+
+    if (event.key === 'ArrowRight' && this.state.activePage < Math.ceil(this.props.event.events.length / maxEventsPerPage)) {
+      this.setState((prevState) => ({
+        replayEventIndex: prevState.activePage * maxEventsPerPage,
+        activePage: prevState.activePage + 1
+      }))
+    } else if (event.key === 'ArrowLeft' && this.state.activePage > 1) {
+      this.setState((prevState) => ({
+        replayEventIndex: (prevState.activePage - 2) * maxEventsPerPage,
+        activePage: prevState.activePage - 1
+      }))
+    } else if (event.key === 'ArrowDown' && this.state.replayEventIndex < this.props.event.events.length - 1) {
+      this.setState((prevState) => ({
+        replayEventIndex: prevState.replayEventIndex + 1,
+        activePage: Math.ceil((prevState.replayEventIndex + 2) / maxEventsPerPage)
+      }))
+    } else if (event.key === 'ArrowUp' && this.state.replayEventIndex > 0) {
+      this.setState((prevState) => ({
+        replayEventIndex: prevState.replayEventIndex - 1,
+        activePage: Math.ceil(prevState.replayEventIndex / maxEventsPerPage)
+      }))
+    }
+
+    this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
   }
 
   handleCruiseModeSelect(mode) {
     if (mode === 'Map') {
       this.props.gotoCruiseMap(this.props.match.params.id)
-    } else if (mode === 'Replay') {
-      this.props.gotoCruiseReplay(this.props.match.params.id)
+    }
+  }
+
+  handleSliderChangeComplete() {
+    const sliderHandle = this.sliderRef.current?.querySelector('.rc-slider-handle')
+    if (sliderHandle) {
+      sliderHandle.blur()
     }
   }
 
@@ -242,11 +251,11 @@ class CruiseReplay extends Component {
 
   replayAdvance() {
     if (this.state.replayEventIndex < this.props.event.events.length - 1) {
-      this.setState({ replayEventIndex: this.state.replayEventIndex + 1 })
+      this.setState((prevState) => ({
+        replayEventIndex: prevState.replayEventIndex + 1,
+        activePage: Math.ceil((prevState.replayEventIndex + 2) / maxEventsPerPage)
+      }))
       this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
-      this.setState({
-        activePage: Math.ceil((this.state.replayEventIndex + 1) / maxEventsPerPage)
-      })
     } else {
       this.setState({ replayState: PAUSE })
     }
@@ -254,11 +263,11 @@ class CruiseReplay extends Component {
 
   replayReverse() {
     if (this.state.replayEventIndex > 0) {
-      this.setState({ replayEventIndex: this.state.replayEventIndex - 1 })
+      this.setState((prevState) => ({
+        replayEventIndex: prevState.replayEventIndex - 1,
+        activePage: Math.ceil(prevState.replayEventIndex / maxEventsPerPage)
+      }))
       this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
-      this.setState({
-        activePage: Math.ceil((this.state.replayEventIndex + 1) / maxEventsPerPage)
-      })
     } else {
       this.setState({ replayState: PAUSE })
     }
@@ -324,13 +333,13 @@ class CruiseReplay extends Component {
         )
 
       return (
-        <Card className='border-secondar p-1'>
+        <Card className='border-secondary p-1'>
           <div className='d-flex align-items-center justify-content-between'>
             <span className='text-primary'>00:00:00</span>
             {buttons}
             <span className='text-primary'>{moment.duration(cruiseDuration).format('d [days] hh:mm:ss')}</span>
           </div>
-          <div className='d-flex align-items-center justify-content-between'>
+          <div className='d-flex align-items-center justify-content-between' ref={this.sliderRef}>
             <SliderWithTooltip
               className='mx-2'
               value={this.state.replayEventIndex}
@@ -339,6 +348,7 @@ class CruiseReplay extends Component {
               railStyle={{ opacity: 0.5 }}
               onBeforeChange={this.handleCruiseReplayPause}
               onChange={this.handleSliderChange}
+              onAfterChange={this.handleSliderChangeComplete}
               max={this.props.event.events.length - 1}
             />
           </div>
@@ -446,14 +456,7 @@ class CruiseReplay extends Component {
     return (
       <Card className='border-secondary'>
         <Card.Header>{this.renderEventListHeader()}</Card.Header>
-        <ListGroup
-          variant='flush'
-          tabIndex='-1'
-          onKeyDown={this.handleKeyPress}
-          ref={(div) => {
-            this.divFocus = div
-          }}
-        >
+        <ListGroup variant='flush' tabIndex='-1'>
           {this.renderEvents()}
         </ListGroup>
       </Card>
@@ -548,7 +551,6 @@ CruiseReplay.propTypes = {
   eventUpdateCruiseReplay: PropTypes.func.isRequired,
   gotoCruiseMap: PropTypes.func.isRequired,
   gotoCruiseMenu: PropTypes.func.isRequired,
-  gotoCruiseReplay: PropTypes.func.isRequired,
   initCruiseReplay: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired,
   roles: PropTypes.array,
