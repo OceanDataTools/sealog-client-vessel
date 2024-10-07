@@ -31,7 +31,6 @@ const FREV = 3
 
 const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES]))
 
-
 class CruiseReplay extends Component {
   constructor(props) {
     super(props)
@@ -147,7 +146,7 @@ class CruiseReplay extends Component {
     })
   }
 
-  handlePageSelect(page, updateReplay = true) {
+  handlePageSelect(page) {
     this.handleCruiseReplayPause()
     this.setState({
       activePage: page,

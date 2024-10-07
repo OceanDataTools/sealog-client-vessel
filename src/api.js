@@ -176,6 +176,18 @@ export const delete_cruise = async (id) => {
     })
 }
 
+export const export_cruise = async (id) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/external_calls/execute_export_cruise/${id}`, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      console.debug(error)
+      return { error }
+    })
+}
+
 export const get_cruises = async (queryDict = {}, id = null) => {
   const queryStr = id ? `/${id}?` : '?' + _buildQueryString(queryDict)
 

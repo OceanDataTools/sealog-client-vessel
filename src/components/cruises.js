@@ -7,6 +7,7 @@ import PropTypes from 'prop-types'
 import CruiseForm from './cruise_form'
 import DeleteCruiseModal from './delete_cruise_modal'
 import DeleteFileModal from './delete_file_modal'
+import ExecuteModal from './execute_modal'
 import ImportCruisesModal from './import_cruises_modal'
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard'
 import CruisePermissionsModal from './cruise_permissions_modal'
@@ -83,6 +84,14 @@ class Cruises extends Component {
     this.props.showModal('deleteCruise', {
       id: id,
       handleDelete: this.props.deleteCruise
+    })
+  }
+
+  handleCruiseExportModal(cruise) {
+    this.props.showModal('executeCommand', {
+      title: `Export ${_Cruise_}: ${cruise['cruise_id']}`,
+      message: `Export data related to this ${_cruise_} to files.`,
+      handleConfirm: () => this.props.exportCruise(cruise['id'])
     })
   }
 
@@ -182,32 +191,58 @@ class Cruises extends Component {
   renderCruises() {
     const editTooltip = <Tooltip id='editTooltip'>Edit this {_cruise_}.</Tooltip>
     const deleteTooltip = <Tooltip id='deleteTooltip'>Delete this {_cruise_}.</Tooltip>
+    const exportTooltip = <Tooltip id='exportTooltip'>Export this {_cruise_}.</Tooltip>
     const showTooltip = <Tooltip id='showTooltip'>{_Cruise_} is hidden, click to show.</Tooltip>
     const hideTooltip = <Tooltip id='hideTooltip'>{_Cruise_} is visible, click to hide.</Tooltip>
     const permissionTooltip = <Tooltip id='permissionTooltip'>User permissions.</Tooltip>
 
     return this.state.filteredCruises.map((cruise, index) => {
       if (index >= (this.state.activePage - 1) * maxCruisesPerPage && index < this.state.activePage * maxCruisesPerPage) {
+        let editLink = (
+          <OverlayTrigger placement='top' overlay={editTooltip}>
+            <FontAwesomeIcon
+              className='text-warning'
+              onClick={() => this.handleCruiseUpdate(cruise.id)}
+              icon='pencil-alt'
+              fixedWidth
+            />
+          </OverlayTrigger>
+        )
+
+        let permLink =
+          USE_ACCESS_CONTROL && this.props.roles.includes('admin') ? (
+            <OverlayTrigger placement='top' overlay={permissionTooltip}>
+              <FontAwesomeIcon
+                className='text-primary'
+                onClick={() => this.handleCruisePermissionsModal(cruise)}
+                icon='user-lock'
+                fixedWidth
+              />
+            </OverlayTrigger>
+          ) : null
+
         let deleteLink = this.props.roles.includes('admin') ? (
           <OverlayTrigger placement='top' overlay={deleteTooltip}>
             <FontAwesomeIcon className='text-danger' onClick={() => this.handleCruiseDeleteModal(cruise.id)} icon='trash' fixedWidth />
           </OverlayTrigger>
         ) : null
-        let hiddenLink = null
 
-        if (this.props.roles.includes('admin') && cruise.cruise_hidden) {
-          hiddenLink = (
-            <OverlayTrigger placement='top' overlay={showTooltip}>
-              <FontAwesomeIcon onClick={() => this.handleCruiseShow(cruise.id)} icon='eye-slash' fixedWidth />
-            </OverlayTrigger>
-          )
-        } else if (this.props.roles.includes('admin') && !cruise.cruise_hidden) {
-          hiddenLink = (
-            <OverlayTrigger placement='top' overlay={hideTooltip}>
-              <FontAwesomeIcon className='text-success' onClick={() => this.handleCruiseHide(cruise.id)} icon='eye' fixedWidth />
-            </OverlayTrigger>
-          )
-        }
+        let exportLink = this.props.roles.includes('admin') ? (
+          <OverlayTrigger placement='top' overlay={exportTooltip}>
+            <FontAwesomeIcon className='text-info' onClick={() => this.handleCruiseExportModal(cruise)} icon='download' fixedWidth />
+          </OverlayTrigger>
+        ) : null
+
+        let hiddenLink = this.props.roles.includes('admin') ? (
+          <OverlayTrigger placement='top' overlay={cruise.cruise_hidden ? showTooltip : hideTooltip}>
+            <FontAwesomeIcon
+              className={cruise.cruise_hidden ? 'pl-1' : 'text-success pl-1'}
+              onClick={() => (cruise.cruise_hidden ? this.handleCruiseShow(cruise.id) : this.handleCruiseHide(cruise.id))}
+              icon={cruise.cruise_hidden ? 'eye-slash' : 'eye'}
+              fixedWidth
+            />
+          </OverlayTrigger>
+        ) : null
 
         let cruiseName = cruise.cruise_additional_meta.cruise_name ? (
           <span>
@@ -246,22 +281,11 @@ class Cruises extends Component {
               {moment.utc(cruise.stop_ts).format('L')}
             </td>
             <td className='text-center'>
-              <OverlayTrigger placement='top' overlay={editTooltip}>
-                <FontAwesomeIcon className='text-warning' onClick={() => this.handleCruiseUpdate(cruise.id)} icon='pencil-alt' fixedWidth />
-              </OverlayTrigger>
-              {USE_ACCESS_CONTROL && this.props.roles.includes('admin') ? (
-                <OverlayTrigger placement='top' overlay={permissionTooltip}>
-                  <FontAwesomeIcon
-                    className='text-primary'
-                    onClick={() => this.handleCruisePermissionsModal(cruise)}
-                    icon='user-lock'
-                    fixedWidth
-                  />
-                </OverlayTrigger>
-              ) : (
-                ''
-              )}{' '}
-              {hiddenLink} {deleteLink}
+              {editLink}
+              {permLink}
+              {exportLink}
+              {hiddenLink}
+              {deleteLink}
               <CopyCruiseToClipboard cruise={cruise} />
             </td>
           </tr>
@@ -323,6 +347,7 @@ class Cruises extends Component {
         <Container className='mt-2'>
           <DeleteCruiseModal />
           <DeleteFileModal />
+          <ExecuteModal />
           <CruisePermissionsModal onClose={this.props.fetchCruises} />
           <ImportCruisesModal handleExit={this.handleCruiseImportClose} />
           <Row>
@@ -360,6 +385,7 @@ Cruises.propTypes = {
   cruise_id: PropTypes.string,
   cruises: PropTypes.array,
   deleteCruise: PropTypes.func.isRequired,
+  exportCruise: PropTypes.func.isRequired,
   fetchCruises: PropTypes.func.isRequired,
   hideCruise: PropTypes.func.isRequired,
   initCruise: PropTypes.func.isRequired,
