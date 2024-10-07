@@ -1,6 +1,6 @@
 {
     "name": "sealog-client-vessel",
-    "version": "2.3.4",
+    "version": "2.3.5",
     "license": "MIT",
     "description": "Sealog Client intended for use with research vessels",
     "bugs": {
