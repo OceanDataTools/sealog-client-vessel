@@ -261,6 +261,7 @@ class CruiseForm extends Component {
                   }
                 }}
                 onupdatefiles={() => {
+                  this.setState({ filepondPristine: false })
                   this.props.dispatch(change('editCruise', 'cruise_additional_meta.cruise_files', true))
                 }}
                 disabled={this.props.cruise.id ? false : true}

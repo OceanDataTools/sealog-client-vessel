@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { compose } from 'redux'
 import { connectModal } from 'redux-modal'
 import { reduxForm, Field } from 'redux-form'
+import { FilePond, registerPlugin } from 'react-filepond'
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import {
@@ -14,6 +16,10 @@ import {
   renderTextField
 } from './form_elements'
 import { Button, Modal } from 'react-bootstrap'
+import { authorizationHeader, IMAGE_ROUTE } from '../api'
+import { API_ROOT_URL } from '../client_settings'
+
+registerPlugin(FilePondPluginFileValidateType)
 
 const required = (value) => (!value ? 'Required' : undefined)
 const requiredArray = (value) => (!value || value.length === 0 ? 'Must select at least one option' : undefined)
@@ -21,6 +27,10 @@ const requiredArray = (value) => (!value || value.length === 0 ? 'Must select at
 class EventTemplateOptionsModal extends Component {
   constructor(props) {
     super(props)
+
+    // this.state = {
+    //   filepondPristine: true
+    // }
 
     this.state = {
       event_id: this.props.event ? this.props.event.id : null
@@ -81,6 +91,14 @@ class EventTemplateOptionsModal extends Component {
         event_option_value: optionValue[index]
       }
     })
+
+    formProps.event_files = [
+      ...new Set(
+        this.pond.getFiles().map((file) => {
+          return file.filename
+        })
+      )
+    ]
 
     //Submit event
     if (this.props.event) {
@@ -195,6 +213,27 @@ class EventTemplateOptionsModal extends Component {
                 validate={eventTemplate.event_free_text_required ? required : undefined}
                 rows={2}
               />
+              <FilePond
+                ref={(ref) => (this.pond = ref)}
+                allowMultiple={true}
+                maxFiles={5}
+                acceptedFileTypes={['image/png', 'image/jpeg']}
+                server={{
+                  url: API_ROOT_URL,
+                  process: {
+                    url: IMAGE_ROUTE + '/filepond/process/' + this.props.event.id,
+                    ...authorizationHeader()
+                  },
+                  revert: {
+                    url: IMAGE_ROUTE + '/filepond/revert',
+                    ...authorizationHeader()
+                  }
+                }}
+                // onupdatefiles={() => {
+                //   this.props.dispatch(change('editCruise', 'cruise_additional_meta.cruise_files', true))
+                // }}
+                disabled={this.props.event.id ? false : true}
+              ></FilePond>
               <Field name='ts' label='Custom Time (UTC)' component={renderDateTimePicker} disabled={this.props.disabled} required={true} />
             </Modal.Body>
             <Modal.Footer>
