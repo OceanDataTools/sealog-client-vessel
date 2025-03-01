@@ -286,10 +286,8 @@ class CruiseForm extends Component {
     } else {
       return (
         <Card>
-        <Card.Header>Update { _Cruise_ }</Card.Header>
-        <Card.Body className='cruise_form'>
-          {`Sorry... there are no currently active ${_cruises_} for you to edit.`}
-        </Card.Body>
+          <Card.Header>Update {_Cruise_}</Card.Header>
+          <Card.Body className='cruise_form'>{`Sorry... there are no currently active ${_cruises_} for you to edit.`}</Card.Body>
         </Card>
       )
     }

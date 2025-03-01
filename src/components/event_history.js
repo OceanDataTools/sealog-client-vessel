@@ -142,12 +142,10 @@ class EventHistory extends Component {
 
       if (cruises.length) {
         this.setState({ startTS: cruises[0].start_ts })
-      }
-      else {
+      } else {
         const cruises = await get_cruises()
         if (cruises.length) {
-          console.log(cruises[cruises.length-1].stop_ts)
-          this.setState({ startTS: cruises[cruises.length-1].stop_ts })
+          this.setState({ startTS: cruises[cruises.length - 1].stop_ts })
         }
       }
     }

@@ -351,7 +351,7 @@ class Users extends Component {
           <UserPermissionsModal onClose={this.props.fetchCruises} />
           <Row className='py-2 px-1 d-flex justify-content-center'>
             <Col className='px-1' sm={8} md={6} lg={5} xl={5}>
-              { this.props.roles.includes('admin') ? (
+              {this.props.roles.includes('admin') ? (
                 <Card className='border-secondary'>
                   <Card.Header>{this.renderUsersHeader(true)}</Card.Header>
                   {this.renderUserTable(true)}
@@ -363,7 +363,7 @@ class Users extends Component {
                     maxPerPage={maxSystemUsersPerPage}
                   />
                 </Card>
-              ) : null }
+              ) : null}
               <Card className='border-secondary mt-2'>
                 <Card.Header>{this.renderUsersHeader()}</Card.Header>
                 {this.renderUserTable()}

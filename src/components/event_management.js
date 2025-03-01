@@ -9,7 +9,7 @@ import DeleteModal from './delete_modal'
 import EventShowDetailsModal from './event_show_details_modal'
 import CustomPagination from './custom_pagination'
 import ExportDropdown from './export_dropdown'
-import { get_events, get_events_count, get_events_by_cruise, get_events_count_by_cruise, get_cruises } from '../api'
+import { get_events, get_events_count, get_cruises } from '../api'
 import * as mapDispatchToProps from '../actions'
 
 const maxEventsPerPage = 15
@@ -26,7 +26,7 @@ class EventManagement extends Component {
       events: [],
       fetching: false,
       hideASNAP: true,
-      startTS: null,
+      startTS: null
     }
 
     this.handleEventUpdate = this.handleEventUpdate.bind(this)
@@ -41,7 +41,6 @@ class EventManagement extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
     if (prevProps.roles != this.props.roles) {
       this.initStartTS()
     }
@@ -62,14 +61,11 @@ class EventManagement extends Component {
   }
 
   async initStartTS() {
-    console.log("pre-roles")
     if (!this.props.roles) {
-      console.log("no roles")
       return
     }
 
     if (this.props.roles && !this.props.roles.includes('admin')) {
-      console.log("not admin")
       let query = {
         startTS: new Date().toISOString()
       }
@@ -79,11 +75,10 @@ class EventManagement extends Component {
 
       if (cruises.length) {
         this.setState({ startTS: cruises[0].start_ts })
-      }
-      else {
+      } else {
         const cruises = await get_cruises()
         if (cruises.length) {
-          this.setState({ startTS: cruises[cruises.length-1].stop_ts })
+          this.setState({ startTS: cruises[cruises.length - 1].stop_ts })
         }
       }
     }
@@ -154,7 +149,6 @@ class EventManagement extends Component {
     this.fetchEvents()
   }
 
-
   handleEventShowDetailsModal(event) {
     this.props.showModal('eventShowDetails', {
       event: event,
@@ -198,9 +192,6 @@ class EventManagement extends Component {
   //   this.fetchEvents()
   //   this.fetchEventsCount()
   // }
-
-
-
 
   // async fetchEvents() {
   //   this.setState({ fetching: true })
