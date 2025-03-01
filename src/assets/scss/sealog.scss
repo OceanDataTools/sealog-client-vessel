@@ -15,6 +15,15 @@
 // @import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
 // @import "~@fortawesome/fontawesome-free/scss/solid.scss";
 
+.accordion-button {
+  padding: 12px;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: $gray-100;
+  border: #ccc, 4px, solid;
+}
+
 .btn-outline-secondary {
   border-color: $gray-600;
 }

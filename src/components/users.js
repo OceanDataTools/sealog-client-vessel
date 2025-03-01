@@ -351,17 +351,19 @@ class Users extends Component {
           <UserPermissionsModal onClose={this.props.fetchCruises} />
           <Row className='py-2 px-1 d-flex justify-content-center'>
             <Col className='px-1' sm={8} md={6} lg={5} xl={5}>
-              <Card className='border-secondary'>
-                <Card.Header>{this.renderUsersHeader(true)}</Card.Header>
-                {this.renderUserTable(true)}
-                <CustomPagination
-                  className='mt-2'
-                  page={this.state.activeSystemPage}
-                  count={filteredSystemUsers}
-                  pageSelectFunc={(eventKey) => this.handlePageSelect(eventKey, true)}
-                  maxPerPage={maxSystemUsersPerPage}
-                />
-              </Card>
+              { this.props.roles.includes('admin') ? (
+                <Card className='border-secondary'>
+                  <Card.Header>{this.renderUsersHeader(true)}</Card.Header>
+                  {this.renderUserTable(true)}
+                  <CustomPagination
+                    className='mt-2'
+                    page={this.state.activeSystemPage}
+                    count={filteredSystemUsers}
+                    pageSelectFunc={(eventKey) => this.handlePageSelect(eventKey, true)}
+                    maxPerPage={maxSystemUsersPerPage}
+                  />
+                </Card>
+              ) : null }
               <Card className='border-secondary mt-2'>
                 <Card.Header>{this.renderUsersHeader()}</Card.Header>
                 {this.renderUserTable()}

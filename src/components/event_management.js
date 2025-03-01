@@ -20,16 +20,15 @@ class EventManagement extends Component {
     super(props)
 
     this.state = {
-      hideASNAP: true,
-      cruise_id: null,
       activePage: 1,
-      fetching: false,
-      events: [],
       eventCount: 0,
-      eventFilter: {}
+      eventFilter: {},
+      events: [],
+      fetching: false,
+      hideASNAP: true,
+      startTS: null,
     }
 
-    this.initEvents = this.initEvents.bind(this)
     this.handleEventUpdate = this.handleEventUpdate.bind(this)
     this.handleEventDelete = this.handleEventDelete.bind(this)
     this.handlePageSelect = this.handlePageSelect.bind(this)
@@ -38,12 +37,13 @@ class EventManagement extends Component {
   }
 
   componentDidMount() {
-    this.initEvents()
+    this.initStartTS()
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.roles !== this.props.roles) {
-      this.initEvents()
+
+    if (prevProps.roles != this.props.roles) {
+      this.initStartTS()
     }
 
     if (prevState.activePage !== this.state.activePage) {
@@ -51,46 +51,74 @@ class EventManagement extends Component {
     }
 
     if (prevState.eventFilter !== this.state.eventFilter) {
-      if (this.state.activePage > 1) {
-        this.setState({ activePage: 1 })
-      } else {
-        this.fetchEvents()
-      }
-      this.fetchEventsCount()
+      this.setState({ activePage: 1 })
+      this.fetchEvents()
     }
 
     if (prevState.hideASNAP !== this.state.hideASNAP) {
       this.setState({ activePage: 1 })
       this.fetchEvents()
-      this.fetchEventsCount()
     }
   }
 
-  handlePageSelect(eventKey) {
-    this.setState({ activePage: eventKey })
+  async initStartTS() {
+    console.log("pre-roles")
+    if (!this.props.roles) {
+      console.log("no roles")
+      return
+    }
+
+    if (this.props.roles && !this.props.roles.includes('admin')) {
+      console.log("not admin")
+      let query = {
+        startTS: new Date().toISOString()
+      }
+
+      query.stopTS = query.startTS
+      const cruises = await get_cruises(query)
+
+      if (cruises.length) {
+        this.setState({ startTS: cruises[0].start_ts })
+      }
+      else {
+        const cruises = await get_cruises()
+        if (cruises.length) {
+          this.setState({ startTS: cruises[cruises.length-1].stop_ts })
+        }
+      }
+    }
+
+    this.fetchEvents()
+  }
+
+  async fetchEvents() {
+    this.setState({ fetching: true })
+
+    if (this.props.roles && !this.props.roles.includes('admin') && !this.state.startTS) {
+      this.setState({ fetching: false })
+      return
+    }
+
+    let eventFilter_value = this.state.eventFilter.value ? this.state.eventFilter.value : this.state.hideASNAP ? '!ASNAP' : null
+
+    let query = {
+      startTS: this.state.startTS,
+      ...this.state.eventFilter,
+      value: eventFilter_value ? eventFilter_value.split(',') : null,
+      sort: 'newest',
+      offset: (this.state.activePage - 1) * maxEventsPerPage,
+      limit: maxEventsPerPage
+    }
+
+    const events = await get_events(query)
+    const eventCount = await get_events_count(query)
+    this.setState({ events, eventCount, fetching: false })
   }
 
   handleEventCommentModal(event) {
     this.props.showModal('eventComment', {
       event: event,
       handleUpdateEvent: this.handleEventUpdate
-    })
-  }
-
-  updateEventFilter(filter = {}) {
-    this.setState({ eventFilter: filter })
-  }
-
-  async handleEventUpdate(formProps) {
-    await this.props.updateEvent(formProps)
-    this.fetchEvents()
-  }
-
-  handleEventDeleteModal(event) {
-    this.props.showModal('deleteModal', {
-      id: event.id,
-      handleDelete: this.handleEventDelete,
-      message: 'this event'
     })
   }
 
@@ -109,75 +137,29 @@ class EventManagement extends Component {
     }
   }
 
+  handleEventDeleteModal(event) {
+    this.props.showModal('deleteModal', {
+      id: event.id,
+      handleDelete: this.handleEventDelete,
+      message: 'this event'
+    })
+  }
+
+  handlePageSelect(eventKey) {
+    this.setState({ activePage: eventKey })
+  }
+
+  async handleEventUpdate(formProps) {
+    await this.props.updateEvent(formProps)
+    this.fetchEvents()
+  }
+
+
   handleEventShowDetailsModal(event) {
     this.props.showModal('eventShowDetails', {
       event: event,
       handleUpdateEvent: this.handleEventUpdate
     })
-  }
-
-  async initEvents() {
-    if (!this.props.roles) {
-      return
-    }
-
-    if (this.props.roles && !this.props.roles.includes('admin')) {
-      let query = {
-        startTS: new Date().toISOString()
-      }
-
-      query.stopTS = query.startTS
-      const cruises = await get_cruises(query)
-
-      if (cruises.length) {
-        this.setState({ cruise_id: cruises[0].id })
-      } else {
-        this.setState({ events: [], eventCount: 0, fetching: false })
-        return
-      }
-    }
-
-    this.fetchEvents()
-    this.fetchEventsCount()
-  }
-
-  async fetchEvents() {
-    this.setState({ fetching: true })
-
-    if (this.props.roles && !this.props.roles.includes('admin') && !this.state.cruise_id) {
-      this.setState({ fetching: false })
-      return
-    }
-
-    let eventFilter_value = this.state.eventFilter.value ? this.state.eventFilter.value : this.state.hideASNAP ? '!ASNAP' : null
-
-    let query = {
-      ...this.state.eventFilter,
-      value: eventFilter_value ? eventFilter_value.split(',') : null,
-      sort: 'newest',
-      offset: (this.state.activePage - 1) * maxEventsPerPage,
-      limit: maxEventsPerPage
-    }
-
-    const events = this.state.cruise_id ? await get_events_by_cruise(query, this.state.cruise_id) : await get_events(query)
-    this.setState({ events, fetching: false })
-  }
-
-  async fetchEventsCount() {
-    if (this.props.roles && !this.props.roles.includes('admin') && !this.state.cruise_id) {
-      return
-    }
-
-    let eventFilter_value = this.state.eventFilter.value ? this.state.eventFilter.value : this.state.hideASNAP ? '!ASNAP' : null
-
-    let query = {
-      ...this.state.eventFilter,
-      value: eventFilter_value ? eventFilter_value.split(',') : null,
-      sort: 'newest'
-    }
-    const eventCount = this.state.cruise_id ? await get_events_count_by_cruise(query, this.state.cruise_id) : await get_events_count(query)
-
-    this.setState({ eventCount })
   }
 
   async toggleASNAP() {
@@ -187,6 +169,77 @@ class EventManagement extends Component {
     }))
     this.fetchEvents()
   }
+
+  updateEventFilter(filter = {}) {
+    this.setState({ eventFilter: filter })
+  }
+
+  // async initEvents() {
+  //   if (!this.props.roles) {
+  //     return
+  //   }
+
+  //   if (this.props.roles && !this.props.roles.includes('admin')) {
+  //     let query = {
+  //       startTS: new Date().toISOString()
+  //     }
+
+  //     query.stopTS = query.startTS
+  //     const cruises = await get_cruises(query)
+
+  //     if (cruises.length) {
+  //       this.setState({ cruise_id: cruises[0].id })
+  //     } else {
+  //       this.setState({ events: [], eventCount: 0, fetching: false })
+  //       return
+  //     }
+  //   }
+
+  //   this.fetchEvents()
+  //   this.fetchEventsCount()
+  // }
+
+
+
+
+  // async fetchEvents() {
+  //   this.setState({ fetching: true })
+
+  //   if (this.props.roles && !this.props.roles.includes('admin') && !this.state.cruise_id) {
+  //     this.setState({ fetching: false })
+  //     return
+  //   }
+
+  //   let eventFilter_value = this.state.eventFilter.value ? this.state.eventFilter.value : this.state.hideASNAP ? '!ASNAP' : null
+
+  //   let query = {
+  //     ...this.state.eventFilter,
+  //     value: eventFilter_value ? eventFilter_value.split(',') : null,
+  //     sort: 'newest',
+  //     offset: (this.state.activePage - 1) * maxEventsPerPage,
+  //     limit: maxEventsPerPage
+  //   }
+
+  //   const events = this.state.cruise_id ? await get_events_by_cruise(query, this.state.cruise_id) : await get_events(query)
+  //   this.setState({ events, fetching: false })
+  // }
+
+  // async fetchEventsCount() {
+  //   if (this.props.roles && !this.props.roles.includes('admin') && !this.state.cruise_id) {
+  //     return
+  //   }
+
+  //   let eventFilter_value = this.state.eventFilter.value ? this.state.eventFilter.value : this.state.hideASNAP ? '!ASNAP' : null
+
+  //   let query = {
+  //     ...this.state.eventFilter,
+  //     value: eventFilter_value ? eventFilter_value.split(',') : null,
+  //     sort: 'newest'
+  //   }
+  //   const eventCount = this.state.cruise_id ? await get_events_count_by_cruise(query, this.state.cruise_id) : await get_events_count(query)
+
+  //   this.setState({ eventCount })
+  // }
 
   renderEventListHeader() {
     const Label = 'Filtered Events'
@@ -249,7 +302,7 @@ class EventManagement extends Component {
           <FontAwesomeIcon className={'text-danger me-1'} onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth />
         )
         let deleteTooltip =
-          this.props.roles && this.props.roles.includes('admin') ? (
+          this.props.roles && this.props.roles.some((role) => ['admin', 'event_manager'].includes(role)) ? (
             <OverlayTrigger placement='top' overlay={<Tooltip id={`deleteTooltip_${event.id}`}>Delete this event</Tooltip>}>
               {deleteIcon}
             </OverlayTrigger>

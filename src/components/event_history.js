@@ -11,7 +11,7 @@ import ImageryCards from './imagery_cards'
 import ImagePreviewModal from './image_preview_modal'
 import { Client } from '@hapi/nes/lib/client'
 import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER, WS_ROOT_URL } from '../client_settings'
-import { authorizationHeader, get_events, get_event_exports, handle_image_file_download } from '../api'
+import { authorizationHeader, get_cruises, get_events, get_event_exports, handle_image_file_download } from '../api'
 import * as mapDispatchToProps from '../actions'
 
 const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES, ...IMAGES_AUX_DATA_SOURCES]))
@@ -26,6 +26,7 @@ class EventHistory extends Component {
 
     this.state = {
       activePage: 1,
+      startTS: null,
       event: {},
       events: [],
       fetching: false,
@@ -34,7 +35,7 @@ class EventHistory extends Component {
       showEventHistory: true,
       showExpandedEventHistory: false,
       filterTimer: null,
-      eventFilterValue: null
+      eventFilter: null
     }
 
     this.client = new Client(`${WS_ROOT_URL}`)
@@ -52,8 +53,8 @@ class EventHistory extends Component {
 
   componentDidMount() {
     if (this.props.authenticated) {
+      this.initStartTS()
       this.fetchEvents()
-      this.fetchEventExport()
       this.connectToWS()
     }
   }
@@ -63,7 +64,7 @@ class EventHistory extends Component {
       this.fetchEvents()
     }
 
-    if (prevState.eventFilterValue !== this.state.eventFilterValue) {
+    if (prevState.eventFilter !== this.state.eventFilter) {
       this.setState({ activePage: 1 })
       this.fetchEvents()
     }
@@ -82,7 +83,6 @@ class EventHistory extends Component {
     if (this.props.authenticated) {
       this.client.disconnect()
     }
-    // this.props.fetchSelectedEvent()
   }
 
   async connectToWS() {
@@ -127,21 +127,55 @@ class EventHistory extends Component {
     }
   }
 
+  async initStartTS() {
+    if (!this.props.roles) {
+      return
+    }
+
+    if (this.props.roles && !this.props.roles.includes('admin')) {
+      let query = {
+        startTS: new Date().toISOString()
+      }
+
+      query.stopTS = query.startTS
+      const cruises = await get_cruises(query)
+
+      if (cruises.length) {
+        this.setState({ startTS: cruises[0].start_ts })
+      }
+      else {
+        const cruises = await get_cruises()
+        if (cruises.length) {
+          console.log(cruises[cruises.length-1].stop_ts)
+          this.setState({ startTS: cruises[cruises.length-1].stop_ts })
+        }
+      }
+    }
+
+    this.fetchEvents()
+  }
+
   async fetchEvents() {
     this.setState({ fetching: true })
 
-    let eventFilterValue = this.state.eventFilterValue ? this.state.eventFilterValue : null
+    if (this.props.roles && !this.props.roles.includes('admin') && !this.state.startTS) {
+      this.setState({ fetching: false })
+      return
+    }
+
+    let eventFilter_value = this.state.eventFilter ? this.state.eventFilter : this.state.hideASNAP ? '!ASNAP' : null
 
     let query = {
-      value: this.state.hideASNAP ? ['!ASNAP'] : null,
-      fulltext: eventFilterValue ? eventFilterValue.split(',') : null,
+      startTS: this.state.startTS,
+      ...this.state.eventFilter,
+      value: eventFilter_value ? eventFilter_value.split(',') : null,
       sort: 'newest',
       offset: (this.state.activePage - 1) * maxEventsPerPage,
       limit: maxEventsPerPage
     }
 
     const events = await get_events(query)
-    this.setState({ events, fetching: false })
+    this.setState({ events, event: {}, fetching: false })
     if (events.length) {
       this.fetchEventExport(events[0].id)
     }
@@ -475,13 +509,15 @@ class EventHistory extends Component {
 EventHistory.propTypes = {
   authenticated: PropTypes.bool.isRequired,
   className: PropTypes.string.isRequired,
+  roles: PropTypes.array,
   showModal: PropTypes.func.isRequired,
   updateEvent: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => {
   return {
-    authenticated: state.auth.authenticated
+    authenticated: state.auth.authenticated,
+    roles: state.user.profile.roles
   }
 }
 

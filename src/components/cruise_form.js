@@ -11,10 +11,8 @@ import { FilePond } from 'react-filepond'
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard'
 import { authorizationHeader, handle_cruise_file_delete, handle_cruise_file_download, CRUISE_ROUTE } from '../api'
 import { API_ROOT_URL, CRUISE_ID_PLACEHOLDER, CRUISE_ID_REGEX, DEFAULT_VESSEL } from '../client_settings'
-import { _Cruise_, _cruise_ } from '../vocab'
+import { _Cruise_, _cruise_, _cruises_ } from '../vocab'
 import * as mapDispatchToProps from '../actions'
-
-const start_ts = moment.utc().set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0)
 
 class CruiseForm extends Component {
   constructor(props) {
@@ -286,7 +284,14 @@ class CruiseForm extends Component {
         </Card>
       )
     } else {
-      return null
+      return (
+        <Card>
+        <Card.Header>Update { _Cruise_ }</Card.Header>
+        <Card.Body className='cruise_form'>
+          {`Sorry... there are no currently active ${_cruises_} for you to edit.`}
+        </Card.Body>
+        </Card>
+      )
     }
   }
 }
@@ -368,7 +373,7 @@ const warn = (formProps) => {
 
 const mapStateToProps = (state) => {
   let initialValues = {
-    start_ts,
+    start_ts: moment.utc().set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0),
     ...{ cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL } },
     ...state.cruise.cruise
   }
