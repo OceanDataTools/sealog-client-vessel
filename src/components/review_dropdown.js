@@ -33,13 +33,13 @@ class ReviewDropdown extends Component {
           </Dropdown.Toggle>
           <Dropdown.Menu>
             {this.props.activeMode !== 'Replay' ? (
-              <Dropdown.Item key='replay' onClick={() => this.props.gotoCruiseReplay(this.props.cruiseID)}>
+              <Dropdown.Item key='replay' onClick={() => this.props.gotoReviewReplay(this.props.cruiseID)}>
                 Replay View
               </Dropdown.Item>
             ) : null}
             {this.props.activeMode ? null : <Dropdown.Divider />}
             {this.props.activeMode !== 'Map' ? (
-              <Dropdown.Item key='map' onClick={() => this.props.gotoCruiseMap(this.props.cruiseID)}>
+              <Dropdown.Item key='map' onClick={() => this.props.gotoReviewMap(this.props.cruiseID)}>
                 Map View
               </Dropdown.Item>
             ) : null}
@@ -56,8 +56,8 @@ ReviewDropdown.propTypes = {
   className: PropTypes.string,
   cruiseID: PropTypes.string,
   disabled: PropTypes.bool,
-  gotoCruiseMap: PropTypes.func.isRequired,
-  gotoCruiseReplay: PropTypes.func.isRequired,
+  gotoReviewMap: PropTypes.func.isRequired,
+  gotoReviewReplay: PropTypes.func.isRequired,
   id: PropTypes.string
 }
 

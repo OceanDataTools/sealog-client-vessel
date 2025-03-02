@@ -85,7 +85,7 @@ import { ROOT_PATH } from '../client_settings'
 const port = window.location.port ? ':' + window.location.port : ''
 export const resetURL = window.location.protocol + '//' + window.location.hostname + port + ROOT_PATH + 'resetPassword/'
 
-export const advanceCruiseReplayTo = (id) => {
+export const advanceReviewReplayTo = (id) => {
   return async (dispatch) => {
     const payload = (await get_event_exports({}, id)) || {}
 
@@ -347,7 +347,7 @@ export const eventUpdate = () => {
   }
 }
 
-export const eventUpdateCruiseReplay = () => {
+export const eventUpdateReviewReplay = () => {
   return async (dispatch, getState) => {
     dispatch({ type: EVENT_FETCHING, payload: true })
 
@@ -438,9 +438,9 @@ export const forgotPassword = ({ email, reCaptcha = null }) => {
   }
 }
 
-export const gotoCruiseMap = (id) => {
+export const gotoReviewMap = (id) => {
   return (dispatch) => {
-    return dispatch(push(`/cruise_map/${id}`))
+    return dispatch(push(`/review_map/${id}`))
   }
 }
 
@@ -450,9 +450,9 @@ export const gotoCruiseMenu = () => {
   }
 }
 
-export const gotoCruiseReplay = (id) => {
+export const gotoReviewReplay = (id) => {
   return (dispatch) => {
-    return dispatch(push(`/cruise_replay/${id}`))
+    return dispatch(push(`/review_replay/${id}`))
   }
 }
 
@@ -517,7 +517,7 @@ export const initCruise = (id) => {
   }
 }
 
-export const initCruiseReplay = (id) => {
+export const initReviewReplay = (id) => {
   return async (dispatch, getState) => {
     dispatch({ type: EVENT_FETCHING, payload: true })
     dispatch(initCruise(id))
@@ -537,7 +537,7 @@ export const initCruiseReplay = (id) => {
     dispatch({ type: INIT_EVENT, payload })
 
     if (payload.length) {
-      dispatch(advanceCruiseReplayTo(payload[0].id))
+      dispatch(advanceReviewReplayTo(payload[0].id))
     }
 
     return dispatch({ type: EVENT_FETCHING, payload: false })
@@ -739,7 +739,7 @@ export const updateCruiseError = (message) => {
   }
 }
 
-export const updateCruiseReplayEvent = (id) => {
+export const updateReviewReplayEvent = (id) => {
   return async (dispatch) => {
     const payload = await get_event_exports({}, id)
     return dispatch({ type: UPDATE_EVENT, payload })

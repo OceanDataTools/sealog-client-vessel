@@ -2,20 +2,16 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import moment from 'moment'
-import { Map, TileLayer, WMSTileLayer, Marker, Polyline, Popup, LayersControl, ScaleControl, CircleMarker } from 'react-leaflet'
-import L from 'leaflet'
 import { ButtonToolbar, Row, Col, Card, Tooltip, OverlayTrigger, ListGroup } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import Slider from 'rc-slider'
 import CustomPagination from './custom_pagination'
+import TracklineMap from './trackline_map'
 import EventCommentModal from './event_comment_modal'
 import EventFilterForm from './event_filter_form'
 import EventShowDetailsModal from './event_show_details_modal'
 import ExportDropdown from './export_dropdown'
 import ReviewDropdown from './review_dropdown'
-import { get_event_aux_data_by_cruise } from '../api'
-import { POSITION_DATASOURCES } from '../client_settings'
-import { TILE_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers'
 import { _Cruises_ } from '../vocab'
 import * as mapDispatchToProps from '../actions'
 
@@ -23,40 +19,28 @@ const SliderWithTooltip = Slider.createSliderWithTooltip(Slider)
 
 const maxEventsPerPage = 10
 
-const { BaseLayer } = LayersControl
-
-class CruiseMap extends Component {
+class ReviewMap extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
       fetching: false,
-      tracklines: {},
 
       posDataSource: null,
 
       replayEventIndex: 0,
       activePage: 1,
-      sliderTimer: null,
-
-      zoom: 13,
-      center: DEFAULT_LOCATION,
-      position: DEFAULT_LOCATION,
-      showMarker: false,
-      height: '480px'
+      sliderTimer: null
     }
 
     this.sliderRef = React.createRef() // Reference to the slider
 
-    this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this)
+    this.handleReviewModeSelect = this.handleReviewModeSelect.bind(this)
     this.handleEventClick = this.handleEventClick.bind(this)
     this.handleKeyDown = this.handleKeyDown.bind(this)
-    this.handleMoveEnd = this.handleMoveEnd.bind(this)
     this.handlePageSelect = this.handlePageSelect.bind(this)
     this.handleSliderChange = this.handleSliderChange.bind(this)
     this.handleSliderChangeComplete = this.handleSliderChangeComplete.bind(this)
-    this.handleZoomEnd = this.handleZoomEnd.bind(this)
-    this.initMapView = this.initMapView.bind(this)
     this.sliderTooltipFormatter = this.sliderTooltipFormatter.bind(this)
     this.toggleASNAP = this.toggleASNAP.bind(this)
     this.updateEventFilter = this.updateEventFilter.bind(this)
@@ -64,7 +48,7 @@ class CruiseMap extends Component {
 
   componentDidMount() {
     if (!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
-      this.props.initCruiseReplay(this.props.match.params.id)
+      this.props.initReviewReplay(this.props.match.params.id)
     } else {
       const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id)
       this.setState({
@@ -74,12 +58,6 @@ class CruiseMap extends Component {
     }
 
     document.addEventListener('keydown', this.handleKeyDown)
-
-    this.initCruiseTrackline(this.props.match.params.id)
-  }
-
-  componentDidUpdate() {
-    this.map.leafletElement.invalidateSize()
   }
 
   componentWillUnmount() {
@@ -92,16 +70,16 @@ class CruiseMap extends Component {
 
   updateEventFilter(filter = {}) {
     this.setState({ activePage: 1, replayEventIndex: 0 })
-    this.props.advanceCruiseReplayTo(this.props.event.events[0].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
     this.props.updateEventFilterForm(filter)
-    this.props.eventUpdateCruiseReplay()
+    this.props.eventUpdateReviewReplay()
   }
 
   toggleASNAP() {
     this.props.toggleASNAP()
     this.setState({ replayEventIndex: 0 })
-    this.props.advanceCruiseReplayTo(this.props.event.events[0].id)
-    this.props.eventUpdateCruiseReplay()
+    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
+    this.props.eventUpdateReviewReplay()
     this.handleEventClick(0)
   }
 
@@ -119,7 +97,7 @@ class CruiseMap extends Component {
       clearTimeout(this.state.sliderTimer)
       this.setState({
         sliderTimer: setTimeout(() => {
-          this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+          this.props.advanceReviewReplayTo(this.props.event.events[index].id)
           this.setState({
             activePage: Math.ceil((index + 1) / maxEventsPerPage)
           })
@@ -130,7 +108,7 @@ class CruiseMap extends Component {
 
   handleEventClick(index) {
     this.setState({ replayEventIndex: index })
-    this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[index].id)
     if (this.props.event.events && this.props.event.events.length > index) {
       this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
     }
@@ -138,7 +116,7 @@ class CruiseMap extends Component {
 
   handleEventCommentModal(index) {
     this.setState({ replayEventIndex: index })
-    this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[index].id)
     this.props.showModal('eventComment', {
       event: this.props.event.events[index],
       handleUpdateEvent: this.props.updateEvent
@@ -150,7 +128,7 @@ class CruiseMap extends Component {
       activePage: page,
       replayEventIndex: (page - 1) * maxEventsPerPage
     })
-    this.props.advanceCruiseReplayTo(this.props.event.events[(page - 1) * maxEventsPerPage].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[(page - 1) * maxEventsPerPage].id)
   }
 
   handleKeyDown(event) {
@@ -180,12 +158,12 @@ class CruiseMap extends Component {
       }))
     }
 
-    this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
   }
 
-  handleCruiseModeSelect(mode) {
+  handleReviewModeSelect(mode) {
     if (mode === 'Replay') {
-      this.props.gotoCruiseReplay(this.props.match.params.id)
+      this.props.gotoReviewReplay(this.props.match.params.id)
     }
   }
 
@@ -193,76 +171,6 @@ class CruiseMap extends Component {
     const sliderHandle = this.sliderRef.current?.querySelector('.rc-slider-handle')
     if (sliderHandle) {
       sliderHandle.blur()
-    }
-  }
-
-  async initCruiseTrackline(id) {
-    this.setState({ fetching: true })
-
-    let tracklines = {}
-
-    for (const datasource of POSITION_DATASOURCES) {
-      let trackline = {
-        eventIDs: [],
-        polyline: L.polyline([]),
-        startPoint: null,
-        endPoint: null
-      }
-
-      const aux_data = await get_event_aux_data_by_cruise({ datasource }, id)
-
-      if (!aux_data.length) {
-        console.debug(`No data found for ${datasource}`)
-        continue
-      }
-
-      aux_data.forEach((r_data) => {
-        try {
-          const latLng = [
-            parseFloat(r_data['data_array'].find((data) => data['data_name'] == 'latitude')['data_value']),
-            parseFloat(r_data['data_array'].find((data) => data['data_name'] == 'longitude')['data_value'])
-          ]
-
-          if (latLng[0] != 0 && latLng[1] != 0) {
-            trackline.polyline.addLatLng(latLng)
-            trackline.eventIDs.push(r_data['event_id'])
-            if (trackline.startPoint === null) {
-              trackline.startPoint = latLng
-            }
-            trackline.endPoint = latLng
-          }
-        } catch {
-          console.error('Problem parsing', r_data['data_array'])
-        }
-      })
-
-      if (trackline.eventIDs) {
-        tracklines[datasource] = trackline
-        this.setState({ tracklines, posDataSource: datasource })
-        break
-      }
-    }
-
-    this.setState({ fetching: false })
-    this.initMapView()
-  }
-
-  initMapView() {
-    if (this.state.tracklines[this.state.posDataSource] && !this.state.tracklines[this.state.posDataSource].polyline.isEmpty()) {
-      this.map.leafletElement.panTo(this.state.tracklines[this.state.posDataSource].polyline.getBounds().getCenter())
-      this.map.leafletElement.fitBounds(this.state.tracklines[this.state.posDataSource].polyline.getBounds())
-    }
-  }
-
-  handleZoomEnd() {
-    if (this.map) {
-      this.setState({ zoom: this.map.leafletElement.getZoom() })
-    }
-  }
-
-  handleMoveEnd() {
-    if (this.map) {
-      this.setState({ center: this.map.leafletElement.getCenter() })
     }
   }
 
@@ -406,74 +314,7 @@ class CruiseMap extends Component {
     )
   }
 
-  renderMarker() {
-    if (!this.props.event.selected_event) {
-      return null
-    }
-
-    if (
-      this.props.event.selected_event.aux_data &&
-      typeof this.props.event.selected_event.aux_data.find((data) => data['data_source'] === this.state.posDataSource) !== 'undefined'
-    ) {
-      const posData = this.props.event.selected_event.aux_data.find((data) => data['data_source'] === this.state.posDataSource)
-      try {
-        const latLng = [
-          parseFloat(posData['data_array'].find((data) => data['data_name'] == 'latitude')['data_value']),
-          parseFloat(posData['data_array'].find((data) => data['data_name'] == 'longitude')['data_value'])
-        ]
-        return (
-          <Marker position={latLng}>
-            <Popup>You are here! :-)</Popup>
-          </Marker>
-        )
-      } catch (err) {
-        return null
-      }
-    }
-  }
-
   render() {
-    const baseLayers = TILE_LAYERS.map((layer, index) => {
-      if (layer.wms) {
-        return (
-          <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name}>
-            <WMSTileLayer attribution={layer.attribution} url={layer.url} layers={layer.layers} transparent={layer.transparent} />
-          </BaseLayer>
-        )
-      } else {
-        return (
-          <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name}>
-            <TileLayer
-              attribution={layer.attribution}
-              url={layer.url}
-              tms={layer.tms ?? false}
-              zoomOffset={layer.zoomOffset ?? 0}
-              maxNativeZoom={layer.maxNativeZoom}
-            />
-          </BaseLayer>
-        )
-      }
-    })
-
-    let trackLine = null
-
-    for (const datasource of POSITION_DATASOURCES) {
-      if (this.state.tracklines[datasource] && !this.state.tracklines[datasource].polyline.isEmpty()) {
-        trackLine = <Polyline color='yellow' positions={this.state.tracklines[datasource].polyline.getLatLngs()} />
-        break
-      }
-    }
-
-    const startMarker = //null
-      this.state.tracklines[this.state.posDataSource] && !this.state.tracklines[this.state.posDataSource].startPoint !== null ? (
-        <CircleMarker center={this.state.tracklines[this.state.posDataSource].startPoint} radius={3} color={'green'} />
-      ) : null
-
-    const endMarker = //null
-      this.state.tracklines[this.state.posDataSource] && !this.state.tracklines[this.state.posDataSource].endPoint !== null ? (
-        <CircleMarker center={this.state.tracklines[this.state.posDataSource].endPoint} radius={3} color={'red'} />
-      ) : null
-
     return (
       <div className='pt-2 px-1'>
         <EventCommentModal />
@@ -504,21 +345,7 @@ class CruiseMap extends Component {
         <Row>
           <Col className='px-1' sm={12}>
             <Card className='border-secondary'>
-              <Map
-                style={{ height: this.state.height }}
-                center={this.state.center}
-                zoom={this.state.zoom}
-                onMoveEnd={this.handleMoveEnd}
-                onZoomEnd={this.handleZoomEnd}
-                ref={(map) => (this.map = map)}
-              >
-                <ScaleControl position='bottomleft' />
-                <LayersControl position='topright'>{baseLayers}</LayersControl>
-                {trackLine}
-                {startMarker}
-                {endMarker}
-                {this.renderMarker()}
-              </Map>
+              <TracklineMap selectedEvent={this.props.event.selected_event} id={this.props.match.params.id} />
             </Card>
           </Col>
         </Row>
@@ -554,14 +381,14 @@ class CruiseMap extends Component {
   }
 }
 
-CruiseMap.propTypes = {
-  advanceCruiseReplayTo: PropTypes.func.isRequired,
+ReviewMap.propTypes = {
+  advanceReviewReplayTo: PropTypes.func.isRequired,
   cruise: PropTypes.object.isRequired,
   event: PropTypes.object.isRequired,
-  eventUpdateCruiseReplay: PropTypes.func.isRequired,
+  eventUpdateReviewReplay: PropTypes.func.isRequired,
   gotoCruiseMenu: PropTypes.func.isRequired,
-  gotoCruiseReplay: PropTypes.func.isRequired,
-  initCruiseReplay: PropTypes.func.isRequired,
+  gotoReviewReplay: PropTypes.func.isRequired,
+  initReviewReplay: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired,
   roles: PropTypes.array,
   showModal: PropTypes.func.isRequired,
@@ -578,4 +405,4 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CruiseMap)
+export default connect(mapStateToProps, mapDispatchToProps)(ReviewMap)

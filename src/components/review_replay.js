@@ -32,7 +32,7 @@ const FREV = 3
 
 const excludeAuxDataSources = Array.from(new Set([...EXCLUDE_AUX_DATA_SOURCES, ...IMAGES_AUX_DATA_SOURCES]))
 
-class CruiseReplay extends Component {
+class ReviewReplay extends Component {
   constructor(props) {
     super(props)
 
@@ -47,8 +47,8 @@ class CruiseReplay extends Component {
 
     this.sliderRef = React.createRef() // Reference to the slider
 
-    this.handleCruiseModeSelect = this.handleCruiseModeSelect.bind(this)
-    this.handleCruiseReplayPause = this.handleCruiseReplayPause.bind(this)
+    this.handleReviewModeSelect = this.handleReviewModeSelect.bind(this)
+    this.handleReviewReplayPause = this.handleReviewReplayPause.bind(this)
     this.handleEventClick = this.handleEventClick.bind(this)
     this.handleKeyDown = this.handleKeyDown.bind(this)
     this.handlePageSelect = this.handlePageSelect.bind(this)
@@ -64,7 +64,7 @@ class CruiseReplay extends Component {
 
   componentDidMount() {
     if (!this.props.cruise.id || this.props.cruise.id !== this.props.match.params.id || this.props.event.events.length === 0) {
-      this.props.initCruiseReplay(this.props.match.params.id)
+      this.props.initReviewReplay(this.props.match.params.id)
     } else {
       const eventIndex = this.props.event.events.findIndex((event) => event.id === this.props.event.selected_event.id)
       this.setState({
@@ -87,19 +87,19 @@ class CruiseReplay extends Component {
   }
 
   updateEventFilter(filter) {
-    this.handleCruiseReplayPause()
+    this.handleReviewReplayPause()
     this.setState({ activePage: 1, replayEventIndex: 0 })
-    this.props.advanceCruiseReplayTo(this.props.event.events[0].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
     this.props.updateEventFilterForm(filter)
-    this.props.eventUpdateCruiseReplay()
+    this.props.eventUpdateReviewReplay()
   }
 
   toggleASNAP() {
-    this.handleCruiseReplayPause()
+    this.handleReviewReplayPause()
     this.props.toggleASNAP()
     this.setState({ replayEventIndex: 0 })
-    this.props.advanceCruiseReplayTo(this.props.event.events[0].id)
-    this.props.eventUpdateCruiseReplay()
+    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
+    this.props.eventUpdateReviewReplay()
     this.handleEventClick(0)
   }
 
@@ -112,13 +112,13 @@ class CruiseReplay extends Component {
   }
 
   handleSliderChange(index) {
-    this.handleCruiseReplayPause()
+    this.handleReviewReplayPause()
     if (this.props.event.events && this.props.event.events[index]) {
       this.setState({ replayEventIndex: index })
       clearTimeout(this.state.sliderTimer)
       this.setState({
         sliderTimer: setTimeout(() => {
-          this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+          this.props.advanceReviewReplayTo(this.props.event.events[index].id)
           this.setState({
             activePage: Math.ceil((index + 1) / maxEventsPerPage)
           })
@@ -128,33 +128,33 @@ class CruiseReplay extends Component {
   }
 
   handleEventClick(index) {
-    this.handleCruiseReplayPause()
+    this.handleReviewReplayPause()
     this.setState({ replayEventIndex: index })
-    this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[index].id)
     if (this.props.event.events && this.props.event.events.length > index) {
       this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
     }
   }
 
   handleEventCommentModal(index) {
-    this.handleCruiseReplayPause()
+    this.handleReviewReplayPause()
     this.setState({ replayEventIndex: index })
     this.props.showModal('eventComment', {
       event: this.props.event.events[index],
       handleUpdateEvent: async (formProps) => {
         await this.props.updateEvent(formProps)
-        this.props.advanceCruiseReplayTo(this.props.event.events[index].id)
+        this.props.advanceReviewReplayTo(this.props.event.events[index].id)
       }
     })
   }
 
   handlePageSelect(page) {
-    this.handleCruiseReplayPause()
+    this.handleReviewReplayPause()
     this.setState({
       activePage: page,
       replayEventIndex: (page - 1) * maxEventsPerPage
     })
-    this.props.advanceCruiseReplayTo(this.props.event.events[(page - 1) * maxEventsPerPage].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[(page - 1) * maxEventsPerPage].id)
   }
 
   handleKeyDown(event) {
@@ -184,12 +184,12 @@ class CruiseReplay extends Component {
       }))
     }
 
-    this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
   }
 
-  handleCruiseModeSelect(mode) {
+  handleReviewModeSelect(mode) {
     if (mode === 'Map') {
-      this.props.gotoCruiseMap(this.props.match.params.id)
+      this.props.gotoReviewMap(this.props.match.params.id)
     }
   }
 
@@ -200,25 +200,25 @@ class CruiseReplay extends Component {
     }
   }
 
-  handleCruiseReplayStart() {
-    this.handleCruiseReplayPause()
+  handleReviewReplayStart() {
+    this.handleReviewReplayPause()
     this.setState({ replayEventIndex: 0 })
-    this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
     this.setState({
       activePage: Math.ceil((this.state.replayEventIndex + 1) / maxEventsPerPage)
     })
   }
 
-  handleCruiseReplayEnd() {
-    this.handleCruiseReplayPause()
+  handleReviewReplayEnd() {
+    this.handleReviewReplayPause()
     this.setState({ replayEventIndex: this.props.event.events.length - 1 })
-    this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
     this.setState({
       activePage: Math.ceil((this.state.replayEventIndex + 1) / maxEventsPerPage)
     })
   }
 
-  handleCruiseReplayFRev() {
+  handleReviewReplayFRev() {
     this.setState({ replayState: FREV })
     if (this.state.replayTimer !== null) {
       clearInterval(this.state.replayTimer)
@@ -226,7 +226,7 @@ class CruiseReplay extends Component {
     this.setState({ replayTimer: setInterval(this.replayReverse, ffwdTimer) })
   }
 
-  handleCruiseReplayPlay() {
+  handleReviewReplayPlay() {
     this.setState({ replayState: PLAY })
     if (this.state.replayTimer !== null) {
       clearInterval(this.state.replayTimer)
@@ -234,7 +234,7 @@ class CruiseReplay extends Component {
     this.setState({ replayTimer: setInterval(this.replayAdvance, playTimer) })
   }
 
-  handleCruiseReplayPause() {
+  handleReviewReplayPause() {
     this.setState({ replayState: PAUSE })
     if (this.state.replayTimer !== null) {
       clearInterval(this.state.replayTimer)
@@ -242,7 +242,7 @@ class CruiseReplay extends Component {
     this.setState({ replayTimer: null })
   }
 
-  handleCruiseReplayFFwd() {
+  handleReviewReplayFFwd() {
     this.setState({ replayState: FFWD })
     if (this.state.replayTimer !== null) {
       clearInterval(this.state.replayTimer)
@@ -256,7 +256,7 @@ class CruiseReplay extends Component {
         replayEventIndex: prevState.replayEventIndex + 1,
         activePage: Math.ceil((prevState.replayEventIndex + 2) / maxEventsPerPage)
       }))
-      this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+      this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
     } else {
       this.setState({ replayState: PAUSE })
     }
@@ -268,7 +268,7 @@ class CruiseReplay extends Component {
         replayEventIndex: prevState.replayEventIndex - 1,
         activePage: Math.ceil(prevState.replayEventIndex / maxEventsPerPage)
       }))
-      this.props.advanceCruiseReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+      this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
     } else {
       this.setState({ replayState: PAUSE })
     }
@@ -284,14 +284,14 @@ class CruiseReplay extends Component {
           <FontAwesomeIcon
             className='text-primary'
             key={`pause_${this.props.cruise.id}`}
-            onClick={() => this.handleCruiseReplayPause()}
+            onClick={() => this.handleReviewReplayPause()}
             icon='pause'
           />
         ) : (
           <FontAwesomeIcon
             className='text-primary'
             key={`play_${this.props.cruise.id}`}
-            onClick={() => this.handleCruiseReplayPlay()}
+            onClick={() => this.handleReviewReplayPlay()}
             icon='play'
           />
         )
@@ -302,26 +302,26 @@ class CruiseReplay extends Component {
             <FontAwesomeIcon
               className='text-primary'
               key={`start_${this.props.cruise.id}`}
-              onClick={() => this.handleCruiseReplayStart()}
+              onClick={() => this.handleReviewReplayStart()}
               icon='step-backward'
             />{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`frev_${this.props.cruise.id}`}
-              onClick={() => this.handleCruiseReplayFRev()}
+              onClick={() => this.handleReviewReplayFRev()}
               icon='backward'
             />{' '}
             {playPause}{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`ffwd_${this.props.cruise.id}`}
-              onClick={() => this.handleCruiseReplayFFwd()}
+              onClick={() => this.handleReviewReplayFFwd()}
               icon='forward'
             />{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`end_${this.props.cruise.id}`}
-              onClick={() => this.handleCruiseReplayEnd()}
+              onClick={() => this.handleReviewReplayEnd()}
               icon='step-forward'
             />
           </span>
@@ -346,7 +346,7 @@ class CruiseReplay extends Component {
               tipFormatter={this.sliderTooltipFormatter}
               trackStyle={{ opacity: 0.5 }}
               railStyle={{ opacity: 0.5 }}
-              onBeforeChange={this.handleCruiseReplayPause}
+              onBeforeChange={this.handleReviewReplayPause}
               onChange={this.handleSliderChange}
               onAfterChange={this.handleSliderChangeComplete}
               max={this.props.event.events.length - 1}
@@ -453,7 +453,7 @@ class CruiseReplay extends Component {
 
   render() {
     const event_free_text_card = this.props.event.selected_event.event_free_text ? (
-      <Col className='event-data-col' sm={6} md={4} lg={3}>
+      <Col className='event-data-col' sm={4} lg={3}>
         <Card className='event-data-card'>
           <Card.Header className='event-details'>Free-form Text</Card.Header>
           <Card.Body>{this.props.event.selected_event.event_free_text}</Card.Body>
@@ -498,11 +498,11 @@ class CruiseReplay extends Component {
           </Col>
         </Row>
         <Row>
-          <ImageryCards image_data_sources={image_data_sources} onClick={this.handleImagePreviewModal} lg={4} />
-          <AuxDataCards aux_data={aux_data} />
-          <EventOptionsCard event={this.props.event.selected_event} />
+          <ImageryCards image_data_sources={image_data_sources} onClick={this.handleImagePreviewModal} sm={4} lg={3} />
+          <AuxDataCards aux_data={aux_data} sm={4} lg={3} />
+          <EventOptionsCard event={this.props.event.selected_event} sm={4} lg={3} />
           {event_free_text_card}
-          <EventCommentCard event={this.props.event.selected_event} />
+          <EventCommentCard event={this.props.event.selected_event} sm={4} lg={3} />
         </Row>
         <Row>
           <Col className='px-1 mb-2' xl={12}>
@@ -536,14 +536,14 @@ class CruiseReplay extends Component {
   }
 }
 
-CruiseReplay.propTypes = {
-  advanceCruiseReplayTo: PropTypes.func.isRequired,
+ReviewReplay.propTypes = {
+  advanceReviewReplayTo: PropTypes.func.isRequired,
   cruise: PropTypes.object.isRequired,
   event: PropTypes.object.isRequired,
-  eventUpdateCruiseReplay: PropTypes.func.isRequired,
-  gotoCruiseMap: PropTypes.func.isRequired,
+  eventUpdateReviewReplay: PropTypes.func.isRequired,
+  gotoReviewMap: PropTypes.func.isRequired,
   gotoCruiseMenu: PropTypes.func.isRequired,
-  initCruiseReplay: PropTypes.func.isRequired,
+  initReviewReplay: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired,
   roles: PropTypes.array,
   showModal: PropTypes.func.isRequired,
@@ -560,4 +560,4 @@ const mapStateToProps = (state) => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CruiseReplay)
+export default connect(mapStateToProps, mapDispatchToProps)(ReviewReplay)

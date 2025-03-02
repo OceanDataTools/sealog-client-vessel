@@ -80,14 +80,14 @@ class CruiseMenu extends Component {
   handleCruiseSelectForReplay() {
     if (this.state.activeCruise) {
       this.props.clearEvents()
-      this.props.gotoCruiseReplay(this.state.activeCruise.id)
+      this.props.gotoReviewReplay(this.state.activeCruise.id)
     }
   }
 
   handleCruiseSelectForMap() {
     if (this.state.activeCruise) {
       this.props.clearEvents()
-      this.props.gotoCruiseMap(this.state.activeCruise.id)
+      this.props.gotoReviewMap(this.state.activeCruise.id)
     }
   }
 
@@ -427,8 +427,8 @@ CruiseMenu.propTypes = {
   cruise: PropTypes.object.isRequired,
   cruises: PropTypes.array.isRequired,
   fetchCruises: PropTypes.func.isRequired,
-  gotoCruiseMap: PropTypes.func.isRequired,
-  gotoCruiseReplay: PropTypes.func.isRequired
+  gotoReviewMap: PropTypes.func.isRequired,
+  gotoReviewReplay: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => {
