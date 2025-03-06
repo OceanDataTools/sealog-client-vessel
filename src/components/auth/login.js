@@ -125,7 +125,7 @@ class Login extends Component {
                     Forgot Password?
                   </Link>
                   <div className='pt-3'>
-                    Don`&apos;`t have an account?
+                    Don&apos;t have an account?
                     <Link className='btn btn-sm btn-outline-primary ms-2' to={'/register'}>
                       Register
                     </Link>
