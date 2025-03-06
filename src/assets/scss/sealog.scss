@@ -131,6 +131,10 @@ button.btn-template {
   display: flex;
 }
 
+.event-image-data-card {
+  font-size: .8rem;
+}
+
 .event-list-item {
   padding-left: 0.5rem !important;
   padding-right: 0.5rem !important;
@@ -185,6 +189,11 @@ div {
     padding: .5rem;
   }
 }
+
+.td {
+  color: $gray-200;
+}
+
 
 // react-datetime styles
 @import "~react-datetime/css/react-datetime.css";

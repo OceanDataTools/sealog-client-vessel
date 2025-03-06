@@ -77,6 +77,14 @@ class EventHistory extends Component {
     if (prevState.showNewEventDetails !== this.state.showNewEventDetails && this.state.showNewEventDetails && this.state.events.length) {
       this.fetchEventExport(this.state.events[0].id)
     }
+
+    if (prevState.events !== this.state.events) {
+      if (this.state.events.length === 0) {
+        this.setState({ event: {} })
+      } else if (prevState.event.id !== this.state.events[0].id) {
+        this.fetchEventExport(this.state.events[0].id)
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -165,7 +173,6 @@ class EventHistory extends Component {
 
     let query = {
       startTS: this.state.startTS,
-      ...this.state.eventFilter,
       value: eventFilter_value ? eventFilter_value.split(',') : null,
       sort: 'newest',
       offset: (this.state.activePage - 1) * maxEventsPerPage,
@@ -173,10 +180,7 @@ class EventHistory extends Component {
     }
 
     const events = await get_events(query)
-    this.setState({ events, event: {}, fetching: false })
-    if (events.length) {
-      this.fetchEventExport(events[0].id)
-    }
+    this.setState({ events, fetching: false })
   }
 
   async fetchEventExport(event_id = null) {
@@ -294,7 +298,7 @@ class EventHistory extends Component {
         ) : (
           <span onClick={() => this.handleEventCommentModal(event)} className='fa-layers fa-fw'>
             <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
-            <FontAwesomeIcon inverse icon='plus' fixedWidth transform='shrink-4' />
+            <FontAwesomeIcon inverse icon='plus' style={{ color: 'var(--bs-black)' }} fixedWidth transform='shrink-4' />
           </span>
         )
         let commentTooltip = comment_exists ? (

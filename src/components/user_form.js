@@ -6,8 +6,7 @@ import { Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderAlert, renderCheckboxGroup, renderMessage, renderSwitch, renderTextField } from './form_elements'
 import * as mapDispatchToProps from '../actions'
-import { standardUserRoleOptions } from '../standard_user_role_options'
-import { systemUserRoleOptions } from '../system_user_role_options'
+import { standardUserRoleOptions, systemUserRoleOptions } from '../user_role_options'
 
 class UserForm extends Component {
   componentWillUnmount() {

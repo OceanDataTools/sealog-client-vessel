@@ -258,9 +258,7 @@ class CruiseMenu extends Component {
 
         if (this.state.years.size > 1) {
           yearCards.unshift(
-            // <Card className='border-secondary' key={`year_${year}`}>
             <Accordion.Item eventKey={year} key={`year_${year}`}>
-              {/*<Accordion.Header as={Card.Header} ><h6>Year: {yearTxt}</h6></Accordion.Header>*/}
               <Accordion.Header>
                 <span>Year: {yearTxt}</span>
               </Accordion.Header>
@@ -268,14 +266,6 @@ class CruiseMenu extends Component {
                 <span>{yearCruises}</span>
               </Accordion.Body>
             </Accordion.Item>
-            // <Accordion.Toggle as={Card.Header} eventKey={year}>
-            // <h6>Year: {yearTxt}</h6>
-            // </Accordion.Toggle>
-            // <Accordion.Collapse eventKey={year}>
-            // <Card.Body className='py-2'>{yearCruises}</Card.Body>
-            // </Accordion.Collapse>
-
-            // </Card>
           )
         } else {
           yearCards.push(

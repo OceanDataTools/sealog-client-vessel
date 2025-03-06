@@ -23,7 +23,27 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
-      chunks: 'all'
+      chunks: 'all',
+      cacheGroups: {
+        moment: {
+          test: /[\\/]node_modules[\\/](moment)/,
+          name: 'moment',
+          chunks: 'all',
+          priority: 10
+        },
+        leaflet: {
+          test: /[\\/]node_modules[\\/](leaflet)/,
+          name: 'leaflet',
+          chunks: 'all',
+          priority: 10
+        },
+        filepond: {
+          test: /[\\/]node_modules[\\/](filepond)/,
+          name: 'filepond',
+          chunks: 'all',
+          priority: 10
+        }
+      }
     },
     runtimeChunk: 'single'
   },
@@ -90,8 +110,7 @@ module.exports = {
       template: './src/assets/index.html'
     }),
     new MiniCssExtractPlugin({
-      filename: 'style/[name].css',
-      chunkFilename: 'style/[id].css'
+      filename: 'style/[[name].[contenthash].css'
     }),
     new CopyPlugin({
       patterns: [{ from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' }]
