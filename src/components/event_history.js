@@ -298,7 +298,7 @@ class EventHistory extends Component {
         ) : (
           <span onClick={() => this.handleEventCommentModal(event)} className='fa-layers fa-fw'>
             <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
-            <FontAwesomeIcon inverse icon='plus' style={{ color: 'var(--bs-black)' }} fixedWidth transform='shrink-4' />
+            <FontAwesomeIcon icon='plus' fixedWidth transform='shrink-4' inverse />
           </span>
         )
         let commentTooltip = comment_exists ? (

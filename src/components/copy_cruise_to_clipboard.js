@@ -82,8 +82,8 @@ class CopyCruiseToClipboard extends Component {
 }
 
 CopyCruiseToClipboard.propTypes = {
-  cruise: PropTypes.object,
-  className: PropTypes.string
+  className: PropTypes.string,
+  cruise: PropTypes.object
 }
 
 export default compose(connect(null, mapDispatchToProps))(CopyCruiseToClipboard)

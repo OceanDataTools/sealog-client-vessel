@@ -408,7 +408,7 @@ class ReviewReplay extends Component {
             <OverlayTrigger placement='top' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>
               <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw'>
                 <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
-                <FontAwesomeIcon inverse style={active ? { color: 'var(--bs-primary)' } : ''} icon='plus' fixedWidth transform='shrink-4' />
+                <FontAwesomeIcon icon='plus' fixedWidth transform='shrink-4' inverse style={active ? { color: 'var(--bs-primary)' } : ''} />
               </span>
             </OverlayTrigger>
           )
