@@ -12,6 +12,7 @@ import EventCommentModal from './event_comment_modal'
 import EventFilterForm from './event_filter_form'
 import EventOptionsCard from './event_options_card'
 import ExportDropdown from './export_dropdown'
+import ImagePreviewModal from './image_preview_modal'
 import ImageryCards from './imagery_cards'
 import ReviewDropdown from './review_dropdown'
 import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_settings'
@@ -47,6 +48,7 @@ class ReviewReplay extends Component {
 
     this.sliderRef = React.createRef() // Reference to the slider
 
+    this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this)
     this.handleReviewModeSelect = this.handleReviewModeSelect.bind(this)
     this.handleReviewReplayPause = this.handleReviewReplayPause.bind(this)
     this.handleEventClick = this.handleEventClick.bind(this)
@@ -145,6 +147,13 @@ class ReviewReplay extends Component {
         await this.props.updateEvent(formProps)
         this.props.advanceReviewReplayTo(this.props.event.events[index].id)
       }
+    })
+  }
+
+  handleImagePreviewModal(source, filepath) {
+    this.props.showModal('imagePreview', {
+      name: source,
+      filepath: filepath
     })
   }
 
@@ -474,6 +483,7 @@ class ReviewReplay extends Component {
     return (
       <div className='pt-2 px-1'>
         <EventCommentModal />
+        <ImagePreviewModal />
         <Row>
           <ButtonToolbar className='mb-2 ms-1 align-items-center'>
             <span onClick={() => this.props.gotoCruiseMenu()} className='text-warning'>
