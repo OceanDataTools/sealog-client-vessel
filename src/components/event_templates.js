@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import { Row, Button, Col, Card, Table, OverlayTrigger, Tooltip, Form, FormControl } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import EventTemplateForm from './event_template_form'
-import EventTemplatesWipeModal from './event_templates_wipe_modal'
 import DeleteModal from './delete_modal'
 import ImportFromFileModal from './import_from_file_modal'
 import EventTemplateOptionsModal from './event_template_options_modal'
@@ -31,9 +30,10 @@ class EventTemplates extends Component {
     this.templateSearch = React.createRef()
     this.systemTemplateSearch = React.createRef()
 
-    this.handlePageSelect = this.handlePageSelect.bind(this)
-    this.handleEventTemplateImportClose = this.handleEventTemplateImportClose.bind(this)
     this.filterTemplates = this.filterTemplates.bind(this)
+    this.handleEventTemplateImportClose = this.handleEventTemplateImportClose.bind(this)
+    this.handleEventTemplatesWipe = this.handleEventTemplatesWipe.bind(this)
+    this.handlePageSelect = this.handlePageSelect.bind(this)
   }
 
   componentDidMount() {
@@ -79,10 +79,10 @@ class EventTemplates extends Component {
     this.props.fetchEventTemplates()
   }
 
-  handleEventTemplatesWipe(system = false) {
-    this.props.showModal('eventTemplatesWipe', {
+  handleEventTemplatesWipe() {
+    this.props.showModal('deleteModal', {
       handleDelete: this.props.deleteAllEventTemplates,
-      system: system
+      message: 'all non-system event templates'
     })
   }
 
@@ -310,7 +310,7 @@ class EventTemplates extends Component {
           <OverlayTrigger placement='top' overlay={deleteAllTooltip}>
             <FontAwesomeIcon
               className='float-end pt-2 text-danger'
-              onClick={() => this.handleEventTemplatesWipe(system)}
+              onClick={this.handleEventTemplatesWipe}
               disabled={disableBtn}
               icon='trash'
               fixedWidth
@@ -340,7 +340,6 @@ class EventTemplates extends Component {
       return (
         <React.Fragment>
           <DeleteModal />
-          <EventTemplatesWipeModal />
           <EventTemplateOptionsModal />
           <ImportFromFileModal
             handleExit={this.handleEventTemplateImportClose}
