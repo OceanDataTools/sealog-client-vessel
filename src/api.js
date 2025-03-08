@@ -72,7 +72,7 @@ const _handleFileDownload = async (filename, route, id) => {
   const url = id ? `${API_ROOT_URL}${route}/${id}/${filename}` : `${API_ROOT_URL}${route}/${filename}`
 
   await axios
-    .get(url, authorizationHeader())
+    .get(url, { ...authorizationHeader(), responseType: 'blob' })
     .then((response) => {
       FileDownload(response.data, filename)
     })
@@ -84,7 +84,7 @@ const _handleFileDownload = async (filename, route, id) => {
 
 const _handleImageDownload = async (image_path) => {
   await axios
-    .get(getImageUrl(image_path), authorizationHeader())
+    .get(getImageUrl(image_path), { ...authorizationHeader(), responseType: 'blob' })
     .then((response) => {
       FileDownload(response.data, basename(image_path))
     })
