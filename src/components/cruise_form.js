@@ -28,7 +28,7 @@ class CruiseForm extends Component {
       const init_start_ts = moment.utc().set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0)
 
       this.props.dispatch(change('editLowering', 'start_ts', init_start_ts))
-    } 
+    }
   }
 
   componentWillUnmount() {
