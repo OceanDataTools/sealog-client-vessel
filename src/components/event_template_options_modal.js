@@ -49,7 +49,19 @@ class EventTemplateOptionsModal extends Component {
 
   handleFormSubmit(formProps) {
     formProps.event_free_text = formProps.event_free_text ? formProps.event_free_text : ''
-    formProps.ts = formProps.ts ? formProps.ts.toISOString() : null
+
+    if (formProps.ts) {
+      if (moment.isMoment(formProps.ts)) {
+        formProps.ts = formProps.ts.toISOString()
+      } else if (typeof formProps.ts === 'string') {
+        const validMoment = moment(formProps.ts, moment.ISO_8601, true)
+        if (validMoment.isValid()) {
+          formProps.ts = validMoment.toISOString()
+        }
+      } else {
+        formProps.ts = null
+      }
+    }
 
     let raw_event_options = JSON.parse(JSON.stringify(formProps.event_options))
 
