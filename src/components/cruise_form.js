@@ -23,6 +23,14 @@ class CruiseForm extends Component {
     }
   }
 
+  componentDidMount() {
+    if (!this.props.cruise.id) {
+      const init_start_ts = moment.utc().set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0)
+
+      this.props.dispatch(change('editLowering', 'start_ts', init_start_ts))
+    } 
+  }
+
   componentWillUnmount() {
     this.props.leaveCruiseForm()
   }
@@ -371,7 +379,6 @@ const warn = (formProps) => {
 
 const mapStateToProps = (state) => {
   let initialValues = {
-    start_ts: moment.utc().set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0),
     ...{ cruise_additional_meta: { cruise_vessel: DEFAULT_VESSEL } },
     ...state.cruise.cruise
   }
