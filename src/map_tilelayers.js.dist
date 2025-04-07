@@ -25,6 +25,10 @@ export const TILE_LAYERS = [
   }
 ]
 
+// List of overlay tilesets.  This can be set to an explicit list similar to
+// TILE_LAYERS or to a url that returns the array
+export const OVERLAY_LAYERS = []
+
 // Default location of map while data is loading or in the absence of position
 // data.
 export const DEFAULT_LOCATION = { lat: 41.38, lng: -71.5 }

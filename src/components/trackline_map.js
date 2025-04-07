@@ -4,7 +4,7 @@ import L from 'leaflet'
 import PropTypes from 'prop-types'
 import { get_event_aux_data_by_cruise } from '../api'
 import { POSITION_DATASOURCES } from '../client_settings'
-import { TILE_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers'
+import { TILE_LAYERS, OVERLAY_LAYERS, DEFAULT_LOCATION } from '../map_tilelayers'
 
 const { BaseLayer } = LayersControl
 
@@ -22,7 +22,8 @@ class TracklineMap extends Component {
       center: DEFAULT_LOCATION,
       position: DEFAULT_LOCATION,
       showMarker: false,
-      height: '480px'
+      height: '480px',
+      overlay_array: []
     }
 
     this.handleMoveEnd = this.handleMoveEnd.bind(this)
@@ -32,10 +33,28 @@ class TracklineMap extends Component {
 
   componentDidMount() {
     this.initCruiseTrackline(this.props.id)
+    this.initOverLayers()
   }
 
   componentDidUpdate() {
     this.map.leafletElement.invalidateSize()
+  }
+
+  async fetchOverlayLayers() {
+    try {
+      const response = await fetch(OVERLAY_LAYERS, {
+        headers: { 'Content-Type': 'application/json' },
+        mode: 'cors'
+      })
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+      const data = await response.json() // Parse the JSON data
+      return data // Return the fetched data
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      return null // Return null or a default value in case of error
+    }
   }
 
   initMapView() {
@@ -96,6 +115,19 @@ class TracklineMap extends Component {
     this.initMapView()
   }
 
+  initOverLayers() {
+    if (Array.isArray(OVERLAY_LAYERS)) {
+      this.setState({ overlay_array: OVERLAY_LAYERS })
+    } else if (typeof OVERLAY_LAYERS === 'string') {
+      const getOverlayData = async () => {
+        const overlay_array = await this.fetchOverlayLayers() // Await the promise to get the resolved data
+        this.setState({ overlay_array })
+      }
+
+      getOverlayData()
+    }
+  }
+
   handleZoomEnd() {
     if (this.map) {
       this.setState({ zoom: this.map.leafletElement.getZoom() })
@@ -136,15 +168,16 @@ class TracklineMap extends Component {
 
   render() {
     const baseLayers = TILE_LAYERS.map((layer, index) => {
+      /* eslint-disable react/jsx-no-duplicate-props */
       if (layer.wms) {
         return (
-          <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name}>
+          <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name} key={layer.name}>
             <WMSTileLayer attribution={layer.attribution} url={layer.url} layers={layer.layers} transparent={layer.transparent} />
           </BaseLayer>
         )
       } else {
         return (
-          <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name}>
+          <BaseLayer checked={layer.default} key={`baseLayer_${index}`} name={layer.name} key={layer.name}>
             <TileLayer
               attribution={layer.attribution}
               url={layer.url}
@@ -153,6 +186,30 @@ class TracklineMap extends Component {
               maxNativeZoom={layer.maxNativeZoom}
             />
           </BaseLayer>
+        )
+      }
+      /* eslint-disable react/jsx-no-duplicate-props */
+    })
+
+    const overLayers = this.state.overlay_array.map((layer) => {
+      // console.log("layer:", layer)
+      if (layer.wms) {
+        return (
+          <LayersControl.Overlay name={layer.name} key={layer.name}>
+            <WMSTileLayer attribution={layer.attribution} url={layer.url} layers={layer.layers} transparent={layer.transparent} />
+          </LayersControl.Overlay>
+        )
+      } else {
+        return (
+          <LayersControl.Overlay name={layer.name} key={layer.name}>
+            <TileLayer
+              attribution={layer.attribution}
+              url={layer.url}
+              tms={layer.tms ?? false}
+              zoomOffset={layer.zoomOffset ?? 0}
+              maxNativeZoom={layer.maxNativeZoom}
+            />
+          </LayersControl.Overlay>
         )
       }
     })
@@ -187,7 +244,10 @@ class TracklineMap extends Component {
         ref={(map) => (this.map = map)}
       >
         <ScaleControl position='bottomleft' />
-        <LayersControl position='topright'>{baseLayers}</LayersControl>
+        <LayersControl position='topright'>
+          {baseLayers}
+          {overLayers}
+        </LayersControl>
         {trackLine}
         {startMarker}
         {endMarker}
