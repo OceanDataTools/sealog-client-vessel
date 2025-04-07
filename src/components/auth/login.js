@@ -93,7 +93,7 @@ class Login extends Component {
     )
 
     const loginImage = LOGIN_IMAGE ? (
-      <div className='d-flex justify-content-center'>
+      <div>
         <Image style={{ width: '250px' }} fluid src={`${ROOT_PATH}images/${LOGIN_IMAGE}`} />
       </div>
     ) : null
@@ -142,14 +142,9 @@ class Login extends Component {
             <div className='d-flex d-sm-none justify-content-center'>{loginFormCard}</div>
           </Col>
           <Col xs={12} sm={6}>
-            <div className='d-sm-flex d-none justify-content-begin'>
-              {loginImage}
-              {loginScreenTxt}
-            </div>
-            <div className='d-flex d-sm-none justify-content-center'>
-              {loginImage}
-              {loginScreenTxt}
-            </div>
+            {loginImage}
+            <div className='d-sm-flex d-none justify-content-begin'>{loginScreenTxt}</div>
+            <div className='d-flex d-sm-none justify-content-center'>{loginScreenTxt}</div>
           </Col>
         </Row>
       </Container>
