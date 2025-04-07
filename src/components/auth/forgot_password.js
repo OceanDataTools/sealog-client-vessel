@@ -35,11 +35,12 @@ class ForgotPassword extends Component {
             <div className='alert alert-success'>
               <strong>Success!</strong> {this.props.successMessage}
             </div>
-            <div className='text-center d-grid'>
-              <hr className='border-secondary' />
-              <Link className='btn btn-outline-primary btn-block' to={`/login`}>
-                Back to Login
-              </Link>
+            <div className='h-100'>
+              <Col className='d-flex justify-content-center'>
+                <Link className='text-muted text-link' to={'/login'}>
+                  Back to Login
+                </Link>
+              </Col>
             </div>
           </Card.Body>
         </Card>
@@ -84,14 +85,18 @@ class ForgotPassword extends Component {
               </Row>
               {recaptcha}
               {this.renderAlert()}
-              <div className='d-grid gap-2'>
+              <div className='d-grid'>
                 <Button variant='outline-primary' type='submit' disabled={submitting || !valid}>
                   Submit
                 </Button>
                 <hr />
-                <Link className='btn btn-outline-secondary' to={`/login`}>
-                  Back to Login
-                </Link>
+                <div className='h-100'>
+                  <Col className='d-flex justify-content-center'>
+                    <Link className='text-muted text-link' to={'/login'}>
+                      Back to Login
+                    </Link>
+                  </Col>
+                </div>
               </div>
             </Form>
           </Card.Body>

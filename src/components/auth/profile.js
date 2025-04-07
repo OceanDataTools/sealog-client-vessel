@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import cookies from '../../cookies'
 import { reduxForm, Field } from 'redux-form'
-import { Alert, Button, Col, Form, Card, Row } from 'react-bootstrap'
+import { Alert, Button, Col, Container, Form, Card, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderTextField } from '../form_elements'
 import * as mapDispatchToProps from '../../actions'
@@ -83,10 +83,10 @@ class UserProfile extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props
 
     return (
-      <div className='my-4'>
-        <Row className='justify-content-center'>
-          <Col sm={8} md={6} lg={4}>
-            <Card>
+      <Container>
+        <Row>
+          <Col className='pt-4 d-flex justify-content-center'>
+            <Card style={{ width: '18rem', minWidth: '18rem' }}>
               <Card.Body>
                 <Form className='mb-1' onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
                   <Row>
@@ -114,7 +114,7 @@ class UserProfile extends Component {
             </Card>
           </Col>
         </Row>
-      </div>
+      </Container>
     )
   }
 }

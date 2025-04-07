@@ -27,7 +27,7 @@ class CruiseForm extends Component {
     if (!this.props.cruise.id) {
       const init_start_ts = moment.utc().set('hour', 0).set('minute', 0).set('second', 0).set('millisecond', 0)
 
-      this.props.dispatch(change('editLowering', 'start_ts', init_start_ts))
+      this.props.dispatch(change('editCruise', 'start_ts', init_start_ts))
     }
   }
 

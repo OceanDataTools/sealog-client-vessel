@@ -32,7 +32,7 @@ class Register extends Component {
       return (
         <Card className='form-signin'>
           <Card.Body>
-            <h5 className='form-signin-heading'>New User Registration</h5>
+            <h5>User Registration</h5>
             <div className='alert alert-success'>
               <strong>Success!</strong> {this.props.message}
             </div>
@@ -70,8 +70,8 @@ class Register extends Component {
 
       return (
         <Card className='form-signin'>
-          <Card.Header>User Registration</Card.Header>
           <Card.Body>
+            <h5>User Registration</h5>
             <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
               <Row>
                 <Field name='username' component={renderTextField} label='Username' required={true} sm={6} md={6} lg={6} />
@@ -109,13 +109,11 @@ class Register extends Component {
                 </Col>
               </Row>
               <hr />
-              <Row className='justify-content-center'>
-                <Col sm='6'>
-                  <div className='d-grid gap-2'>
-                    <Link className='btn btn-outline-secondary w-100' to={`/login`}>
-                      Back to Login
-                    </Link>
-                  </div>
+              <Row className='h-100'>
+                <Col className='d-flex justify-content-center'>
+                  <Link className='text-muted text-link' to={'/login'}>
+                    Back to Login
+                  </Link>
                 </Col>
               </Row>
             </Form>
