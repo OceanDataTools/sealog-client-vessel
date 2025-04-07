@@ -32,7 +32,7 @@ class TracklineMap extends Component {
   }
 
   componentDidMount() {
-    this.initCruiseTrackline(this.props.id)
+    this.initTrackline(this.props.id)
     this.initOverLayers()
   }
 
@@ -64,7 +64,7 @@ class TracklineMap extends Component {
     }
   }
 
-  async initCruiseTrackline(id) {
+  async initTrackline(id) {
     this.setState({ fetching: true })
 
     let tracklines = {}
