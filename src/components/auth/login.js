@@ -142,9 +142,14 @@ class Login extends Component {
             <div className='d-flex d-sm-none justify-content-center'>{loginFormCard}</div>
           </Col>
           <Col xs={12} sm={6}>
-            {loginImage}
-            <div className='d-sm-flex d-none justify-content-begin'>{loginScreenTxt}</div>
-            <div className='d-flex d-sm-none justify-content-center'>{loginScreenTxt}</div>
+            <div className='d-sm-flex d-none justify-content-begin'>
+              {loginImage}
+              {loginScreenTxt}
+            </div>
+            <div className='d-flex d-sm-none justify-content-center'>
+              {loginImage}
+              {loginScreenTxt}
+            </div>
           </Col>
         </Row>
       </Container>
