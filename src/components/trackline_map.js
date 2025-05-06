@@ -53,7 +53,7 @@ class TracklineMap extends Component {
       return data // Return the fetched data
     } catch (error) {
       console.error('Error fetching data:', error)
-      return null // Return null or a default value in case of error
+      return [] // Return null or a default value in case of error
     }
   }
 
@@ -121,7 +121,7 @@ class TracklineMap extends Component {
     } else if (typeof OVERLAY_LAYERS === 'string') {
       const getOverlayData = async () => {
         const overlay_array = await this.fetchOverlayLayers() // Await the promise to get the resolved data
-        this.setState({ overlay_array: overlay_array || [] })
+        this.setState({ overlay_array })
       }
 
       getOverlayData()
