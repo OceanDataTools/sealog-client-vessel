@@ -139,7 +139,10 @@ class EventTemplateList extends Component {
     const template_categories = [
       ...new Set(
         this.props.event_templates.reduce((flat, event_template) => {
-          return flat.concat(event_template.template_categories)
+          if (typeof event_template.disabled === 'undefined' || !event_template.disabled) {
+            return flat.concat(event_template.template_categories)
+          }
+          return flat
         }, [])
       )
     ].sort()
