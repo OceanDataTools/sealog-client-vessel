@@ -121,7 +121,7 @@ class TracklineMap extends Component {
     } else if (typeof OVERLAY_LAYERS === 'string') {
       const getOverlayData = async () => {
         const overlay_array = await this.fetchOverlayLayers() // Await the promise to get the resolved data
-        this.setState({ overlay_array })
+        this.setState({ overlay_array: overlay_array || [] })
       }
 
       getOverlayData()
