@@ -2,12 +2,11 @@ import React, { Component } from 'react'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { reduxForm, Field } from 'redux-form'
-import { Button, Card, Form } from 'react-bootstrap'
+import { Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderAlert, renderCheckboxGroup, renderMessage, renderSwitch, renderTextField } from './form_elements'
 import * as mapDispatchToProps from '../actions'
-import { standardUserRoleOptions } from '../standard_user_role_options'
-import { systemUserRoleOptions } from '../system_user_role_options'
+import { standardUserRoleOptions, systemUserRoleOptions } from '../user_role_options'
 
 class UserForm extends Component {
   componentWillUnmount() {
@@ -39,20 +38,20 @@ class UserForm extends Component {
     if (this.props.roles.includes('admin')) {
       return (
         <React.Fragment>
-          <Form.Row>{this.renderSystemUserOption()}</Form.Row>
-          <Form.Row>{this.renderDisableUserOption()}</Form.Row>
+          {this.renderSystemUserOption()}
+          {this.renderDisableUserOption()}
         </React.Fragment>
       )
     }
   }
 
   renderSystemUserOption() {
-    return <Field name='system_user' label='System User' component={renderSwitch} />
+    return <Field name='system_user' label='System User' component={renderSwitch} sm={6} lg={6} />
   }
 
   renderDisableUserOption() {
     if (this.props.profile.id !== this.props.user.id) {
-      return <Field name='disabled' label='User Disabled' component={renderSwitch} />
+      return <Field name='disabled' label='User Disabled' component={renderSwitch} sm={6} lg={6} />
     }
   }
 
@@ -70,9 +69,11 @@ class UserForm extends Component {
           <Card.Header>{formHeader}</Card.Header>
           <Card.Body>
             <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
-              <Form.Row>
-                <Field name='username' component={renderTextField} label='Username' required={true} />
-                <Field name='fullname' component={renderTextField} label='Full Name' required={true} />
+              <Row>
+                <Field name='username' component={renderTextField} label='Username' required={true} sm={6} lg={6} />
+                <Field name='fullname' component={renderTextField} label='Full Name' required={true} sm={6} lg={6} />
+              </Row>
+              <Row>
                 <Field
                   name='email'
                   component={renderTextField}
@@ -80,19 +81,30 @@ class UserForm extends Component {
                   required={true}
                   disabled={this.props.user.id ? true : false}
                 />
-                <Field name='password' component={renderTextField} type='password' label='Password' />
-                <Field name='confirmPassword' component={renderTextField} type='password' label='Confirm Password' />
+              </Row>
+              <Row>
+                <Field name='password' component={renderTextField} type='password' label='Password' sm={6} lg={6} />
+                <Field name='confirmPassword' component={renderTextField} type='password' label='Confirm Password' sm={6} lg={6} />
+              </Row>
+              <Row>
+                {this.props.roles.includes('admin') ? (
+                  <Field name='system_user' label='System User' component={renderSwitch} sm={6} lg={6} />
+                ) : null}
+                {this.props.profile.id !== this.props.user.id ? (
+                  <Field name='disabled' label='User Disabled' component={renderSwitch} sm={6} lg={6} />
+                ) : null}
+              </Row>
+              <Row>
                 <Field name='roles' component={renderCheckboxGroup} label='Roles' options={userRoleOptions} required={true} />
-              </Form.Row>
-              {this.renderAdminOptions()}
+              </Row>
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
-              <div className='float-right'>
-                <Button className='mr-1' variant='secondary' size='sm' disabled={pristine || submitting} onClick={reset}>
+              <div className='float-end'>
+                <Button className='me-1' variant='outline-secondary' size='sm' disabled={pristine || submitting} onClick={reset}>
                   Reset Values
                 </Button>
-                <Button variant='primary' size='sm' type='submit' disabled={submitting || !valid || pristine}>
-                  {this.props.user.id ? 'Update' : 'Add'}
+                <Button variant='outline-primary' size='sm' type='submit' disabled={submitting || !valid || pristine}>
+                  {this.props.user.id ? 'Update' : 'Create'}
                 </Button>
               </div>
             </Form>

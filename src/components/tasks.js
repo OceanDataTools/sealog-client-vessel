@@ -4,9 +4,10 @@ import { connect } from 'react-redux'
 import { Row, Col, Container, ListGroup } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { delete_all_events } from '../api'
-import ImportEventsModal from './import_events_modal'
-import ImportAuxDataModal from './import_aux_data_modal'
-import DataWipeModal from './data_wipe_modal'
+import ImportFromFileModal from './import_from_file_modal'
+import DeleteModal from './delete_modal'
+import { create_event_aux_data, create_event } from '../api'
+
 import * as mapDispatchToProps from '../actions'
 
 const importEventsDescription = (
@@ -37,16 +38,80 @@ class Tasks extends Component {
     }
   }
 
+  async _insertEventItem({ id, ts, event_author, event_value, event_free_text = '', event_options = [] }) {
+    let result = {
+      skipped: false,
+      imported: false,
+      error: null
+    }
+
+    const response = await create_event({
+      id,
+      ts,
+      event_author,
+      event_value,
+      event_free_text,
+      event_options
+    })
+
+    if (response.success) {
+      result.imported = true
+      return result
+    }
+
+    if (response.error.response.data.statusCode == 400 && response.error.response.data.message == 'duplicate event ID') {
+      result.skipped = true
+      return result
+    }
+
+    result.error = { ...response.error.response.data, id: id || 'unknown' }
+    return result
+  }
+
+  async _insertAuxDataItem({ id, event_id, data_source, data_array }) {
+    let result = {
+      skipped: false,
+      imported: false,
+      error: null
+    }
+
+    const response = await create_event_aux_data({
+      id,
+      event_id,
+      data_source,
+      data_array
+    })
+
+    if (response.success) {
+      result.imported = true
+      return result
+    }
+
+    result.error = { ...response.error.response.data, id: id || 'unknown' }
+    return result
+  }
+
   handleEventImport() {
-    this.props.showModal('importEvents')
+    this.props.showModal('importFromFileModal', {
+      handleHide: this.handleEventImportClose,
+      insertItem: this._insertEventItem,
+      title: 'Import Event Data'
+    })
   }
 
   handleAuxDataImport() {
-    this.props.showModal('importAuxData')
+    this.props.showModal('importFromFileModal', {
+      handleHide: this.handleAuxDataImportClose,
+      insertItem: this._insertAuxDataItem,
+      title: 'Import Auxiliary Data'
+    })
   }
 
   async handleDataWipe() {
-    this.props.showModal('dataWipe', { handleDelete: delete_all_events })
+    this.props.showModal('deleteModal', {
+      handleDelete: delete_all_events,
+      message: 'all event and aux_data records'
+    })
   }
 
   renderTaskTable() {
@@ -82,12 +147,11 @@ class Tasks extends Component {
       return <div>Loading...</div>
     } else if (this.props.roles.includes('admin')) {
       return (
-        <div className='mt-2'>
-          <ImportEventsModal />
-          <ImportAuxDataModal />
-          <DataWipeModal />
-          <Row>
-            <Col sm={5} md={{ span: 4, offset: 1 }} lg={{ span: 3, offset: 2 }}>
+        <React.Fragment>
+          <ImportFromFileModal />
+          <DeleteModal />
+          <Row className='d-flex justify-content-center py-2'>
+            <Col sm={5} md={4} lg={3}>
               {this.renderTaskTable()}
             </Col>
             <Col sm={7} md={6} lg={5}>
@@ -98,7 +162,7 @@ class Tasks extends Component {
               </Container>
             </Col>
           </Row>
-        </div>
+        </React.Fragment>
       )
     } else {
       this.props.gotoHome()

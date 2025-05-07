@@ -85,7 +85,7 @@ import { ROOT_PATH } from '../client_settings'
 const port = window.location.port ? ':' + window.location.port : ''
 export const resetURL = window.location.protocol + '//' + window.location.hostname + port + ROOT_PATH + 'resetPassword/'
 
-export const advanceCruiseReplayTo = (id) => {
+export const advanceReviewReplayTo = (id) => {
   return async (dispatch) => {
     const payload = (await get_event_exports({}, id)) || {}
 
@@ -115,6 +115,7 @@ export const autoLogin = ({ loginToken, reCaptcha = null }) => {
       if (response.success) {
         cookies.set('token', response.data.token)
         cookies.set('id', response.data.id)
+        cookies.set('category', null)
         dispatch({ type: AUTH_USER })
         return dispatch(updateProfileState())
       } else {
@@ -249,7 +250,7 @@ export const createUserSuccess = (message) => {
   }
 }
 
-export const deleteAllNonSystemEventTemplates = () => {
+export const deleteAllEventTemplates = () => {
   return async (dispatch) => {
     const query = {
       system_template: false
@@ -257,7 +258,7 @@ export const deleteAllNonSystemEventTemplates = () => {
 
     const event_templates = await get_event_templates(query)
     event_templates.map(async (event_template) => {
-      await dispatch(deleteEventTemplate(event_template.id, false))
+      await dispatch(deleteEventTemplate(event_template.id))
     })
 
     return dispatch(fetchEventTemplates())
@@ -346,7 +347,7 @@ export const eventUpdate = () => {
   }
 }
 
-export const eventUpdateCruiseReplay = () => {
+export const eventUpdateReviewReplay = () => {
   return async (dispatch, getState) => {
     dispatch({ type: EVENT_FETCHING, payload: true })
 
@@ -437,9 +438,9 @@ export const forgotPassword = ({ email, reCaptcha = null }) => {
   }
 }
 
-export const gotoCruiseMap = (id) => {
+export const gotoReviewMap = (id) => {
   return (dispatch) => {
-    return dispatch(push(`/cruise_map/${id}`))
+    return dispatch(push(`/review_map/${id}`))
   }
 }
 
@@ -449,9 +450,9 @@ export const gotoCruiseMenu = () => {
   }
 }
 
-export const gotoCruiseReplay = (id) => {
+export const gotoReviewReplay = (id) => {
   return (dispatch) => {
-    return dispatch(push(`/cruise_replay/${id}`))
+    return dispatch(push(`/review_replay/${id}`))
   }
 }
 
@@ -516,7 +517,7 @@ export const initCruise = (id) => {
   }
 }
 
-export const initCruiseReplay = (id) => {
+export const initReviewReplay = (id) => {
   return async (dispatch, getState) => {
     dispatch({ type: EVENT_FETCHING, payload: true })
     dispatch(initCruise(id))
@@ -536,7 +537,7 @@ export const initCruiseReplay = (id) => {
     dispatch({ type: INIT_EVENT, payload })
 
     if (payload.length) {
-      dispatch(advanceCruiseReplayTo(payload[0].id))
+      dispatch(advanceReviewReplayTo(payload[0].id))
     }
 
     return dispatch({ type: EVENT_FETCHING, payload: false })
@@ -607,6 +608,7 @@ export const login = ({ username, password, reCaptcha = null }) => {
       if (response.success) {
         cookies.set('token', response.data.token)
         cookies.set('id', response.data.id)
+        cookies.set('category', null)
         dispatch(updateProfileState())
         return dispatch({ type: AUTH_USER })
       }
@@ -626,6 +628,7 @@ export const logout = () => {
   return (dispatch) => {
     cookies.remove('token')
     cookies.remove('id')
+    cookies.remove('category')
     dispatch(push(`/login`))
     return dispatch({ type: UNAUTH_USER })
   }
@@ -736,9 +739,9 @@ export const updateCruiseError = (message) => {
   }
 }
 
-export const updateCruiseReplayEvent = (id) => {
+export const updateReviewReplayEvent = (id) => {
   return async (dispatch) => {
-    const payload = await get_events({}, id)
+    const payload = await get_event_exports({}, id)
     return dispatch({ type: UPDATE_EVENT, payload })
   }
 }

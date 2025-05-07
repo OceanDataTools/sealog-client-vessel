@@ -20,7 +20,7 @@ class DeleteFileModal extends Component {
 
     if (file) {
       return (
-        <Modal show={show} onHide={handleHide}>
+        <Modal size='md' show={show} onHide={handleHide}>
           <Modal.Header className='bg-light' closeButton>
             <Modal.Title>Confirm Deletion</Modal.Title>
           </Modal.Header>

@@ -39,7 +39,7 @@ class ResetPassword extends Component {
             </div>
             <div className='text-center'>
               <hr className='border-secondary' />
-              <Link className='btn btn-outline-primary btn-block' to={`/login`}>
+              <Link className='btn btn-outline-primary' to={`/login`}>
                 Back to Login
               </Link>
             </div>
@@ -69,11 +69,11 @@ class ResetPassword extends Component {
       const { handleSubmit, submitting, valid } = this.props
 
       const submitButton = RECAPTCHA_SITE_KEY ? (
-        <Button variant='primary' type='submit' block disabled={submitting || !valid || !this.state.reCaptcha}>
+        <Button variant='primary' type='submit' disabled={submitting || !valid || !this.state.reCaptcha}>
           Submit
         </Button>
       ) : (
-        <Button variant='primary' type='submit' block disabled={submitting || !valid}>
+        <Button variant='primary' type='submit' disabled={submitting || !valid}>
           Submit
         </Button>
       )
@@ -89,19 +89,19 @@ class ResetPassword extends Component {
           <Card.Body>
             <h5 className='form-signin-heading'>Reset Password</h5>
             <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
-              <Form.Row>
+              <Row>
                 <Field name='password' component={renderTextField} type='password' placeholder='Password' required={true} />
-              </Form.Row>
-              <Form.Row>
+              </Row>
+              <Row>
                 <Field name='confirmPassword' component={renderTextField} type='password' placeholder='Confirm Password' required={true} />
-              </Form.Row>
+              </Row>
               {recaptcha}
               {this.renderAlert()}
               <div>{submitButton}</div>
             </Form>
             <div className='text-center'>
               <hr className='border-secondary' />
-              <Link className='btn btn-outline-primary btn-block' to={`/login`}>
+              <Link className='btn btn-outline-primary' to={`/login`}>
                 Back to Login
               </Link>
             </div>

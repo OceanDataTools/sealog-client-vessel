@@ -2,4 +2,6 @@
 **/dist/
 **/docs/
 **/reducers/
+
 webpack.config.js
+src/client_settings.js

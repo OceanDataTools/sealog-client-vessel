@@ -1,8 +1,10 @@
-// Import Custom Bootswatch Mixins and Components
 @import "variables.scss";
 
 // Import Bootstrap
 @import "~bootstrap/scss/bootstrap.scss";
+
+// Import Custom Bootswatch Mixins and Components
+@import "bootswatch.scss";
 
 // Import fonts
 @import "~@fontsource/open-sans/300.css"; // Weight 300.
@@ -10,8 +12,38 @@
 @import "~@fontsource/open-sans/700.css"; // Weight 700.
 
 // Import FontAwesome
-//@import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
-//@import "~@fortawesome/fontawesome-free/scss/solid.scss";
+// @import "~@fortawesome/fontawesome-free/scss/fontawesome.scss";
+// @import "~@fortawesome/fontawesome-free/scss/solid.scss";
+
+.accordion-button {
+  padding: 12px;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: $gray-100;
+  border: #ccc, 4px, solid;
+}
+
+.btn-outline-secondary {
+  border-color: $gray-600;
+}
+
+.btn-outline-secondary:disabled {
+  color: $gray-500;
+  border-color: $gray-500;
+}
+
+.btn-outline-secondary:hover {
+  color: $white;
+  border-color: $gray-600;
+  background-color: $gray-600;
+}
+
+
+.text-link {
+    color: inherit;
+    text-decoration: inherit;
+}
 
 .nav-tabs,
 .nav-pills,
@@ -39,12 +71,13 @@
   }
 }
 
-.btn-template {
+button.btn-template {
   font-size: .85rem;
-}
-
-.cruise-details {
-  font-size: .75rem;
+  margin-top: .5rem !important;
+  margin-right: .5rem !important;
+  padding-top: 1rem !important;
+  padding-bottom: 1rem !important;
+  min-width: 70px;
 }
 
 .eventList {
@@ -98,6 +131,10 @@
   display: flex;
 }
 
+.event-image-data-card {
+  font-size: .8rem;
+}
+
 .event-list-item {
   padding-left: 0.5rem !important;
   padding-right: 0.5rem !important;
@@ -112,6 +149,51 @@
     display: none;
   }
 }
+
+// Tighen up the dropdown menus
+.dropdown-item {
+  padding: 4px 0px 0px 20px;
+}
+
+.dropdown-header {
+  padding: 0px 0px 0px 10px;
+}
+
+div {
+  .event-details {
+    font-size: .85rem;
+  }
+  .footer {
+    font-size: .85rem;
+  }
+}
+
+div {
+  .modal-header {
+    padding: 10px;
+    font-size: .85rem;
+  }
+}
+
+div {
+  .form-check {
+    margin-bottom: 0;
+  }
+  .form-check-inline {
+    margin-right: 0.5rem;
+  }
+}
+
+div {
+  .event_fitler_form, .cruise_form {
+    padding: .5rem;
+  }
+}
+
+.td {
+  color: $gray-200;
+}
+
 
 // react-datetime styles
 @import "~react-datetime/css/react-datetime.css";

@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import EventTemplateOptionsModal from './event_template_options_modal'
 import { Client } from '@hapi/nes/lib/client'
 import { authorizationHeader } from '../api'
+import cookies from '../cookies'
 import { WS_ROOT_URL, CATEGORY_SORT_ORDER } from '../client_settings'
 import * as mapDispatchToProps from '../actions'
 
@@ -44,7 +45,7 @@ class EventTemplateList extends Component {
     super(props)
 
     this.state = {
-      active_template_category: null,
+      active_template_category: cookies.get('category'),
       fetching: true
     }
 
@@ -131,13 +132,17 @@ class EventTemplateList extends Component {
 
   updateEventTemplateCategory(category) {
     this.setState({ active_template_category: category })
+    cookies.set('category', category)
   }
 
   renderEventTemplates() {
     const template_categories = [
       ...new Set(
         this.props.event_templates.reduce((flat, event_template) => {
-          return flat.concat(event_template.template_categories)
+          if (typeof event_template.disabled === 'undefined' || !event_template.disabled) {
+            return flat.concat(event_template.template_categories)
+          }
+          return flat
         }, [])
       )
     ].sort()
@@ -167,7 +172,7 @@ class EventTemplateList extends Component {
                     .map((event_template) => {
                       return (
                         <Button
-                          className='mt-1 mr-1 py-3 btn-template'
+                          className='btn-template'
                           variant='primary'
                           to='#'
                           key={`template_${event_template.id}`}
@@ -186,7 +191,7 @@ class EventTemplateList extends Component {
                 .map((event_template) => {
                   return (
                     <Button
-                      className='mt-1 mr-1 py-3 btn-template'
+                      className='btn-template'
                       variant='primary'
                       to='#'
                       key={`template_${event_template.id}`}
@@ -205,7 +210,7 @@ class EventTemplateList extends Component {
           .map((event_template) => {
             return (
               <Button
-                className='mt-1 mr-1 py-3 btn-template'
+                className='btn-template'
                 variant='primary'
                 to='#'
                 key={`template_${event_template.id}`}

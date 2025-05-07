@@ -6,8 +6,8 @@ import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Tooltip, OverlayTrigger } from 'react-bootstrap'
 import { CopyToClipboard } from 'react-copy-to-clipboard'
-import * as mapDispatchToProps from '../actions'
 import { _Cruise_ } from '../vocab'
+import * as mapDispatchToProps from '../actions'
 
 class CopyCruiseToClipboard extends Component {
   constructor(props) {
@@ -70,7 +70,11 @@ class CopyCruiseToClipboard extends Component {
     return (
       <OverlayTrigger placement='top' overlay={<Tooltip id='copyToClipboardTooltip'>Copy to clipboard</Tooltip>}>
         <CopyToClipboard text={this.state.text}>
-          <FontAwesomeIcon icon='clipboard' className='text-primary' fixedWidth />
+          <FontAwesomeIcon
+            className={'text-primary' + (this.props.className ? ' ' + this.props.className : '')}
+            icon='clipboard'
+            fixedWidth
+          />
         </CopyToClipboard>
       </OverlayTrigger>
     )
@@ -78,6 +82,7 @@ class CopyCruiseToClipboard extends Component {
 }
 
 CopyCruiseToClipboard.propTypes = {
+  className: PropTypes.string,
   cruise: PropTypes.object
 }
 

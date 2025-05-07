@@ -4,7 +4,6 @@ import { connectModal } from 'redux-modal'
 import PropTypes from 'prop-types'
 import { Form, ListGroup, Modal } from 'react-bootstrap'
 import { get_cruises, get_users, update_cruise_permissions } from '../api'
-import { _Cruise_ } from '../vocab'
 
 const updateType = {
   ADD: true,
@@ -61,35 +60,37 @@ class CruisePermissionsModal extends Component {
   render() {
     const { show } = this.props
 
-    const body =
-      this.state.cruise && this.state.users
-        ? this.state.users.map((user) => {
-            return (
-              <ListGroup.Item key={`user_${user.id}`}>
-                <Form.Check
-                  type='switch'
-                  id={`user_${user.id}`}
-                  label={`${user.fullname}`}
-                  checked={this.state.cruise.cruise_access_list && this.state.cruise.cruise_access_list.includes(user.id)}
-                  onChange={(e) => {
-                    this.updateCruisePermissions(user.id, e.target.checked)
-                  }}
-                />
-              </ListGroup.Item>
-            )
-          })
-        : null
-
-    return (
-      <Modal show={show} onHide={this.handleHide}>
+    return this.state.cruise && this.state.users ? (
+      <Modal size='md' show={show} onHide={this.handleHide}>
         <form>
-          <Modal.Header closeButton>
-            <Modal.Title>{_Cruise_} Permissions</Modal.Title>
+          <Modal.Header className='bg-light' closeButton>
+            <Modal.Title>
+              User Permissions for{' '}
+              <i>
+                <b>{this.state.cruise.cruise_id}</b>
+              </i>
+            </Modal.Title>
           </Modal.Header>
-          <ListGroup>{body}</ListGroup>
+          <ListGroup>
+            {this.state.users.map((user) => {
+              return (
+                <ListGroup.Item key={`user_${user.id}`}>
+                  <Form.Check
+                    type='switch'
+                    id={`user_${user.id}`}
+                    label={`${user.fullname}`}
+                    checked={this.state.cruise.cruise_access_list && this.state.cruise.cruise_access_list.includes(user.id)}
+                    onChange={(e) => {
+                      this.updateCruisePermissions(user.id, e.target.checked)
+                    }}
+                  />
+                </ListGroup.Item>
+              )
+            })}
+          </ListGroup>
         </form>
       </Modal>
-    )
+    ) : null
   }
 }
 

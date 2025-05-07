@@ -49,7 +49,19 @@ class EventTemplateOptionsModal extends Component {
 
   handleFormSubmit(formProps) {
     formProps.event_free_text = formProps.event_free_text ? formProps.event_free_text : ''
-    formProps.ts = formProps.ts ? formProps.ts.toISOString() : null
+
+    if (formProps.ts) {
+      if (moment.isMoment(formProps.ts)) {
+        formProps.ts = formProps.ts.toISOString()
+      } else if (typeof formProps.ts === 'string') {
+        const validMoment = moment(formProps.ts, moment.ISO_8601, true)
+        if (validMoment.isValid()) {
+          formProps.ts = validMoment.toISOString()
+        }
+      } else {
+        formProps.ts = null
+      }
+    }
 
     let raw_event_options = JSON.parse(JSON.stringify(formProps.event_options))
 
@@ -179,7 +191,7 @@ class EventTemplateOptionsModal extends Component {
 
     if (eventTemplate) {
       return (
-        <Modal show={show} onHide={this.handleFormHide}>
+        <Modal size='md' show={show} onHide={this.handleFormHide}>
           <form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
             <Modal.Header className='bg-light' closeButton>
               <Modal.Title>{eventTemplate.event_value}</Modal.Title>
@@ -198,8 +210,8 @@ class EventTemplateOptionsModal extends Component {
               <Field name='ts' label='Custom Time (UTC)' component={renderDateTimePicker} disabled={this.props.disabled} required={true} />
             </Modal.Body>
             <Modal.Footer>
-              <span className='float-right'>
-                <Button className='mr-1' size='sm' variant='secondary' disabled={submitting} onClick={this.handleFormHide}>
+              <span className='float-end'>
+                <Button className='me-1' size='sm' variant='secondary' disabled={submitting} onClick={this.handleFormHide}>
                   Cancel
                 </Button>
                 {this.props.event ? (

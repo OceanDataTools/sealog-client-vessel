@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { reduxForm, Field } from 'redux-form'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Alert, Row, Col, Form, Card, Button, Image } from 'react-bootstrap'
+import { Alert, Button, Card, Col, Container, Form, Image, Row } from 'react-bootstrap'
 import { renderTextField } from '../form_elements'
 import ReCAPTCHA from 'react-google-recaptcha'
 import PropTypes from 'prop-types'
@@ -73,7 +73,6 @@ class Login extends Component {
 
   render() {
     const { handleSubmit, submitting, valid } = this.props
-    const loginCardHeader = <h5 className='form-signin-heading'>Please Sign In</h5>
 
     const recaptcha = RECAPTCHA_SITE_KEY ? (
       <span>
@@ -83,59 +82,72 @@ class Login extends Component {
     ) : null
 
     const loginButton = (
-      <Button variant='primary' type='submit' block disabled={submitting || !valid}>
+      <Button variant='primary' type='submit' disabled={submitting || !valid}>
         Login
       </Button>
     )
     const loginAsGuestButton = (
-      <Button variant='success' onClick={() => this.switch2Guest()} block>
+      <Button variant='success' onClick={() => this.switch2Guest()}>
         Login as Guest
       </Button>
     )
 
     const loginImage = LOGIN_IMAGE ? (
-      <div className='d-flex justify-content-center'>
+      <div>
         <Image style={{ width: '250px' }} fluid src={`${ROOT_PATH}images/${LOGIN_IMAGE}`} />
       </div>
     ) : null
 
+    const loginScreenTxt = <p style={{ width: '18rem', minWidth: '18rem', whiteSpace: 'pre-wrap' }}>{LOGIN_SCREEN_TXT}</p>
+
+    const loginFormCard = (
+      <Card className='me-0' style={{ width: '15rem', minWidth: '15rem' }}>
+        <Card.Body>
+          <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
+            <h5>Please log in</h5>
+            <Form.Group className='mb-2'>
+              <Field name='username' component={renderTextField} placeholder='Username' />
+            </Form.Group>
+            <Form.Group className='mb-2'>
+              <Field name='password' component={renderTextField} type='password' placeholder='Password' />
+            </Form.Group>
+            {recaptcha}
+            {this.renderMessage(this.props.errorMessage, this.props.message)}
+            <div className='d-grid gap-2'>
+              {loginButton}
+              {loginAsGuestButton}
+            </div>
+          </Form>
+          <hr />
+          <div className='text-center'>
+            <Link className='text-muted text-link' to={'/forgotPassword'}>
+              Forgot Password?
+            </Link>
+            <div className='pt-3 d-grid gap-2'>
+              Don&apos;t have an account?
+              <Link className='btn btn-sm btn-outline-primary ms-2' to={'/register'}>
+                Register
+              </Link>
+            </div>
+          </div>
+        </Card.Body>
+      </Card>
+    )
+
     return (
-      <div className='my-4'>
-        <Row className='justify-content-center'>
-          <Col sm={6} md={4} lg={3}>
-            <Card>
-              <Card.Body>
-                {loginCardHeader}
-                <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
-                  <Form.Row>
-                    <Field name='username' component={renderTextField} placeholder='Username' />
-                    <Field name='password' component={renderTextField} type='password' placeholder='Password' />
-                  </Form.Row>
-                  {recaptcha}
-                  {this.renderMessage(this.props.errorMessage, this.props.message)}
-                  {loginButton}
-                  {loginAsGuestButton}
-                </Form>
-                <div className='text-center'>
-                  <hr className='border-secondary' />
-                  <Link className='btn btn-outline-primary btn-block' to={`/forgotPassword`}>
-                    Forgot Password?
-                  </Link>
-                  <Link className='btn btn-outline-primary btn-block' to={`/register`}>
-                    Register New User
-                  </Link>
-                </div>
-              </Card.Body>
-            </Card>
+      <Container>
+        <Row className='pt-5 justify-content-center'>
+          <Col className='mb-2' xs={12} sm={5}>
+            <div className='d-sm-flex d-none justify-content-end'>{loginFormCard}</div>
+            <div className='d-flex d-sm-none justify-content-center'>{loginFormCard}</div>
           </Col>
-          <Col className='justify-content-center d-none d-md-inline' md={5} lg={4} xl={3}>
+          <Col xs={12} sm={6}>
             {loginImage}
-            <p className='text-justify' style={{ whiteSpace: 'pre-wrap' }}>
-              {LOGIN_SCREEN_TXT}
-            </p>
+            <div className='d-sm-flex d-none justify-content-begin'>{loginScreenTxt}</div>
+            <div className='d-flex d-sm-none justify-content-center'>{loginScreenTxt}</div>
           </Col>
         </Row>
-      </div>
+      </Container>
     )
   }
 }

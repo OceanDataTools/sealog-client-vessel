@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import cookies from '../../cookies'
 import { reduxForm, Field } from 'redux-form'
-import { Alert, Button, Col, Form, Card, Row } from 'react-bootstrap'
+import { Alert, Button, Col, Container, Form, Card, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderTextField } from '../form_elements'
 import * as mapDispatchToProps from '../../actions'
@@ -41,19 +41,20 @@ class UserProfile extends Component {
       )
     } else {
       return (
-        <Button
-          variant='warning'
-          size='sm'
-          block
-          onClick={() => {
-            this.setState({ showToken: true })
-            setTimeout(() => {
-              this.setState({ showToken: false })
-            }, 10 * 1000)
-          }}
-        >
-          Show API Token
-        </Button>
+        <div className='d-grid'>
+          <Button
+            variant='outline-warning'
+            size='sm'
+            onClick={() => {
+              this.setState({ showToken: true })
+              setTimeout(() => {
+                this.setState({ showToken: false })
+              }, 10 * 1000)
+            }}
+          >
+            Show API Token
+          </Button>
+        </div>
       )
     }
   }
@@ -82,26 +83,26 @@ class UserProfile extends Component {
     const { handleSubmit, pristine, reset, submitting, valid } = this.props
 
     return (
-      <div className='my-4'>
-        <Row className='justify-content-center'>
-          <Col sm={8} md={6} lg={4}>
-            <Card>
+      <Container>
+        <Row>
+          <Col className='pt-4 d-flex justify-content-center'>
+            <Card style={{ width: '18rem', minWidth: '18rem' }}>
               <Card.Body>
                 <Form className='mb-1' onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
-                  <Form.Row>
+                  <Row>
                     <Field name='username' component={renderTextField} label='Username' required={true} />
                     <Field name='fullname' component={renderTextField} label='Full Name' required={true} />
                     <Field name='email' component={renderTextField} label='Email' disabled={true} />
                     <Field name='password' component={renderTextField} type='password' label='Password' />
                     <Field name='confirmPassword' component={renderTextField} type='password' label='Confirm Password' />
-                  </Form.Row>
+                  </Row>
                   {this.renderAlert()}
                   {this.renderMessage()}
-                  <div className='float-right'>
-                    <Button className='mr-1' variant='secondary' size='sm' disabled={pristine || submitting} onClick={reset}>
+                  <div className='float-end'>
+                    <Button className='me-1' variant='outline-secondary' size='sm' disabled={pristine || submitting} onClick={reset}>
                       Reset Values
                     </Button>
-                    <Button variant='primary' size='sm' type='submit' disabled={pristine || submitting || !valid}>
+                    <Button variant='outline-primary' size='sm' type='submit' disabled={pristine || submitting || !valid}>
                       Update
                     </Button>
                   </div>
@@ -113,7 +114,7 @@ class UserProfile extends Component {
             </Card>
           </Col>
         </Row>
-      </div>
+      </Container>
     )
   }
 }

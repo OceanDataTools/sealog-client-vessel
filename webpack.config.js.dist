@@ -1,12 +1,12 @@
-const { ROOT_PATH, HEADER_TITLE } = require('./src/client_settings');
-const webpack = require('webpack');
-const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const ProvidePlugin = require('process');
+const { ROOT_PATH, HEADER_TITLE } = require('./src/client_settings')
+const webpack = require('webpack')
+const path = require('path')
+const CopyPlugin = require('copy-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = {
+  devtool: 'source-map',
   devServer: {
     port: 8080,
     static: './dist',
@@ -16,10 +16,36 @@ module.exports = {
     }
   },
   output: {
-    path: path.join(__dirname, '/dist'),
-    filename: 'js/index.bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'js/[name].[contenthash].js',
     publicPath: ROOT_PATH,
     clean: true
+  },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        moment: {
+          test: /[\\/]node_modules[\\/](moment)/,
+          name: 'moment',
+          chunks: 'all',
+          priority: 10
+        },
+        leaflet: {
+          test: /[\\/]node_modules[\\/](leaflet)/,
+          name: 'leaflet',
+          chunks: 'all',
+          priority: 10
+        },
+        filepond: {
+          test: /[\\/]node_modules[\\/](filepond)/,
+          name: 'filepond',
+          chunks: 'all',
+          priority: 10
+        }
+      }
+    },
+    runtimeChunk: 'single'
   },
   module: {
     rules: [
@@ -37,22 +63,20 @@ module.exports = {
       {
         test: /\.s[ac]ss$/i,
         use: [
-          process.env.NODE_ENV !== "production"
-          ? "style-loader"
-          : MiniCssExtractPlugin.loader,
+          process.env.NODE_ENV !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
-              sourceMap: true,
+              sourceMap: true
             }
           },
           {
-            loader: "sass-loader",
+            loader: 'sass-loader',
             options: {
               sourceMap: true
             }
           }
-        ],
+        ]
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -79,26 +103,22 @@ module.exports = {
   },
   plugins: [
     new webpack.ProvidePlugin({
-      process: 'process/browser',
+      process: 'process/browser'
     }),
     new HtmlWebpackPlugin({
       title: HEADER_TITLE,
-      favicon: "./src/assets/images/favicon.ico",
-      template: './src/assets/index.html',
+      template: './src/assets/index.html'
     }),
     new MiniCssExtractPlugin({
-      filename: "style/[name].css",
-      chunkFilename: "style/[id].css",
+      filename: 'style/[[name].[contenthash].css'
     }),
     new CopyPlugin({
-      patterns: [
-        { from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' },
-      ]
-    }),
+      patterns: [{ from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' }]
+    })
   ],
   resolve: {
     fallback: {
-      'process/browser': require.resolve('process/browser'),
+      'process/browser': require.resolve('process/browser')
     }
   }
 }

@@ -12,7 +12,7 @@ Sealog Client is tested on Ubuntu versions 20.04 and 22.04 but will likely work 
 Download/run the nvm install script.  You will want to do this as the system user that runs the Sealog-Server services:
 ```
 cd ~
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 ```
 
 Install the LTS version of NodeJS (v20.x.x) using `nvm`:
@@ -27,6 +27,8 @@ nvm install --lts
 Use `apt` to install nginx
 ```
 sudo apt-get install nginx
+sudo service nginx start
+sudo service nginx enable
 ```
 
 ### Install Sealog Client from GitHub

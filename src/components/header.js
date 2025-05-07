@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Navbar, Nav, NavDropdown } from 'react-bootstrap'
+import { Nav, Navbar, NavDropdown } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { HEADER_TITLE, RECAPTCHA_SITE_KEY, DISABLE_EVENT_LOGGING } from '../client_settings'
 import { get_custom_vars, update_custom_var } from '../api'
@@ -107,6 +107,7 @@ class Header extends Component {
             </span>
           }
           id='basic-nav-dropdown-user'
+          align='end'
         >
           {this.props.fullname !== 'Guest' ? (
             <NavDropdown.Item onClick={this.props.gotoProfile} key='profile'>
@@ -137,7 +138,9 @@ class Header extends Component {
   render() {
     return (
       <Navbar className='bg-light' collapseOnSelect expand='md' variant='light'>
-        <Navbar.Brand onClick={this.props.gotoHome}>{HEADER_TITLE}</Navbar.Brand>
+        <Navbar.Brand className='ms-4' onClick={this.props.gotoHome}>
+          {HEADER_TITLE}
+        </Navbar.Brand>
         <Navbar.Toggle aria-controls='responsive-navbar-nav' />
         <Navbar.Collapse id='responsive-navbar-nav' className='justify-content-end'>
           <Nav>

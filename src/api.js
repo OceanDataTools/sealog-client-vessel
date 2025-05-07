@@ -1,6 +1,8 @@
 import axios from 'axios'
+import { basename } from 'path'
 import cookies from './cookies'
 import FileDownload from 'js-file-download'
+import { getImageUrl } from './utils'
 import { API_ROOT_URL } from './client_settings'
 
 export const CRUISE_ROUTE = '/files/cruises'
@@ -27,9 +29,6 @@ const _buildQueryString = (queryDict) => {
       return acc
     }, [])
     .join('&')
-
-  // console.debug("queryDict:", queryDict);
-  // console.debug("queryStr:", queryStr);
 
   return queryStr
 }
@@ -73,9 +72,21 @@ const _handleFileDownload = async (filename, route, id) => {
   const url = id ? `${API_ROOT_URL}${route}/${id}/${filename}` : `${API_ROOT_URL}${route}/${filename}`
 
   await axios
-    .get(url, authorizationHeader())
+    .get(url, { ...authorizationHeader(), responseType: 'blob' })
     .then((response) => {
       FileDownload(response.data, filename)
+    })
+    .catch((error) => {
+      _errorNot401(error)
+      console.debug(error)
+    })
+}
+
+const _handleImageDownload = async (image_path) => {
+  await axios
+    .get(getImageUrl(image_path), { ...authorizationHeader(), responseType: 'blob' })
+    .then((response) => {
+      FileDownload(response.data, basename(image_path))
     })
     .catch((error) => {
       _errorNot401(error)
@@ -290,18 +301,6 @@ export const get_event_aux_data = async (queryDict = {}, id = null) => {
     })
 }
 
-export const update_event_aux_data = async (payload, id) => {
-  return await axios
-    .patch(`${API_ROOT_URL}/api/v1/event_aux_data/${id}`, payload, authorizationHeader())
-    .then(() => {
-      return { success: true }
-    })
-    .catch((error) => {
-      _errorNot400(error)
-      return { error }
-    })
-}
-
 export const get_event_aux_data_by_cruise = async (queryDict, id) => {
   const queryStr = _buildQueryString(queryDict)
 
@@ -313,6 +312,18 @@ export const get_event_aux_data_by_cruise = async (queryDict, id) => {
     .catch((error) => {
       _errorNot404(error)
       return []
+    })
+}
+
+export const update_event_aux_data = async (payload, id) => {
+  return await axios
+    .patch(`${API_ROOT_URL}/api/v1/event_aux_data/${id}`, payload, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
     })
 }
 
@@ -571,6 +582,6 @@ export const handle_image_file_delete = async (filename, callback) => {
   await _handleFileDelete(filename, IMAGE_ROUTE, callback)
 }
 
-export const handle_image_file_download = async (filename) => {
-  await _handleFileDownload(filename, IMAGE_ROUTE)
+export const handle_image_file_download = async (image_path) => {
+  await _handleImageDownload(image_path)
 }
