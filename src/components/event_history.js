@@ -378,7 +378,8 @@ class EventHistory extends Component {
             </OverlayTrigger>
           </span>
         </Card.Header>
-        {this.state.showNewEventDetails && (image_data_sources.length || aux_data.length || event_free_text_card) ? (
+        {this.state.showNewEventDetails &&
+        (image_data_sources.length || aux_data.length || event_free_text_card || this.state.event.event_options) ? (
           <Card.Body className='pt-2 pb-1'>
             <Row>
               <ImageryCards image_data_sources={image_data_sources} onClick={this.handleImagePreviewModal} md={4} lg={3} />
