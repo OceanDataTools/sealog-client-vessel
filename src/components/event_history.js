@@ -223,7 +223,7 @@ class EventHistory extends Component {
     let eventFilterValue = event.target.value !== '' ? event.target.value : null
     clearTimeout(this.state.filterTimer)
     this.setState({
-      filterTimer: setTimeout(() => this.setState({ eventFilterValue }), 500)
+      filterTimer: setTimeout(() => this.setState({ eventFilter: eventFilterValue }), 500)
     })
   }
 
