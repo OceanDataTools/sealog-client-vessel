@@ -23,7 +23,9 @@ class ImportFromFileModal extends Component {
 
   quitImport() {
     this.setState({ quit: true })
-    this.props.handleExit()
+    if (this.props.handleExit) {
+      this.props.handleExit()
+    }
     this.props.handleHide()
   }
 
