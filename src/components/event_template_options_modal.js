@@ -225,6 +225,7 @@ class EventTemplateOptionsModal extends Component {
                 validate={eventTemplate.event_free_text_required ? required : undefined}
                 rows={2}
               />
+              Attachments
               <FilePond
                 ref={(ref) => (this.pond = ref)}
                 allowMultiple={true}
