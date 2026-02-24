@@ -1,19 +1,20 @@
 import React, { Component } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { connect } from 'react-redux'
-import { Row, Button, Col, Card, Container, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { Row, Button, Col, Card, Form, FormControl, Table, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import moment from 'moment'
 import PropTypes from 'prop-types'
 import CruiseForm from './cruise_form'
-import DeleteCruiseModal from './delete_cruise_modal'
+import DeleteModal from './delete_modal'
 import DeleteFileModal from './delete_file_modal'
 import ExecuteModal from './execute_modal'
-import ImportCruisesModal from './import_cruises_modal'
+import ImportFromFileModal from './import_from_file_modal'
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard'
 import CruisePermissionsModal from './cruise_permissions_modal'
 import CustomPagination from './custom_pagination'
 import { USE_ACCESS_CONTROL } from '../client_settings'
 import { _Cruises_, _Cruise_, _cruise_ } from '../vocab'
+import { create_cruise } from '../api'
 import * as mapDispatchToProps from '../actions'
 
 let fileDownload = require('js-file-download')
@@ -81,9 +82,10 @@ class Cruises extends Component {
   }
 
   handleCruiseDeleteModal(id) {
-    this.props.showModal('deleteCruise', {
+    this.props.showModal('deleteModal', {
       id: id,
-      handleDelete: this.props.deleteCruise
+      handleDelete: this.props.deleteCruise,
+      message: 'this cruise'
     })
   }
 
@@ -117,9 +119,7 @@ class Cruises extends Component {
   }
 
   handleCruiseImportModal() {
-    this.props.showModal('importCruises', {
-      handleHide: this.handleCruiseImportClose
-    })
+    this.props.showModal('importFromFileModal')
   }
 
   handleCruiseImportClose() {
@@ -159,19 +159,71 @@ class Cruises extends Component {
         })
       })
     } else {
-      this.setState({ filteredCruises: [] })
+      this.setState({ filteredCruises: this.props.cruises })
     }
     this.handlePageSelect(1)
   }
 
   exportCruisesToJSON() {
-    fileDownload(JSON.stringify(this.props.cruises, null, '\t'), 'sealog_cruisesExport.json')
+    if (this.state.filteredCruises.length) {
+      fileDownload(JSON.stringify(this.state.filteredCruises, null, '\t'), 'sealog_cruisesExport.json')
+    }
+  }
+
+  async _insertCruise({
+    id,
+    cruise_id,
+    start_ts,
+    stop_ts,
+    cruise_location = '',
+    cruise_tags = [],
+    cruise_hidden = false,
+    cruise_additional_meta = {}
+  }) {
+    let result = {
+      skipped: false,
+      imported: false,
+      error: null
+    }
+    // const item = await get_cruises({}, id)
+
+    // if (item) {
+    //   this.setState((prevState) => ({
+    //     skipped: prevState.skipped + 1,
+    //     pending: prevState.pending - 1
+    //   }))
+    //   return
+    // }
+
+    const response = await create_cruise({
+      id,
+      cruise_id,
+      start_ts,
+      stop_ts,
+      cruise_location,
+      cruise_tags,
+      cruise_hidden,
+      cruise_additional_meta
+    })
+
+    if (response.success) {
+      result.imported = true
+      return result
+    }
+
+    if (response.error.response.data.statusCode == 400 && response.error.response.data.message == 'duplicate event ID') {
+      result.skipped = true
+      return result
+    }
+
+    result.error = { ...response.error.response.data, id: id || 'unknown' }
+    return result
   }
 
   renderAddCruiseButton() {
     if (!this.props.showform && this.props.roles && this.props.roles.includes('admin')) {
       return (
-        <Button variant='primary' size='sm' onClick={() => this.handleCruiseCreate()} disabled={!this.props.cruise_id}>
+        <Button variant='outline-primary' size='sm' onClick={() => this.handleCruiseCreate()} disabled={!this.props.cruise_id}>
           Add {_Cruise_}
         </Button>
       )
@@ -181,7 +233,7 @@ class Cruises extends Component {
   renderImportCruisesButton() {
     if (this.props.roles.includes('admin')) {
       return (
-        <Button className='mr-1' variant='primary' size='sm' onClick={() => this.handleCruiseImportModal()}>
+        <Button className='me-1' variant='outline-primary' size='sm' onClick={() => this.handleCruiseImportModal()}>
           Import From File
         </Button>
       )
@@ -189,6 +241,14 @@ class Cruises extends Component {
   }
 
   renderCruises() {
+    if (!this.state.filteredCruises.length) {
+      return (
+        <tr key='noCruises'>
+          <td colSpan='3'> No cruises found!</td>
+        </tr>
+      )
+    }
+
     const editTooltip = <Tooltip id='editTooltip'>Edit this {_cruise_}.</Tooltip>
     const deleteTooltip = <Tooltip id='deleteTooltip'>Delete this {_cruise_}.</Tooltip>
     const exportTooltip = <Tooltip id='exportTooltip'>Export this {_cruise_}.</Tooltip>
@@ -231,7 +291,7 @@ class Cruises extends Component {
         let hiddenLink = this.props.roles.includes('admin') ? (
           <OverlayTrigger placement='top' overlay={cruise.cruise_hidden ? showTooltip : hideTooltip}>
             <FontAwesomeIcon
-              className={cruise.cruise_hidden ? 'pl-1' : 'text-success pl-1'}
+              className={cruise.cruise_hidden ? 'ps-1' : 'text-success ps-1'}
               onClick={() => (cruise.cruise_hidden ? this.handleCruiseShow(cruise.id) : this.handleCruiseHide(cruise.id))}
               icon={cruise.cruise_hidden ? 'eye-slash' : 'eye'}
               fixedWidth
@@ -267,7 +327,7 @@ class Cruises extends Component {
         return (
           <tr key={cruise.id}>
             <td className={this.props.cruise_id === cruise.id ? 'text-warning' : ''}>{cruise.cruise_id}</td>
-            <td className={`cruise-details ${this.props.cruise_id === cruise.id ? 'text-warning' : ''}`}>
+            <td className={this.props.cruise_id === cruise.id ? 'text-warning' : ''}>
               {cruiseName}
               {cruiseLocation}
               {cruisePi}
@@ -290,26 +350,20 @@ class Cruises extends Component {
   }
 
   renderCruiseTable() {
-    if (this.state.filteredCruises.length) {
-      return (
-        <Table responsive bordered striped size='sm'>
-          <thead>
-            <tr>
-              <th>{_Cruise_}</th>
-              <th>Details</th>
-              <th className='text-center' style={tableHeaderStyle}>
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody>{this.renderCruises()}</tbody>
-        </Table>
-      )
-    } else if (!this.props.roles.includes('admin')) {
-      return <Card.Body>Sorry, you can only edit active {_Cruises_}!</Card.Body>
-    } else {
-      return <Card.Body>No {_Cruises_} found!</Card.Body>
-    }
+    return (
+      <Table className='mb-0' bordered striped size='sm'>
+        <thead>
+          <tr>
+            <th>{_Cruise_}</th>
+            <th>Details</th>
+            <th className='text-center' style={tableHeaderStyle}>
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>{this.renderCruises()}</tbody>
+      </Table>
+    )
   }
 
   renderCruiseHeader() {
@@ -318,16 +372,14 @@ class Cruises extends Component {
     return (
       <div>
         {_Cruises_}
-        <span className='float-right'>
-          <Form inline>
-            {this.props.roles.includes('admin') ? (
-              <FormControl size='sm' type='text' placeholder='Search' className='mr-sm-2' onChange={this.handleSearchChange} />
-            ) : null}
-            <OverlayTrigger placement='top' overlay={exportTooltip}>
-              <FontAwesomeIcon onClick={() => this.exportCruisesToJSON()} icon='download' fixedWidth />
-            </OverlayTrigger>
-          </Form>
-        </span>
+        <OverlayTrigger placement='top' overlay={exportTooltip}>
+          <FontAwesomeIcon className='float-end pt-2 text-primary' onClick={() => this.exportCruisesToJSON()} icon='download' fixedWidth />
+        </OverlayTrigger>
+        <Form className='float-end me-2'>
+          {this.props.roles.includes('admin') ? (
+            <FormControl size='sm' type='text' placeholder='Search' onChange={this.handleSearchChange} />
+          ) : null}
+        </Form>
       </div>
     )
   }
@@ -339,35 +391,37 @@ class Cruises extends Component {
 
     if (this.props.roles.some((item) => ['admin', 'cruise_manager'].includes(item))) {
       return (
-        <Container className='mt-2'>
-          <DeleteCruiseModal />
-          <DeleteFileModal />
-          <ExecuteModal />
+        <React.Fragment>
           <CruisePermissionsModal onClose={this.props.fetchCruises} />
-          <ImportCruisesModal handleExit={this.handleCruiseImportClose} />
-          <Row>
-            <Col className='px-1' sm={12} md={7} lg={6} xl={{ span: 5, offset: 1 }}>
-              <Card className='border-secondary'>
-                <Card.Header>{this.renderCruiseHeader()}</Card.Header>
-                {this.renderCruiseTable()}
-              </Card>
-              <CustomPagination
-                className='mt-2'
-                page={this.state.activePage}
-                count={this.state.filteredCruises.length}
-                pageSelectFunc={this.handlePageSelect}
-                maxPerPage={maxCruisesPerPage}
-              />
-              <div className='my-2 float-right'>
-                {this.renderImportCruisesButton()}
-                {this.renderAddCruiseButton()}
-              </div>
-            </Col>
+          <DeleteFileModal />
+          <DeleteModal />
+          <ExecuteModal />
+          <ImportFromFileModal handleExit={this.handleCruiseImportClose} title='Import Cruises' insertItem={this._insertCruise} />
+          <Row className='d-flex justify-content-center py-2'>
+            {this.props.roles.includes('admin') ? (
+              <Col className='px-1' sm={12} md={7} lg={6} xl={5}>
+                <Card className='border-secondary'>
+                  <Card.Header>{this.renderCruiseHeader()}</Card.Header>
+                  {this.renderCruiseTable()}
+                </Card>
+                <CustomPagination
+                  className='mt-2'
+                  page={this.state.activePage}
+                  count={this.state.filteredCruises.length}
+                  pageSelectFunc={this.handlePageSelect}
+                  maxPerPage={maxCruisesPerPage}
+                />
+                <div className='my-2 float-end'>
+                  {this.renderImportCruisesButton()}
+                  {this.renderAddCruiseButton()}
+                </div>
+              </Col>
+            ) : null}
             <Col className='px-1' sm={12} md={5} lg={6} xl={5}>
               <CruiseForm handleFormSubmit={this.props.fetchCruises} />
             </Col>
           </Row>
-        </Container>
+        </React.Fragment>
       )
     } else {
       return <div>What are YOU doing here?</div>

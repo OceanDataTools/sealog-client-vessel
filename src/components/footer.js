@@ -1,8 +1,10 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Client } from '@hapi/nes/lib/client'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import prettyBytes from 'pretty-bytes'
+import { Nav, Navbar, NavbarCollapse } from 'react-bootstrap'
 import { authorizationHeader, get_custom_vars } from '../api'
 import { WS_ROOT_URL, DISABLE_EVENT_LOGGING } from '../client_settings'
 import * as mapDispatchToProps from '../actions'
@@ -99,9 +101,9 @@ class Footer extends Component {
         sizeStyle = 'text-success'
       }
       freeSpaceStatus = (
-        <span className='ml-2'>
+        <React.Fragment>
           Free Space: <span className={sizeStyle}>{prettyBytes(parseInt(this.state.freeSpaceInBytes || 'Unknown'))}</span>
-        </span>
+        </React.Fragment>
       )
     }
 
@@ -111,27 +113,37 @@ class Footer extends Component {
         asnapStatusStyle = 'text-success'
       }
       asnapStatus = (
-        <span>
-          ASNAP: <span className={asnapStatusStyle}>{this.state.asnapStatus || 'Unknown'}</span>
-        </span>
+        <React.Fragment>
+          ASNAP: <span className={asnapStatusStyle + ' me-3'}>{this.state.asnapStatus || 'Unknown'}</span>
+        </React.Fragment>
       )
     }
 
     return (
-      <div className='mt-2 justify-content-center'>
-        {asnapStatus}
-        {freeSpaceStatus}
-        <span className='float-right'>
-          <a href='https://oceandatatools.github.io/sealog-docs' target='_blank'>
-            Sealog
-          </a>{' '}
-          is licensed under the{' '}
-          <a href='https://opensource.org/license/mit' target='_blank'>
-            MIT
-          </a>{' '}
-          public license
-        </span>
-      </div>
+      <Navbar className='bg-light footer' collapseOnSelect expand='sm' variant='light' fixed='bottom'>
+        <Navbar.Text className='ms-4'>
+          {asnapStatus}
+          {freeSpaceStatus}
+        </Navbar.Text>
+        <NavbarCollapse id='responsive-navbar-nav' className='justify-content-end'>
+          <Nav className='justify-content-end me-4' style={{ width: '100%' }}>
+            <span>
+              <Link
+                className='text-link text-primary me-1'
+                to={{ pathname: 'https://oceandatatools.github.io/sealog-docs' }}
+                target='_blank'
+              >
+                Sealog
+              </Link>
+              is licensed under the
+              <Link className='text-link text-primary mx-1' to={{ pathname: 'https://opensource.org/license/mit' }} target='_blank'>
+                MIT
+              </Link>
+              public license
+            </span>
+          </Nav>
+        </NavbarCollapse>
+      </Navbar>
     )
   }
 }

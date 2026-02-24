@@ -13,7 +13,7 @@ class EventOptionsCard extends Component {
         filtered.push(
           <div key={`event_option_${index}`}>
             <span className='data-name'>{event_option.event_option_name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:</span>{' '}
-            <span className='float-right' style={{ wordWrap: 'break-word' }}>
+            <span className='float-end' style={{ wordWrap: 'break-word' }}>
               {event_option.event_option_value}
             </span>
             <br />
@@ -24,9 +24,9 @@ class EventOptionsCard extends Component {
     }, [])
 
     return return_event_options.length ? (
-      <Col className='event-data-col' sm={this.props.sm || 6} md={this.props.md || 4} lg={this.props.lg || 3}>
+      <Col className='event-data-col' sm={this.props.sm || 6} md={this.props.md || 4} lg={this.props.lg || 3} xl={this.props.xl || 3}>
         <Card className='event-data-card'>
-          <Card.Header>Event Options</Card.Header>
+          <Card.Header className='event-details'>Event Options</Card.Header>
           <Card.Body>{return_event_options}</Card.Body>
         </Card>
       </Col>
@@ -38,7 +38,8 @@ EventOptionsCard.propTypes = {
   event: PropTypes.object.isRequired,
   sm: PropTypes.number,
   md: PropTypes.number,
-  lg: PropTypes.number
+  lg: PropTypes.number,
+  xl: PropTypes.number
 }
 
 export default EventOptionsCard

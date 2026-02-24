@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connectModal } from 'redux-modal'
 import PropTypes from 'prop-types'
 import { Form, ListGroup, Modal } from 'react-bootstrap'
-import { get_cruises, update_cruise_permissions } from '../api'
+import { get_cruises, get_users, update_cruise_permissions } from '../api'
 
 const updateType = {
   ADD: true,
@@ -42,16 +42,19 @@ class UserPermissionsModal extends Component {
 
     this.state = {
       cruises: [],
+      user: {},
       Permissions: {}
     }
 
     this.fetchCruises = this.fetchCruises.bind(this)
+    this.fetchUser = this.fetchUser.bind(this)
     this.handleHide = this.handleHide.bind(this)
     this.updateCruisePermissions = this.updateCruisePermissions.bind(this)
   }
 
   componentDidMount() {
     this.fetchCruises()
+    this.fetchUser()
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -74,6 +77,11 @@ class UserPermissionsModal extends Component {
     this.setState({ cruises })
   }
 
+  async fetchUser() {
+    const user = await get_users({}, this.props.user_id)
+    this.setState({ user })
+  }
+
   handleHide() {
     this.props.onClose()
     this.props.handleHide()
@@ -92,39 +100,38 @@ class UserPermissionsModal extends Component {
 
   render() {
     const { show, user_id } = this.props
-    const body =
-      this.props.user_id && this.state.cruises
-        ? this.state.cruises.map((cruise) => {
-            const cruiseCheckbox = (
-              <Form.Check
-                type='switch'
-                id={`cruise_${cruise.id}`}
-                label={`${cruise.cruise_id}${cruise.cruise_additional_meta.cruise_name ? ': ' + cruise.cruise_additional_meta.cruise_name : ''}`}
-                checked={cruise.cruise_access_list && cruise.cruise_access_list.includes(user_id)}
-                onChange={(e) => {
-                  this.updateCruisePermissions(cruise.id, e.target.checked)
-                }}
-              />
-            )
 
-            return <RenderTableRow key={cruise.id} cruise={cruiseCheckbox} />
-          })
-        : null
-
-    if (body) {
-      return (
-        <Modal show={show} onHide={this.handleHide}>
-          <form>
-            <Modal.Header className='bg-light' closeButton>
-              <Modal.Title>User Permissions</Modal.Title>
-            </Modal.Header>
-            {body}
-          </form>
-        </Modal>
-      )
-    } else {
-      return null
-    }
+    return this.state.user.username ? (
+      <Modal size='md' show={show} onHide={this.handleHide}>
+        <form>
+          <Modal.Header className='bg-light' closeButton>
+            <Modal.Title>
+              Access permissions for{' '}
+              <i>
+                <b>{this.state.user.username}</b>
+              </i>
+            </Modal.Title>
+          </Modal.Header>
+          <ListGroup>
+            {this.state.cruises.map((cruise) => {
+              return (
+                <ListGroup.Item key={`user_${cruise.id}`}>
+                  <Form.Check
+                    type='switch'
+                    id={`cruise_${cruise.id}`}
+                    label={`${cruise.cruise_id}${cruise.cruise_additional_meta.cruise_name ? ': ' + cruise.cruise_additional_meta.cruise_name : ''}`}
+                    checked={cruise.cruise_access_list && cruise.cruise_access_list.includes(user_id)}
+                    onChange={(e) => {
+                      this.updateCruisePermissions(cruise.id, e.target.checked)
+                    }}
+                  />
+                </ListGroup.Item>
+              )
+            })}
+          </ListGroup>
+        </form>
+      </Modal>
+    ) : null
   }
 }
 

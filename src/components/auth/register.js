@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { reduxForm, Field } from 'redux-form'
 import { Link } from 'react-router-dom'
-import { Row, Col, Card, Form, Button } from 'react-bootstrap'
+import { Row, Container, Col, Card, Form, Button } from 'react-bootstrap'
 import ReCAPTCHA from 'react-google-recaptcha'
 import PropTypes from 'prop-types'
 import { RECAPTCHA_SITE_KEY } from '../../client_settings'
@@ -32,13 +32,13 @@ class Register extends Component {
       return (
         <Card className='form-signin'>
           <Card.Body>
-            <h5 className='form-signin-heading'>New User Registration</h5>
+            <h5>User Registration</h5>
             <div className='alert alert-success'>
               <strong>Success!</strong> {this.props.message}
             </div>
             <div className='text-center'>
               <hr className='border-secondary' />
-              <Link className='btn btn-outline-primary btn-block' to={`/login`}>
+              <Link className='btn btn-outline-primary' to={`/login`}>
                 Back to Login
               </Link>
             </div>
@@ -71,27 +71,52 @@ class Register extends Component {
       return (
         <Card className='form-signin'>
           <Card.Body>
-            <h5 className='form-signin-heading'>User Registration</h5>
+            <h5>User Registration</h5>
             <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
-              <Form.Row>
-                <Field name='username' component={renderTextField} label='Username' required={true} />
-                <Field name='fullname' component={renderTextField} label='Full Name' required={true} />
-                <Field name='email' component={renderTextField} label='Email' required={true} />
-                <Field name='password' component={renderTextField} type='password' label='Password' required={true} />
-                <Field name='confirmPassword' component={renderTextField} type='password' label='Confirm Password' required={true} />
-              </Form.Row>
-              {recaptcha}
-              {this.renderAlert()}
-              <Button variant='primary' block type='submit' disabled={submitting || !valid}>
-                Register
-              </Button>
+              <Row>
+                <Field name='username' component={renderTextField} label='Username' required={true} sm={6} md={6} lg={6} />
+                <Field name='fullname' component={renderTextField} label='Full Name' required={true} sm={6} md={6} lg={6} />
+              </Row>
+              <Row>
+                <Field name='email' component={renderTextField} label='Email' required={true} sm={10} md={10} lg={10} />
+              </Row>
+              <Row>
+                <Field name='password' component={renderTextField} type='password' label='Password' required={true} sm={6} md={6} lg={6} />
+                <Field
+                  name='confirmPassword'
+                  component={renderTextField}
+                  type='password'
+                  label='Confirm Password'
+                  required={true}
+                  sm={6}
+                  md={6}
+                  lg={6}
+                />
+              </Row>
+              <Row>
+                <Col>
+                  {recaptcha}
+                  {this.renderAlert()}
+                </Col>
+              </Row>
+              <Row className='justify-content-center'>
+                <Col sm='6'>
+                  <div className='d-grid gap-2 pt-2'>
+                    <Button className='w-100' variant='outline-primary' type='submit' disabled={submitting || !valid}>
+                      Register
+                    </Button>
+                  </div>
+                </Col>
+              </Row>
+              <hr />
+              <Row className='h-100'>
+                <Col className='d-flex justify-content-center'>
+                  <Link className='text-muted text-link' to={'/login'}>
+                    Back to Login
+                  </Link>
+                </Col>
+              </Row>
             </Form>
-            <div>
-              <hr className='border-secondary' />
-              <Link className='btn btn-outline-primary btn-block' to={`/login`}>
-                Back to Login
-              </Link>
-            </div>
           </Card.Body>
         </Card>
       )
@@ -100,14 +125,14 @@ class Register extends Component {
 
   render() {
     return (
-      <div className='my-4'>
-        <Row className='justify-content-center'>
-          <Col sm={6} md={5} lg={4} xl={3}>
+      <Container>
+        <Row className='pt-4 justify-content-center'>
+          <Col sm={10} md={8} lg={6} xl={5}>
             {this.renderSuccess()}
             {this.renderForm()}
           </Col>
         </Row>
-      </div>
+      </Container>
     )
   }
 }

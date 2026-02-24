@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import moment from 'moment'
 import { connect } from 'react-redux'
-import { Accordion, Button, Card, Col, Container, Row } from 'react-bootstrap'
+import { Accordion, Card, Col, Row } from 'react-bootstrap'
+import moment from 'moment'
 import PropTypes from 'prop-types'
 import ExportDropdown from './export_dropdown'
+import ReviewDropdown from './review_dropdown'
 import CopyCruiseToClipboard from './copy_cruise_to_clipboard'
 import { MAIN_SCREEN_HEADER, MAIN_SCREEN_TXT } from '../client_settings'
 import { handle_cruise_file_download } from '../api'
@@ -79,21 +80,21 @@ class CruiseMenu extends Component {
   handleCruiseSelectForReplay() {
     if (this.state.activeCruise) {
       this.props.clearEvents()
-      this.props.gotoCruiseReplay(this.state.activeCruise.id)
+      this.props.gotoReviewReplay(this.state.activeCruise.id)
     }
   }
 
   handleCruiseSelectForMap() {
     if (this.state.activeCruise) {
       this.props.clearEvents()
-      this.props.gotoCruiseMap(this.state.activeCruise.id)
+      this.props.gotoReviewMap(this.state.activeCruise.id)
     }
   }
 
   renderCruiseFiles(files) {
     let output = files.map((file, index) => {
       return (
-        <div className='pl-2' key={`file_${index}`}>
+        <div className='ps-2' key={`file_${index}`}>
           <a className='text-decoration-none' href='#' onClick={() => handle_cruise_file_download(file, this.state.activeCruise.id)}>
             {file}
           </a>
@@ -127,7 +128,6 @@ class CruiseMenu extends Component {
       let cruiseDescription = this.state.activeCruise.cruise_additional_meta.cruise_description ? (
         <p className='text-justify' style={{ whiteSpace: 'pre-wrap' }}>
           <strong>Description:</strong> {this.state.activeCruise.cruise_additional_meta.cruise_description}
-          <br />
         </p>
       ) : null
       let cruiseVessel = (
@@ -174,8 +174,8 @@ class CruiseMenu extends Component {
         <Card className='border-secondary' key={`cruise_${this.state.activeCruise.cruise_id}`}>
           <Card.Header>
             {_Cruise_}:<span className='text-warning'> {this.state.activeCruise.cruise_id}</span>
-            <span className='float-right'>
-              <CopyCruiseToClipboard cruise={this.state.activeCruise} />
+            <div className='float-end'>
+              <ReviewDropdown id='dropdown-review' className='pe-3' cruiseID={this.state.activeCruise.id} />
               <ExportDropdown
                 id='dropdown-download'
                 disabled={false}
@@ -184,27 +184,20 @@ class CruiseMenu extends Component {
                 cruiseID={this.state.activeCruise.id}
                 prefix={this.state.activeCruise.cruise_id}
               />
-            </span>
+              <CopyCruiseToClipboard className='ps-1' cruise={this.state.activeCruise} />
+            </div>
           </Card.Header>
           <Card.Body>
             {cruiseName}
             {cruisePi}
-            {cruiseDescription}
-            {cruiseVessel}
             {cruiseLocation}
-            {cruiseDates}
+            {cruiseVessel}
             {cruisePorts}
+            {cruiseDates}
             {cruiseDuration}
-            {cruiseFiles}
             <br />
-            <Row className='pt-2 justify-content-center'>
-              <Button className='mb-1 mr-1' size='sm' variant='outline-primary' onClick={() => this.handleCruiseSelectForReplay()}>
-                Replay
-              </Button>
-              <Button className='mb-1 mr-1' size='sm' variant='outline-primary' onClick={() => this.handleCruiseSelectForMap()}>
-                Map
-              </Button>
-            </Row>
+            {cruiseDescription}
+            {cruiseFiles}
           </Card.Body>
         </Card>
       )
@@ -255,7 +248,7 @@ class CruiseMenu extends Component {
           return (
             <div
               key={`select_${cruise.id}`}
-              className={this.state.activeCruise && cruise.id === this.state.activeCruise.id ? 'ml-2 text-warning' : 'ml-2 text-primary'}
+              className={this.state.activeCruise && cruise.id === this.state.activeCruise.id ? 'ms-2 text-warning' : 'ms-2 text-primary'}
               onClick={() => this.handleCruiseSelect(cruise.id)}
             >
               {cruise.cruise_id}
@@ -265,14 +258,14 @@ class CruiseMenu extends Component {
 
         if (this.state.years.size > 1) {
           yearCards.unshift(
-            <Card className='border-secondary' key={`year_${year}`}>
-              <Accordion.Toggle as={Card.Header} eventKey={year}>
-                <h6>Year: {yearTxt}</h6>
-              </Accordion.Toggle>
-              <Accordion.Collapse eventKey={year}>
-                <Card.Body className='py-2'>{yearCruises}</Card.Body>
-              </Accordion.Collapse>
-            </Card>
+            <Accordion.Item eventKey={year} key={`year_${year}`}>
+              <Accordion.Header>
+                <span>Year: {yearTxt}</span>
+              </Accordion.Header>
+              <Accordion.Body className='p-2'>
+                <span>{yearCruises}</span>
+              </Accordion.Body>
+            </Accordion.Item>
           )
         } else {
           yearCards.push(
@@ -397,14 +390,16 @@ class CruiseMenu extends Component {
 
   render() {
     return (
-      <Container className='mt-2'>
-        <Row>
-          <h4>{MAIN_SCREEN_HEADER}</h4>
-          <p className='text-justify' style={{ whiteSpace: 'pre-wrap' }}>
-            {MAIN_SCREEN_TXT}
-          </p>
+      <div className='mt-2'>
+        <Row className='d-flex justify-content-center'>
+          <Col sm={12} md={11} lg={8}>
+            <h4>{MAIN_SCREEN_HEADER}</h4>
+            <p className='text-justify' style={{ whiteSpace: 'pre-wrap' }}>
+              {MAIN_SCREEN_TXT}
+            </p>
+          </Col>
         </Row>
-        <Row>
+        <Row className='d-flex justify-content-center'>
           <Col className='px-1' sm={3} md={3} lg={2}>
             {this.renderYearList()}
           </Col>
@@ -412,7 +407,7 @@ class CruiseMenu extends Component {
             {this.renderCruiseCard()}
           </Col>
         </Row>
-      </Container>
+      </div>
     )
   }
 }
@@ -422,8 +417,8 @@ CruiseMenu.propTypes = {
   cruise: PropTypes.object.isRequired,
   cruises: PropTypes.array.isRequired,
   fetchCruises: PropTypes.func.isRequired,
-  gotoCruiseMap: PropTypes.func.isRequired,
-  gotoCruiseReplay: PropTypes.func.isRequired
+  gotoReviewMap: PropTypes.func.isRequired,
+  gotoReviewReplay: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => {

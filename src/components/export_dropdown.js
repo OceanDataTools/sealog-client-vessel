@@ -129,8 +129,13 @@ class ExportDropdown extends Component {
     const className = this.props.className ? this.props.className : 'p-0'
 
     return (
-      <Dropdown className='no-arrow' as={'span'} id={this.state.id}>
-        <Dropdown.Toggle className={className} variant='link' disabled={this.props.disabled}>
+      <Dropdown as={'span'} id={this.state.id}>
+        <Dropdown.Toggle
+          className={className}
+          style={{ position: 'relative', bottom: '2px' }}
+          variant='link'
+          disabled={this.props.disabled}
+        >
           <OverlayTrigger placement='top' overlay={exportTooltip}>
             <FontAwesomeIcon icon='download' fixedWidth />
           </OverlayTrigger>

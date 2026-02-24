@@ -19,6 +19,7 @@ export const renderStaticTextField = ({ input, label, xs = 12, sm = 12, md = 12,
 
 export const renderTextField = ({
   input,
+  className = 'pb-2',
   label,
   placeholder,
   required,
@@ -40,7 +41,7 @@ export const renderTextField = ({
   input.value = typeof input.value === 'object' ? input.value.join(', ') : input.value
 
   return (
-    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       {labelComponent}
       <Form.Control type={type} {...input} placeholder={placeholder} isInvalid={touched && (warning || error)} disabled={disabled} />
       <Form.Control.Feedback className={warning ? 'text-warning' : ''} type='invalid'>
@@ -53,6 +54,7 @@ export const renderTextField = ({
 
 export const renderTextArea = ({
   input,
+  className = 'pb-2',
   label,
   placeholder,
   required,
@@ -68,7 +70,7 @@ export const renderTextArea = ({
   input.value = typeof input.value === 'object' ? input.value.join(', ') : input.value
 
   return (
-    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Label>
         {label}
         {requiredField}
@@ -81,8 +83,8 @@ export const renderTextArea = ({
 
 export const renderSelectField = ({
   input,
+  className = 'pb-2',
   label,
-  placeholder,
   required,
   options,
   meta: { touched, error },
@@ -99,15 +101,15 @@ export const renderSelectField = ({
   })
 
   return (
-    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Label>
         {label}
         {requiredField}
       </Form.Label>
-      <Form.Control as='select' {...input} placeholder={placeholder} isInvalid={touched && error} disabled={disabled}>
+      <Form.Select {...input} isInvalid={touched && error} disabled={disabled}>
         {defaultOption}
         {optionList}
-      </Form.Control>
+      </Form.Select>
       <Form.Control.Feedback type='invalid'>{error}</Form.Control.Feedback>
     </Form.Group>
   )
@@ -115,6 +117,7 @@ export const renderSelectField = ({
 
 export const renderDatePicker = ({
   input,
+  className = 'pb-2',
   label,
   required,
   meta: { error },
@@ -128,7 +131,7 @@ export const renderDatePicker = ({
   let requiredField = required ? <span className='text-danger'> *</span> : ''
 
   return (
-    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Label>
         {label}
         {requiredField}
@@ -159,6 +162,7 @@ export const renderDatePicker = ({
 
 export const renderDateTimePicker = ({
   input,
+  className = 'pb-2',
   label,
   required,
   meta: { error },
@@ -173,7 +177,7 @@ export const renderDateTimePicker = ({
   let requiredField = required ? <span className='text-danger'> *</span> : ''
 
   return (
-    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Label>
         {label}
         {requiredField}
@@ -203,14 +207,19 @@ export const renderDateTimePicker = ({
 }
 
 export const renderCheckboxGroup = ({
+  input,
+  className = 'pb-2',
   label,
   options,
-  input,
   required,
   meta: { dirty, error },
   disabled = false,
   inline = false,
-  indication = false
+  indication = false,
+  xs = 12,
+  sm = 12,
+  md = 12,
+  lg = 12
 }) => {
   const requiredField = required ? <span className='text-danger'> *</span> : ''
   const checkboxList = options.map((option, index) => {
@@ -256,7 +265,7 @@ export const renderCheckboxGroup = ({
   })
 
   return (
-    <Form.Group as={Col}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Label>
         <span>
           {label}
@@ -275,9 +284,19 @@ export const renderCheckboxGroup = ({
   )
 }
 
-export const renderCheckbox = ({ input, label, meta: { dirty, error }, disabled = false, xs = 12, sm = 12, md = 12, lg = 12 }) => {
+export const renderCheckbox = ({
+  input,
+  className = 'pb-2',
+  label,
+  meta: { dirty, error },
+  disabled = false,
+  xs = 12,
+  sm = 12,
+  md = 12,
+  lg = 12
+}) => {
   return (
-    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Check
         {...input}
         label={label}
@@ -297,11 +316,16 @@ export const renderRadioGroup = ({
   label,
   options,
   input,
+  className,
   required,
   meta: { dirty, error },
   disabled = false,
   inline = false,
-  indication = false
+  indication = false,
+  xs = 12,
+  sm = 12,
+  md = 12,
+  lg = 12
 }) => {
   const requiredField = required ? <span className='text-danger'> *</span> : ''
   const radioList = options.map((option, index) => {
@@ -335,7 +359,7 @@ export const renderRadioGroup = ({
   })
 
   return (
-    <Form.Group as={Col}>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Label>
         <span>
           {label}
@@ -354,9 +378,19 @@ export const renderRadioGroup = ({
   )
 }
 
-export const renderSwitch = ({ input, label, meta: { dirty, error }, disabled = false }) => {
+export const renderSwitch = ({
+  input,
+  className = 'pb-2',
+  label,
+  meta: { dirty, error },
+  disabled = false,
+  xs = 12,
+  sm = 12,
+  md = 12,
+  lg = 12
+}) => {
   return (
-    <Form.Group className='ml-2'>
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
       <Form.Switch
         {...input}
         id={input.name}

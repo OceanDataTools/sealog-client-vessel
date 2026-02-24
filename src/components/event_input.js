@@ -22,11 +22,9 @@ class EventInput extends Component {
       <Form className={this.props.className} onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
         <InputGroup>
           <Field name='event_free_text' component='input' type='text' placeholder='Type new event' className='form-control' />
-          <InputGroup.Append>
-            <Button block type='submit' disabled={submitting || pristine}>
-              Submit
-            </Button>
-          </InputGroup.Append>
+          <Button type='submit' disabled={submitting || pristine}>
+            Submit
+          </Button>
         </InputGroup>
       </Form>
     )

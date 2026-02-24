@@ -1,0 +1,2 @@
+echo "Linting NodeJS code with eslint..."
+eslint . --ext .js --ext .js.dist

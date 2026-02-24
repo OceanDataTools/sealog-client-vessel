@@ -75,9 +75,9 @@ class EventFilterForm extends Component {
     const stopTS = this.props.maxDate ? moment(this.props.maxDate) : null
 
     return (
-      <Card className='form-standard border-secondary'>
+      <Card className='border-secondary'>
         <Card.Header>{eventFilterFormHeader}</Card.Header>
-        <Card.Body className='px-0'>
+        <Card.Body className='event_fitler_form'>
           <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
             <Field name='fulltext' component={renderTextField} label='Full text' placeholder='i.e. SAMPLE' disabled={this.props.disabled} />
             <Field name='author' component={renderTextField} label='Author' placeholder='i.e. jsmith' disabled={this.props.disabled} />
@@ -97,11 +97,17 @@ class EventFilterForm extends Component {
               label='Stop Date/Time (UTC)'
               disabled={this.props.disabled}
             />
-            <div className='float-right'>
-              <Button className='mr-1' variant='secondary' size='sm' disabled={submitting || this.props.disabled} onClick={this.clearForm}>
+            <div className='float-end mt-2'>
+              <Button
+                className='me-2'
+                variant='outline-secondary'
+                size='sm'
+                disabled={submitting || this.props.disabled}
+                onClick={this.clearForm}
+              >
                 Reset
               </Button>
-              <Button className='mr-3' variant='primary' size='sm' type='submit' disabled={submitting || !valid || this.props.disabled}>
+              <Button variant='outline-primary' size='sm' type='submit' disabled={submitting || !valid || this.props.disabled}>
                 Filter
               </Button>
             </div>

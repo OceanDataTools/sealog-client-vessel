@@ -80,7 +80,7 @@ class ExecuteModal extends Component {
     })
 
     return (
-      <Modal size={'xl'} show={show} onHide={this.handleHide}>
+      <Modal size={'xl'} show={show} onHide={this.handleHide} scrollable>
         <Modal.Header className='bg-light' closeButton>
           <Modal.Title>{title}</Modal.Title>
         </Modal.Header>

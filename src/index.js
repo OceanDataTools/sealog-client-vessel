@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Route, Switch } from 'react-router'
+import { Container } from 'react-bootstrap'
 import cookies from './cookies'
 import L from 'leaflet'
 
@@ -24,8 +25,8 @@ import Tasks from './components/tasks'
 import EventLogging from './components/event_logging'
 import EventManagement from './components/event_management'
 import EventTemplates from './components/event_templates'
-import CruiseMap from './components/cruise_map'
-import CruiseReplay from './components/cruise_replay'
+import ReviewMap from './components/review_map'
+import ReviewReplay from './components/review_replay'
 import Cruises from './components/cruises'
 import ForgotPassword from './components/auth/forgot_password'
 import ResetPassword from './components/auth/reset_password'
@@ -124,25 +125,27 @@ ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <Header />
-      <Switch>
-        <Route path={`/`} exact={true} component={RequireAuth(DISABLE_EVENT_LOGGING ? CruiseMenu : EventLogging)} />
-        <Route path={`/profile`} exact={true} component={RequireAuth(Profile)} />
-        <Route path={`/register`} exact={true} component={Register} />
-        <Route path={`/forgotPassword`} exact={true} component={ForgotPassword} />
-        <Route path={`/resetPassword/:token`} exact={true} component={ResetPassword} />
-        <Route path={`/login`} exact={true} component={RequireUnauth(Login)} />
-        <Route path={`/logout`} exact={true} component={Logout} />
-        <Route path={`/users`} exact={true} component={RequireAuth(Users)} />
-        <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
-        <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
-        <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
-        <Route path={`/cruise_map/:id`} exact={true} component={RequireAuth(CruiseMap)} />
-        <Route path={`/cruise_replay/:id`} exact={true} component={RequireAuth(CruiseReplay)} />
-        <Route path={`/event_management`} exact={true} component={RequireAuth(EventManagement)} />
-        <Route path={`/event_templates`} exact={true} component={RequireAuth(EventTemplates)} />
-      </Switch>
+      <Container fluid style={{ maxWidth: '1200px', paddingBottom: '70px' }}>
+        <Switch>
+          <Route path={`/`} exact={true} component={RequireAuth(DISABLE_EVENT_LOGGING ? CruiseMenu : EventLogging)} />
+          <Route path={`/profile`} exact={true} component={RequireAuth(Profile)} />
+          <Route path={`/register`} exact={true} component={Register} />
+          <Route path={`/forgotPassword`} exact={true} component={ForgotPassword} />
+          <Route path={`/resetPassword/:token`} exact={true} component={ResetPassword} />
+          <Route path={`/login`} exact={true} component={RequireUnauth(Login)} />
+          <Route path={`/logout`} exact={true} component={Logout} />
+          <Route path={`/users`} exact={true} component={RequireAuth(Users)} />
+          <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
+          <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
+          <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
+          <Route path={`/review_map/:id`} exact={true} component={RequireAuth(ReviewMap)} />
+          <Route path={`/review_replay/:id`} exact={true} component={RequireAuth(ReviewReplay)} />
+          <Route path={`/event_management`} exact={true} component={RequireAuth(EventManagement)} />
+          <Route path={`/event_templates`} exact={true} component={RequireAuth(EventTemplates)} />
+        </Switch>
+      </Container>
       <Footer />
     </ConnectedRouter>
   </Provider>,
-  document.querySelector('.container')
+  document.querySelector('#container')
 )

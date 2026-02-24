@@ -57,7 +57,7 @@ class CustomPagination extends Component {
       }
 
       return (
-        <Pagination className={this.props.className}>
+        <Pagination className={this.props.className || 'pt-2'}>
           <Pagination.First className={'rounded-left '} onClick={() => this.props.pageSelectFunc(1)} />
           <Pagination.Prev
             onClick={() => {

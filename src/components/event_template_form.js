@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { reduxForm, Field, FieldArray, formValueSelector } from 'redux-form'
-import { Button, Form, Card } from 'react-bootstrap'
+import { Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderAlert, renderHidden, renderMessage, renderSelectField, renderSwitch, renderTextField, renderTextArea } from './form_elements'
 import * as mapDispatchToProps from '../actions'
@@ -74,15 +74,25 @@ class EventTemplateForm extends Component {
         )
       } else if (this.props.event_options[index].event_option_type === 'dropdown') {
         return (
-          <div>
-            <Field name={`${prefix}.event_option_values`} component={renderTextArea} label='Dropdown Options' required={true} rows={2} />
+          <Row>
+            <Field
+              name={`${prefix}.event_option_values`}
+              component={renderTextArea}
+              label='Dropdown Options'
+              required={true}
+              rows={2}
+              sm={6}
+              lg={6}
+            />
             <Field
               name={`${prefix}.event_option_default_value`}
               component={renderTextField}
               label='Default Selection'
               placeholder='i.e. a value from the list of options'
+              sm={6}
+              lg={6}
             />
-          </div>
+          </Row>
         )
       } else if (this.props.event_options[index].event_option_type === 'checkboxes') {
         return (
@@ -98,7 +108,7 @@ class EventTemplateForm extends Component {
         )
       } else if (this.props.event_options[index].event_option_type === 'radio buttons') {
         return (
-          <div>
+          <Row>
             <Field
               name={`${prefix}.event_option_values`}
               component={renderTextArea}
@@ -112,7 +122,7 @@ class EventTemplateForm extends Component {
               label='Default Selection'
               placeholder='i.e. a value from the list of options'
             />
-          </div>
+          </Row>
         )
       } else {
         return
@@ -124,12 +134,7 @@ class EventTemplateForm extends Component {
     const promote = (index, fields) => {
       if (index > 0) {
         return (
-          <FontAwesomeIcon
-            className='text-primary float-right'
-            icon='chevron-up'
-            fixedWidth
-            onClick={() => fields.swap(index, index - 1)}
-          />
+          <FontAwesomeIcon className='text-primary float-end' icon='chevron-up' fixedWidth onClick={() => fields.swap(index, index - 1)} />
         )
       }
     }
@@ -138,7 +143,7 @@ class EventTemplateForm extends Component {
       if (index < fields.length - 1) {
         return (
           <FontAwesomeIcon
-            className='text-primary float-right'
+            className='text-primary float-end'
             icon='chevron-down'
             fixedWidth
             onClick={() => fields.swap(index, index + 1)}
@@ -154,18 +159,22 @@ class EventTemplateForm extends Component {
             <hr className='border-secondary' />
             <span>
               <Form.Label>Option #{index + 1}</Form.Label>
-              <FontAwesomeIcon className='text-danger float-right' icon='times' fixedWidth onClick={() => fields.remove(index)} />
+              <FontAwesomeIcon className='text-danger float-end' icon='times' fixedWidth onClick={() => fields.remove(index)} />
               {promote(index, fields)}
               {demote(index, fields)}
             </span>
-            <Field name={`${options}.event_option_name`} component={renderTextField} label='Name' required={true} />
-            <Field
-              name={`${options}.event_option_type`}
-              component={renderSelectField}
-              options={EventTemplateOptionTypes}
-              label='Type'
-              required={true}
-            />
+            <Row>
+              <Field name={`${options}.event_option_name`} component={renderTextField} label='Name' required={true} sm={6} lg={6} />
+              <Field
+                name={`${options}.event_option_type`}
+                component={renderSelectField}
+                options={EventTemplateOptionTypes}
+                label='Type'
+                required={true}
+                sm={6}
+                lg={6}
+              />
+            </Row>
             {this.renderOptionOptions(options, index)}
             <Field name={`${options}.event_option_required`} component={renderSwitch} label='Required?' />
           </div>
@@ -181,11 +190,12 @@ class EventTemplateForm extends Component {
   renderAdminOptions() {
     if (this.props.roles.includes('admin')) {
       return (
-        <div>
-          <Field name='system_template' component={renderSwitch} label='System template' />
-          {this.props.system_template ? <Field name='admin_only' component={renderSwitch} label='Only available to admins' /> : null}
-          <Field name='disabled' component={renderSwitch} label='Disable template' />
-        </div>
+        <React.Fragment>
+          <Field name='system_template' component={renderSwitch} label='System template' sm={6} lg={6} />
+          {this.props.system_template ? (
+            <Field name='admin_only' component={renderSwitch} label='Only available to admins' sm={6} lg={6} />
+          ) : null}
+        </React.Fragment>
       )
     }
   }
@@ -201,31 +211,38 @@ class EventTemplateForm extends Component {
           <Card.Body>
             <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
               <Field name='id' component={renderHidden} />
-              <Form.Row>
-                <Field name='event_name' component={renderTextField} label='Button Name' required={true} />
-                <Field name='event_value' component={renderTextField} label='Event Value' required={true} />
+              <Row>
+                <Field name='event_name' component={renderTextField} label='Button Name' required={true} sm={6} lg={6} />
+                <Field name='event_value' component={renderTextField} label='Event Value' required={true} sm={6} lg={6} />
+              </Row>
+              <Row>
                 <Field
                   name={'template_categories'}
                   component={renderTextField}
                   label='Template Categories (comma delimited)'
                   placeholder='i.e. biology,geology'
                 />
+              </Row>
+              <Row>
                 <Field
                   name='event_free_text_required'
                   id='event_free_text_required'
                   component={renderSwitch}
                   label={'Free text Required?'}
+                  sm={6}
+                  lg={6}
                 />
+                <Field name='disabled' component={renderSwitch} label='Disable template' sm={6} lg={6} />
                 {this.renderAdminOptions(initialValues.system_template)}
-              </Form.Row>
+              </Row>
               <FieldArray name='event_options' component={this.renderOptions} />
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
-              <div className='float-right'>
-                <Button className='mr-1' variant='secondary' size='sm' disabled={pristine || submitting} onClick={reset}>
+              <div className='float-end'>
+                <Button className='me-1' variant='outline-secondary' size='sm' disabled={pristine || submitting} onClick={reset}>
                   Reset Form
                 </Button>
-                <Button variant='primary' size='sm' type='submit' disabled={pristine || submitting || !valid}>
+                <Button variant='outline-primary' size='sm' type='submit' disabled={pristine || submitting || !valid}>
                   {this.props.event_template.id ? 'Update' : 'Add'}
                 </Button>
               </div>

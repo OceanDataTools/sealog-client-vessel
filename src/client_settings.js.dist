@@ -24,6 +24,9 @@ const WS_ROOT_URL = `${SERVER_TLS ? 'wss' : 'ws'}://${SERVER_HOSTNAME}:${SERVER_
 // i.e. '/sealog/'
 const ROOT_PATH = '/'
 
+// Where the images are hosted on the webserver.
+const IMAGE_PATH = '/files/images'
+
 // Site customization
 // Optional reCaptcha bot abuse protection.
 const RECAPTCHA_SITE_KEY = null
@@ -105,6 +108,7 @@ module.exports = {
   API_ROOT_URL,
   WS_ROOT_URL,
   ROOT_PATH,
+  IMAGE_PATH,
   RECAPTCHA_SITE_KEY,
   LOGIN_SCREEN_TXT,
   LOGIN_IMAGE,
@@ -119,6 +123,7 @@ module.exports = {
   CUSTOM_CRUISE_NAME,
   POSITION_DATASOURCES,
   EXCLUDE_AUX_DATA_SOURCES,
+  IMAGES_AUX_DATA_SOURCES,
   AUX_DATA_SORT_ORDER,
   AUX_DATA_DATASOURCE_REPLACE,
   CATEGORY_SORT_ORDER

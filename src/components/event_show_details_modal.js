@@ -4,10 +4,10 @@ import { connect } from 'react-redux'
 import { connectModal } from 'redux-modal'
 import PropTypes from 'prop-types'
 import { Row, Col, Card, Modal } from 'react-bootstrap'
-import ImagePreviewModal from './image_preview_modal'
 import AuxDataCards from './aux_data_cards'
 import EventCommentCard from './event_comment_card'
 import EventOptionsCard from './event_options_card'
+import ImagePreviewModal from './image_preview_modal'
 import ImageryCards from './imagery_cards'
 import { EXCLUDE_AUX_DATA_SOURCES, IMAGES_AUX_DATA_SOURCES, AUX_DATA_SORT_ORDER } from '../client_settings'
 import { get_event_exports, handle_image_file_download } from '../api'
@@ -50,9 +50,9 @@ class EventShowDetailsModal extends Component {
     const { show, event } = this.props
 
     const event_free_text_card = this.state.event.event_free_text ? (
-      <Col className='event-data-col' sm={6} md={4}>
+      <Col className='event-data-col' md={6} lg={4} xl={3}>
         <Card className='event-data-card'>
-          <Card.Header>Free-form Text</Card.Header>
+          <Card.Header className='event-details'>Free-form Text</Card.Header>
           <Card.Body>{this.state.event.event_free_text}</Card.Body>
         </Card>
       </Col>
@@ -69,46 +69,28 @@ class EventShowDetailsModal extends Component {
     })
 
     if (event) {
-      if (this.state.event.event_options) {
-        return (
-          <Modal size='lg' show={show} onHide={this.props.handleHide}>
-            <ImagePreviewModal handleDownload={handle_image_file_download} />
-            <Modal.Header className='bg-light' closeButton>
-              <Modal.Title as='h5'>Event Details:</Modal.Title>
+      return (
+        <React.Fragment>
+          <ImagePreviewModal handleDownload={handle_image_file_download} />
+          <Modal size='xl' show={show} onHide={this.props.handleHide}>
+            <Modal.Header className='card-header bg-light d-flex justify-content-between'>
+              {this.state.event.event_value}
+              <span>
+                <i>{this.state.event.event_author}</i> @ {this.state.event.ts}
+              </span>
             </Modal.Header>
-            <Modal.Body className='px-4'>
+            <Modal.Body className='pt-2 pb-0'>
               <Row>
-                <Col className='event-data-col' xs={12}>
-                  <Card className='event-header-card'>
-                    <Card.Header>
-                      <span>{this.state.event.event_value}</span>
-                      <span className='float-right'>
-                        {this.state.event.event_author} @ {this.state.event.ts}
-                      </span>
-                    </Card.Header>
-                  </Card>
-                </Col>
-              </Row>
-              <Row>
-                <ImageryCards image_data_sources={image_data_sources} onClick={this.handleImagePreviewModal} lg={4} />
-                <AuxDataCards aux_data={aux_data} lg={4} />
-                <EventOptionsCard event={this.state.event} lg={4} />
+                <ImageryCards image_data_sources={image_data_sources} onClick={this.handleImagePreviewModal} md={6} lg={4} xl={3} />
+                <AuxDataCards aux_data={aux_data} md={6} lg={4} xl={3} />
+                <EventOptionsCard event={this.state.event} md={6} lg={4} xl={3} />
                 {event_free_text_card}
-                <EventCommentCard event={this.state.event} lg={4} />
+                <EventCommentCard event={this.state.event} md={6} lg={4} xl={3} />
               </Row>
             </Modal.Body>
           </Modal>
-        )
-      } else {
-        return (
-          <Modal size='lg' show={show} onHide={this.props.handleHide}>
-            <Modal.Header className='bg-light' closeButton>
-              <Modal.Title as='h5'>Event Details: {this.state.event.event_value}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>Loading...</Modal.Body>
-          </Modal>
-        )
-      }
+        </React.Fragment>
+      )
     } else {
       return null
     }
