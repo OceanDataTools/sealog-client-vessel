@@ -88,11 +88,11 @@ const EXCLUDE_AUX_DATA_SOURCES = []
 // Optional list of auxdata datasources that should be interpreted as imagery
 // and formatted as such in the event history, lowering replay and lowering
 // gallery.
-const IMAGES_AUX_DATA_SOURCES = ['framegrabber']
+const IMAGES_AUX_DATA_SOURCES = ['eventFileAttachments', 'framegrabber']
 
 // Optional list defining how to order auxdata data sources in the event
 // history and lowering replay
-const AUX_DATA_SORT_ORDER = ['vesselRealtimeNavData']
+const AUX_DATA_SORT_ORDER = ['eventFileAttachments', 'vesselRealtimeNavData']
 
 // Optional key/value pairs for how to format auxdata data source names in
 // event history and event replay.

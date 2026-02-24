@@ -186,6 +186,7 @@ class EventCommentModal extends Component {
 
             <Modal.Body>
               <Field name='event_comment' component={renderTextArea} />
+              Attachments
               {this.renderFiles()}
               <FilePond
                 ref={(ref) => (this.pond = ref)}
