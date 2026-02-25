@@ -4,6 +4,7 @@ import { connectModal } from 'redux-modal'
 import { reduxForm, Field } from 'redux-form'
 import { FilePond, registerPlugin } from 'react-filepond'
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
+import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import {
@@ -27,10 +28,6 @@ const requiredArray = (value) => (!value || value.length === 0 ? 'Must select at
 class EventTemplateOptionsModal extends Component {
   constructor(props) {
     super(props)
-
-    // this.state = {
-    //   filepondPristine: true
-    // }
 
     this.state = {
       event_id: this.props.event ? this.props.event.id : null
@@ -233,19 +230,18 @@ class EventTemplateOptionsModal extends Component {
                 acceptedFileTypes={['image/png', 'image/jpeg']}
                 server={{
                   url: API_ROOT_URL,
-                  process: {
-                    url: IMAGE_ROUTE + '/filepond/process/' + this.props.event.id,
-                    ...authorizationHeader()
-                  },
+                  process: this.props.event
+                    ? {
+                        url: IMAGE_ROUTE + '/filepond/process/' + this.props.event.id,
+                        ...authorizationHeader()
+                      }
+                    : null,
                   revert: {
                     url: IMAGE_ROUTE + '/filepond/revert',
                     ...authorizationHeader()
                   }
                 }}
-                // onupdatefiles={() => {
-                //   this.props.dispatch(change('editCruise', 'cruise_additional_meta.cruise_files', true))
-                // }}
-                disabled={this.props.event.id ? false : true}
+                disabled={!this.props.event}
               ></FilePond>
               <Field name='ts' label='Custom Time (UTC)' component={renderDateTimePicker} disabled={this.props.disabled} required={true} />
             </Modal.Body>
@@ -298,10 +294,37 @@ const validate = (formProps) => {
   return errors
 }
 
+const mapStateToProps = (state) => {
+  const formState = state.form.eventTemplateOptionsModal?.values || {}
+  const eo = formState.event_options
+
+  // Normalize event_options to always be an object like:
+  // { option_0: value, option_1: value, ... }
+  let formValues = {}
+
+  if (Array.isArray(eo)) {
+    // Convert array → object
+    eo.forEach((v, i) => {
+      formValues[`option_${i}`] = v
+    })
+  } else if (eo && typeof eo === 'object') {
+    // Already an object → use as-is
+    formValues = eo
+  } else {
+    // undefined/null → empty object
+    formValues = {}
+  }
+
+  return {
+    formValues
+  }
+}
+
 export default compose(
   connectModal({ name: 'eventOptions' }),
   reduxForm({
     form: 'eventTemplateOptionsModal',
-    validate: validate
-  })
+    validate
+  }),
+  connect(mapStateToProps)
 )(EventTemplateOptionsModal)
