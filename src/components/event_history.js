@@ -49,6 +49,8 @@ class EventHistory extends Component {
     this.toggleEventHistory = this.toggleEventHistory.bind(this)
     this.toggleExpandedEventHistory = this.toggleExpandedEventHistory.bind(this)
     this.toggleNewEventDetails = this.toggleNewEventDetails.bind(this)
+
+    this.wsRetryCount = 0
   }
 
   componentDidMount() {
@@ -94,6 +96,9 @@ class EventHistory extends Component {
   }
 
   async connectToWS() {
+    const MAX_RETRIES = 3
+    const BASE_DELAY = 500 // 250ms
+
     try {
       await this.client.connect({
         auth: authorizationHeader
@@ -102,14 +107,12 @@ class EventHistory extends Component {
       const updateHandler = async (update) => {
         if (this.state.events.length === 0) {
           await this.fetchEvents()
-          await this.fetchEventExport()
         } else {
           const oldest_ts = Moment(this.state.events.slice(-1)[0].ts)
           const update_ts = Moment(update.ts)
 
           if (update_ts > oldest_ts) {
             await this.fetchEvents()
-            await this.fetchEventExport()
           }
         }
       }
@@ -130,8 +133,19 @@ class EventHistory extends Component {
       console.error('Problem connecting to websocket subscriptions')
       console.debug(error)
 
-      // await this.connectToWS();
-      // throw error;
+      if (this.wsRetryCount >= MAX_RETRIES) {
+        console.error('Max WS retries exceeded')
+        return
+      }
+
+      // exponential backoff
+      const delay = BASE_DELAY * Math.pow(2, this.wsRetryCount)
+
+      console.debug(`Retrying websocket in ${delay}ms`)
+
+      await new Promise((resolve) => setTimeout(resolve, delay))
+
+      return this.connectToWS(this.wsRetryCount + 1)
     }
   }
 
@@ -181,9 +195,13 @@ class EventHistory extends Component {
 
     const events = await get_events(query)
     this.setState({ events, fetching: false })
+    const cur_event = events.find((event) => event.id === this.state.event.id)
+    if (cur_event) {
+      this.fetchEventExport(cur_event.id)
+    }
   }
 
-  async fetchEventExport(event_id = null) {
+  async fetchEventExport(event_id) {
     if (!event_id) {
       const query = {
         value: this.state.hideASNAP ? ['!ASNAP'] : null,
