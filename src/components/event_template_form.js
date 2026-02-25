@@ -7,7 +7,7 @@ import { Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderAlert, renderHidden, renderMessage, renderSelectField, renderSwitch, renderTextField, renderTextArea } from './form_elements'
 import * as mapDispatchToProps from '../actions'
-import { EventTemplateOptionTypes } from '../event_template_option_types'
+import { EventTemplateOptionTypes, EventTemplateVisibilityOptionTypes } from '../event_template_option_types'
 
 class EventTemplateForm extends Component {
   constructor(props) {
@@ -15,6 +15,7 @@ class EventTemplateForm extends Component {
 
     this.renderOptions = this.renderOptions.bind(this)
     this.renderOptionOptions = this.renderOptionOptions.bind(this)
+    this.renderVisibilityOptions = this.renderVisibilityOptions.bind(this)
   }
 
   componentWillUnmount() {
@@ -44,6 +45,18 @@ class EventTemplateForm extends Component {
         }
       } else {
         event_option.event_option_values = []
+      }
+
+      if (event_option.event_option_visibility) {
+        if (event_option.event_option_visibility.show_hide == 'always') {
+          delete event_option.event_option_visibility
+        } else {
+          if (typeof event_option.event_option_visibility.event_option_values === 'string') {
+            event_option.event_option_visibility.event_option_values = event_option.event_option_visibility.event_option_values
+              .split(',')
+              .map((item) => item.trim())
+          }
+        }
       }
 
       return event_option
@@ -130,6 +143,36 @@ class EventTemplateForm extends Component {
     }
   }
 
+  renderVisibilityOptions(prefix, index) {
+    if (this.props.event_options && this.props.event_options.length > 0 && this.props.event_options[index].event_option_visibility) {
+      if (['show if', 'hide if'].includes(this.props.event_options[index].event_option_visibility.show_hide)) {
+        return (
+          <>
+            <Field
+              name={`${prefix}.event_option_visibility.event_option_name`}
+              component={renderTextField}
+              label='Event option name'
+              required={true}
+              sm={6}
+              lg={6}
+            />
+            <Field
+              name={`${prefix}.event_option_visibility.event_option_values`}
+              component={renderTextArea}
+              label='Event option values'
+              required={true}
+              rows={2}
+              sm={6}
+              lg={6}
+            />
+          </>
+        )
+      } else {
+        return
+      }
+    }
+  }
+
   renderOptions({ fields, meta: { touched, error } }) {
     const promote = (index, fields) => {
       if (index > 0) {
@@ -176,6 +219,19 @@ class EventTemplateForm extends Component {
               />
             </Row>
             {this.renderOptionOptions(options, index)}
+            <Row>
+              <Field
+                name={`${options}.event_option_visibility.show_hide`}
+                component={renderSelectField}
+                options={EventTemplateVisibilityOptionTypes}
+                addDefaultOption={false}
+                label='Visibility'
+                required={true}
+                sm={6}
+                lg={6}
+              />
+              {this.renderVisibilityOptions(options, index)}
+            </Row>
             <Field name={`${options}.event_option_required`} component={renderSwitch} label='Required?' />
           </div>
         ))}
@@ -313,8 +369,12 @@ const validate = (formProps) => {
       }
     })
 
+    const event_option_names = formProps.event_options.map((event_option) => {
+      return event_option.event_option_name
+    })
+
     formProps.event_options.forEach((event_option, event_optionIndex) => {
-      const event_optionErrors = {}
+      const event_optionErrors = { event_option_visibility: {} }
 
       if (!event_option.event_option_name) {
         event_optionErrors.event_option_name = 'Required'
@@ -363,6 +423,12 @@ const validate = (formProps) => {
       if (event_option.event_option_type === 'static text') {
         if (!event_option.event_option_default_value || event_option.event_option_default_value.trim() === '') {
           event_optionErrors.event_option_default_value = 'Required'
+        }
+      }
+
+      if (event_option.event_option_visibility && ['show if', 'hide if'].includes(event_option.event_option_visibility.show_hide)) {
+        if (!event_option_names.includes(event_option.event_option_visibility.event_option_name)) {
+          event_optionErrors.event_option_visibility.event_option_name = 'Invalid event option name'
         }
       }
 

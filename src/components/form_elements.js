@@ -87,6 +87,7 @@ export const renderSelectField = ({
   label,
   required,
   options,
+  addDefaultOption = true,
   meta: { touched, error },
   disabled = false,
   xs = 12,
@@ -107,7 +108,7 @@ export const renderSelectField = ({
         {requiredField}
       </Form.Label>
       <Form.Select {...input} isInvalid={touched && error} disabled={disabled}>
-        {defaultOption}
+        {addDefaultOption ? defaultOption : null}
         {optionList}
       </Form.Select>
       <Form.Control.Feedback type='invalid'>{error}</Form.Control.Feedback>
