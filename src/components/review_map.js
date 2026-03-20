@@ -296,7 +296,7 @@ class ReviewMap extends Component {
 
           return (
             <ListGroup.Item key={event.id} className='event-list-item d-flex justify-content-between' active={active}>
-              <div onClick={() => this.handleEventClick(index)}>
+              <div onClick={() => this.handleEventClick(index)} className='event-list-item-summary'>
                 {event.ts}{' '}
                 <b>
                   <i>{event.event_author}</i>

@@ -285,7 +285,7 @@ class EventHistory extends Component {
 
         eventArray.push(
           <ListGroup.Item key={event.id} className='event-list-item d-flex justify-content-between'>
-            <div onClick={() => this.handleEventShowDetailsModal(event)}>
+            <div onClick={() => this.handleEventShowDetailsModal(event)} className='event-list-item-summary'>
               {event.ts}{' '}
               <b>
                 <i>{event.event_author}</i>
