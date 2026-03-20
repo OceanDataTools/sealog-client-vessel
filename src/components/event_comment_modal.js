@@ -117,8 +117,10 @@ class EventCommentModal extends Component {
       })
     })
 
-    // If there are no attached files and theres not currently a
-    // aux_data_record for attached files, return
+    handleUpdateEvent({ ...event, event_options })
+
+    // If there are no attached files and there's not currently a
+    // aux_data_record for attached files, we're done
     if (data_array.length == 0 && this.state.event_aux_data == null) {
       handleHide()
       return
@@ -137,7 +139,6 @@ class EventCommentModal extends Component {
     const res = await create_event_aux_data(aux_data_record)
     this.setState({ event_aux_data: { ...aux_data_record, id: res.insertedId } })
 
-    handleUpdateEvent({ ...event, event_options })
     handleHide()
   }
 

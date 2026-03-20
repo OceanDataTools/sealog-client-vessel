@@ -105,7 +105,13 @@ class CruiseForm extends Component {
             <a className='text-decoration-none' href='#' onClick={() => handle_cruise_file_download(file, this.props.cruise.id)}>
               {file}
             </a>{' '}
-            <FontAwesomeIcon onClick={() => this.handleFileDeleteModal(file)} className='text-danger' icon='trash' fixedWidth />
+            <FontAwesomeIcon
+              onClick={() => this.handleFileDeleteModal(file)}
+              className='text-danger'
+              icon='trash'
+              fixedWidth
+              role='button'
+            />
           </div>
         )
       })

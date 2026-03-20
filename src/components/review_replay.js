@@ -275,6 +275,7 @@ class ReviewReplay extends Component {
             key={`pause_${this.props.cruise.id}`}
             onClick={() => this.handleReviewReplayPause()}
             icon='pause'
+            role='button'
           />
         ) : (
           <FontAwesomeIcon
@@ -282,6 +283,7 @@ class ReviewReplay extends Component {
             key={`play_${this.props.cruise.id}`}
             onClick={() => this.handleReviewReplayPlay()}
             icon='play'
+            role='button'
           />
         )
 
@@ -293,12 +295,14 @@ class ReviewReplay extends Component {
               key={`start_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayStart()}
               icon='step-backward'
+              role='button'
             />{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`frev_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayFRev()}
               icon='backward'
+              role='button'
             />{' '}
             {playPause}{' '}
             <FontAwesomeIcon
@@ -306,12 +310,14 @@ class ReviewReplay extends Component {
               key={`ffwd_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayFFwd()}
               icon='forward'
+              role='button'
             />{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`end_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayEnd()}
               icon='step-forward'
+              role='button'
             />
           </span>
         ) : (
@@ -391,11 +397,17 @@ class ReviewReplay extends Component {
 
           let eventComment = comment_exists ? (
             <OverlayTrigger placement='left' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>
-              <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform='grow-4' />
+              <FontAwesomeIcon
+                onClick={() => this.handleEventCommentModal(index)}
+                icon='comment'
+                fixedWidth
+                transform='grow-4'
+                role='button'
+              />
             </OverlayTrigger>
           ) : (
             <OverlayTrigger placement='top' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>
-              <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw'>
+              <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw' role='button'>
                 <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
                 <FontAwesomeIcon icon='plus' fixedWidth transform='shrink-4' inverse style={active ? { color: 'var(--bs-primary)' } : ''} />
               </span>

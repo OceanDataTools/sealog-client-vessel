@@ -260,7 +260,13 @@ class Cruises extends Component {
       if (index >= (this.state.activePage - 1) * maxCruisesPerPage && index < this.state.activePage * maxCruisesPerPage) {
         let editLink = (
           <OverlayTrigger placement='top' overlay={editTooltip}>
-            <FontAwesomeIcon className='text-warning' onClick={() => this.handleCruiseUpdate(cruise.id)} icon='pencil-alt' fixedWidth />
+            <FontAwesomeIcon
+              className='text-warning'
+              onClick={() => this.handleCruiseUpdate(cruise.id)}
+              icon='pencil-alt'
+              fixedWidth
+              role='button'
+            />
           </OverlayTrigger>
         )
 
@@ -272,19 +278,32 @@ class Cruises extends Component {
                 onClick={() => this.handleCruisePermissionsModal(cruise)}
                 icon='user-lock'
                 fixedWidth
+                role='button'
               />
             </OverlayTrigger>
           ) : null
 
         let deleteLink = this.props.roles.includes('admin') ? (
           <OverlayTrigger placement='top' overlay={deleteTooltip}>
-            <FontAwesomeIcon className='text-danger' onClick={() => this.handleCruiseDeleteModal(cruise.id)} icon='trash' fixedWidth />
+            <FontAwesomeIcon
+              className='text-danger ps-1'
+              onClick={() => this.handleCruiseDeleteModal(cruise.id)}
+              icon='trash'
+              fixedWidth
+              role='button'
+            />
           </OverlayTrigger>
         ) : null
 
         let exportLink = this.props.roles.includes('admin') ? (
           <OverlayTrigger placement='top' overlay={exportTooltip}>
-            <FontAwesomeIcon className='text-info' onClick={() => this.handleCruiseExportModal(cruise)} icon='download' fixedWidth />
+            <FontAwesomeIcon
+              className='text-info ps-1'
+              onClick={() => this.handleCruiseExportModal(cruise)}
+              icon='download'
+              fixedWidth
+              role='button'
+            />
           </OverlayTrigger>
         ) : null
 
@@ -295,6 +314,7 @@ class Cruises extends Component {
               onClick={() => (cruise.cruise_hidden ? this.handleCruiseShow(cruise.id) : this.handleCruiseHide(cruise.id))}
               icon={cruise.cruise_hidden ? 'eye-slash' : 'eye'}
               fixedWidth
+              role='button'
             />
           </OverlayTrigger>
         ) : null
@@ -373,7 +393,13 @@ class Cruises extends Component {
       <div>
         {_Cruises_}
         <OverlayTrigger placement='top' overlay={exportTooltip}>
-          <FontAwesomeIcon className='float-end pt-2 text-primary' onClick={() => this.exportCruisesToJSON()} icon='download' fixedWidth />
+          <FontAwesomeIcon
+            className='float-end pt-2 text-primary'
+            onClick={() => this.exportCruisesToJSON()}
+            icon='download'
+            fixedWidth
+            role='button'
+          />
         </OverlayTrigger>
         <Form className='float-end me-2'>
           {this.props.roles.includes('admin') ? (

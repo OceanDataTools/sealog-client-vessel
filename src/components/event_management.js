@@ -202,9 +202,9 @@ class EventManagement extends Component {
         }
         let eventOptions = eventOptionsArray.length > 0 ? eventOptionsArray.join(', ') : ''
         let commentIcon = comment_exists ? (
-          <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform='grow-4' />
+          <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform='grow-4' role='button' />
         ) : (
-          <span onClick={() => this.handleEventCommentModal(event)} className='fa-layers fa-fw'>
+          <span onClick={() => this.handleEventCommentModal(event)} className='fa-layers fa-fw' role='button'>
             <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
             <FontAwesomeIcon inverse icon='plus' fixedWidth transform='shrink-4' />
           </span>
@@ -220,7 +220,13 @@ class EventManagement extends Component {
         )
 
         let deleteIcon = (
-          <FontAwesomeIcon className={'text-danger me-1'} onClick={() => this.handleEventDeleteModal(event)} icon='trash' fixedWidth />
+          <FontAwesomeIcon
+            className={'text-danger me-1'}
+            onClick={() => this.handleEventDeleteModal(event)}
+            icon='trash'
+            fixedWidth
+            role='button'
+          />
         )
         let deleteTooltip =
           this.props.roles && this.props.roles.some((role) => ['admin', 'event_manager'].includes(role)) ? (

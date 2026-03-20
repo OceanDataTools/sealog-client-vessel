@@ -265,11 +265,17 @@ class ReviewMap extends Component {
           let eventOptions = eventOptionsArray.length > 0 ? eventOptionsArray.join(', ') : ''
           let eventComment = comment_exists ? (
             <OverlayTrigger placement='left' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>
-              <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform='grow-4' />
+              <FontAwesomeIcon
+                onClick={() => this.handleEventCommentModal(index)}
+                icon='comment'
+                fixedWidth
+                transform='grow-4'
+                role='button'
+              />
             </OverlayTrigger>
           ) : (
             <OverlayTrigger placement='top' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>
-              <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw'>
+              <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw' role='button'>
                 <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
                 <FontAwesomeIcon inverse style={active ? { color: 'var(--bs-primary)' } : ''} icon='plus' fixedWidth transform='shrink-4' />
               </span>
@@ -278,7 +284,13 @@ class ReviewMap extends Component {
 
           let eventDetails = (
             <OverlayTrigger placement='left' overlay={<Tooltip id={`commentTooltip_${event.id}`}>View Details</Tooltip>}>
-              <FontAwesomeIcon onClick={() => this.handleEventShowDetailsModal(index)} icon='window-maximize' fixedWidth className='me-1' />
+              <FontAwesomeIcon
+                onClick={() => this.handleEventShowDetailsModal(index)}
+                icon='window-maximize'
+                fixedWidth
+                className='me-1'
+                role='button'
+              />
             </OverlayTrigger>
           )
 

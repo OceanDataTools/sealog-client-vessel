@@ -266,7 +266,7 @@ class EventHistory extends Component {
         }
         let eventOptions = eventOptionsArray.length > 0 ? eventOptionsArray.join(', ') : ''
         let commentIcon = comment_exists ? (
-          <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform='grow-4' />
+          <FontAwesomeIcon onClick={() => this.handleEventCommentModal(event)} icon='comment' fixedWidth transform='grow-4' role='button' />
         ) : (
           <span onClick={() => this.handleEventCommentModal(event)} className='fa-layers fa-fw'>
             <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
@@ -292,7 +292,7 @@ class EventHistory extends Component {
               </b>
               : {event.event_value} {eventOptions ? <FontAwesomeIcon icon='arrow-right' fixedWidth /> : null} {eventOptions}
             </div>
-            <div>{commentTooltip}</div>
+            <div role='button'>{commentTooltip}</div>
           </ListGroup.Item>
         )
       }
@@ -344,7 +344,7 @@ class EventHistory extends Component {
           <span className='float-end'>
             <i>{this.state.event.event_author}</i> @ {this.state.event.ts}
             <OverlayTrigger placement='top' overlay={showNewEventTooltip}>
-              <span className='float-end ps-2' size='sm' onClick={this.toggleNewEventDetails}>
+              <span className='float-end ps-2' size='sm' onClick={this.toggleNewEventDetails} role='button'>
                 <FontAwesomeIcon icon={showNewEventIcon} fixedWidth />
               </span>
             </OverlayTrigger>
@@ -386,6 +386,7 @@ class EventHistory extends Component {
             className='float-end'
             style={{ paddingTop: '8px' }}
             onClick={this.toggleEventHistory}
+            role='button'
           />
         </OverlayTrigger>
         {this.state.showEventHistory ? (
@@ -397,6 +398,7 @@ class EventHistory extends Component {
                 className='mx-2 float-end'
                 style={{ paddingTop: '8px' }}
                 onClick={this.toggleExpandedEventHistory}
+                role='button'
               />
             </OverlayTrigger>
             <Form className='float-end'>
