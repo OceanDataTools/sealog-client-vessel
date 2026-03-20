@@ -357,7 +357,7 @@ class ReviewReplay extends Component {
       <div>
         Filtered Events
         <span className='float-end'>
-          <span className='me-2 text-primary' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
+          <span className='me-2 text-primary clickable' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
             {this.props.event.hideASNAP ? 'Show ASNAP' : 'Hide ASNAP'}
           </span>
           <ExportDropdown

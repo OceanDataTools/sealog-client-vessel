@@ -413,7 +413,7 @@ class EventHistory extends Component {
                 />
               ) : null}
             </Form>
-            <div className='float-end mt-1 pe-2 text-primary' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
+            <div className='float-end mt-1 pe-2 text-primary clickable' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
               {this.state.hideASNAP ? 'Show ASNAP' : 'Hide ASNAP'}
             </div>
           </React.Fragment>

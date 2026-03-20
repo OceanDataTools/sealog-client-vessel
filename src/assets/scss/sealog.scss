@@ -255,3 +255,11 @@ td.rdtYear:hover {
   background: $body-bg;
   color: $info;
 }
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  text-decoration: underline;
+}

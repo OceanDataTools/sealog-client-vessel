@@ -169,7 +169,7 @@ class EventManagement extends Component {
       <div>
         {Label}
         <span className='float-end'>
-          <span className='me-2 text-primary' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
+          <span className='me-2 text-primary clickable' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
             {this.state.hideASNAP ? 'Show ASNAP' : 'Hide ASNAP'}
           </span>
           <ExportDropdown
