@@ -238,17 +238,30 @@ class EventTemplates extends Component {
             onClick={() => this.handleEventTemplateSelect(template.id)}
             icon='pencil-alt'
             fixedWidth
+            role='button'
           />
         </OverlayTrigger>
       ) : null
       const test_icon = (
         <OverlayTrigger placement='top' overlay={testTooltip}>
-          <FontAwesomeIcon className='text-success' onClick={() => this.handleEventTemplateTest(template)} icon='vial' fixedWidth />
+          <FontAwesomeIcon
+            className='text-success'
+            onClick={() => this.handleEventTemplateTest(template)}
+            icon='vial'
+            fixedWidth
+            role='button'
+          />
         </OverlayTrigger>
       )
       const delete_icon = this.props.roles.some((item) => edit_roles.includes(item)) ? (
         <OverlayTrigger placement='top' overlay={deleteTooltip}>
-          <FontAwesomeIcon className='text-danger' onClick={() => this.handleEventTemplateDelete(template.id)} icon='trash' fixedWidth />
+          <FontAwesomeIcon
+            className='text-danger'
+            onClick={() => this.handleEventTemplateDelete(template.id)}
+            icon='trash'
+            fixedWidth
+            role='button'
+          />
         </OverlayTrigger>
       ) : null
 
@@ -304,6 +317,7 @@ class EventTemplates extends Component {
             disabled={disableBtn}
             icon='download'
             fixedWidth
+            role='button'
           />
         </OverlayTrigger>
         {!system ? (
@@ -314,6 +328,7 @@ class EventTemplates extends Component {
               disabled={disableBtn}
               icon='trash'
               fixedWidth
+              role='button'
             />
           </OverlayTrigger>
         ) : null}

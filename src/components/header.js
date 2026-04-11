@@ -138,7 +138,7 @@ class Header extends Component {
   render() {
     return (
       <Navbar className='bg-light' collapseOnSelect expand='md' variant='light'>
-        <Navbar.Brand className='ms-4' onClick={this.props.gotoHome}>
+        <Navbar.Brand className='ms-4 clickable' onClick={this.props.gotoHome}>
           {HEADER_TITLE}
         </Navbar.Brand>
         <Navbar.Toggle aria-controls='responsive-navbar-nav' />

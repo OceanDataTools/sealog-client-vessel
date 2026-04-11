@@ -42,10 +42,10 @@ class ReviewReplay extends Component {
       replayState: PAUSE,
 
       replayEventIndex: 0,
-      activePage: 1,
-      sliderTimer: null
+      activePage: 1
     }
 
+    this.sliderTimer = null
     this.sliderRef = React.createRef() // Reference to the slider
 
     this.handleImagePreviewModal = this.handleImagePreviewModal.bind(this)
@@ -78,13 +78,12 @@ class ReviewReplay extends Component {
     document.addEventListener('keydown', this.handleKeyDown)
   }
 
-  componentDidUpdate() {}
-
   componentWillUnmount() {
     if (this.state.replayTimer) {
       clearInterval(this.state.replayTimer)
     }
 
+    clearTimeout(this.sliderTimer)
     document.removeEventListener('keydown', this.handleKeyDown)
   }
 
@@ -117,15 +116,11 @@ class ReviewReplay extends Component {
     this.handleReviewReplayPause()
     if (this.props.event.events && this.props.event.events[index]) {
       this.setState({ replayEventIndex: index })
-      clearTimeout(this.state.sliderTimer)
-      this.setState({
-        sliderTimer: setTimeout(() => {
-          this.props.advanceReviewReplayTo(this.props.event.events[index].id)
-          this.setState({
-            activePage: Math.ceil((index + 1) / maxEventsPerPage)
-          })
-        }, 250)
-      })
+      clearTimeout(this.sliderTimer)
+      this.sliderTimer = setTimeout(() => {
+        this.props.advanceReviewReplayTo(this.props.event.events[index].id)
+        this.setState({ activePage: Math.ceil((index + 1) / maxEventsPerPage) })
+      }, 250)
     }
   }
 
@@ -171,29 +166,23 @@ class ReviewReplay extends Component {
       return
     }
 
+    let newIndex = this.state.replayEventIndex
+
     if (event.key === 'ArrowRight' && this.state.activePage < Math.ceil(this.props.event.events.length / maxEventsPerPage)) {
-      this.setState((prevState) => ({
-        replayEventIndex: prevState.activePage * maxEventsPerPage,
-        activePage: prevState.activePage + 1
-      }))
+      newIndex = this.state.activePage * maxEventsPerPage
+      this.setState({ replayEventIndex: newIndex, activePage: this.state.activePage + 1 })
     } else if (event.key === 'ArrowLeft' && this.state.activePage > 1) {
-      this.setState((prevState) => ({
-        replayEventIndex: (prevState.activePage - 2) * maxEventsPerPage,
-        activePage: prevState.activePage - 1
-      }))
+      newIndex = (this.state.activePage - 2) * maxEventsPerPage
+      this.setState({ replayEventIndex: newIndex, activePage: this.state.activePage - 1 })
     } else if (event.key === 'ArrowDown' && this.state.replayEventIndex < this.props.event.events.length - 1) {
-      this.setState((prevState) => ({
-        replayEventIndex: prevState.replayEventIndex + 1,
-        activePage: Math.ceil((prevState.replayEventIndex + 2) / maxEventsPerPage)
-      }))
+      newIndex = this.state.replayEventIndex + 1
+      this.setState({ replayEventIndex: newIndex, activePage: Math.ceil((newIndex + 1) / maxEventsPerPage) })
     } else if (event.key === 'ArrowUp' && this.state.replayEventIndex > 0) {
-      this.setState((prevState) => ({
-        replayEventIndex: prevState.replayEventIndex - 1,
-        activePage: Math.ceil(prevState.replayEventIndex / maxEventsPerPage)
-      }))
+      newIndex = this.state.replayEventIndex - 1
+      this.setState({ replayEventIndex: newIndex, activePage: Math.ceil((newIndex + 1) / maxEventsPerPage) })
     }
 
-    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+    this.props.advanceReviewReplayTo(this.props.event.events[newIndex].id)
   }
 
   handleReviewModeSelect(mode) {
@@ -211,20 +200,15 @@ class ReviewReplay extends Component {
 
   handleReviewReplayStart() {
     this.handleReviewReplayPause()
-    this.setState({ replayEventIndex: 0 })
-    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
-    this.setState({
-      activePage: Math.ceil((this.state.replayEventIndex + 1) / maxEventsPerPage)
-    })
+    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
+    this.setState({ replayEventIndex: 0, activePage: 1 })
   }
 
   handleReviewReplayEnd() {
     this.handleReviewReplayPause()
-    this.setState({ replayEventIndex: this.props.event.events.length - 1 })
-    this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
-    this.setState({
-      activePage: Math.ceil((this.state.replayEventIndex + 1) / maxEventsPerPage)
-    })
+    const lastIndex = this.props.event.events.length - 1
+    this.props.advanceReviewReplayTo(this.props.event.events[lastIndex].id)
+    this.setState({ replayEventIndex: lastIndex, activePage: Math.ceil((lastIndex + 1) / maxEventsPerPage) })
   }
 
   handleReviewReplayFRev() {
@@ -261,11 +245,9 @@ class ReviewReplay extends Component {
 
   replayAdvance() {
     if (this.state.replayEventIndex < this.props.event.events.length - 1) {
-      this.setState((prevState) => ({
-        replayEventIndex: prevState.replayEventIndex + 1,
-        activePage: Math.ceil((prevState.replayEventIndex + 2) / maxEventsPerPage)
-      }))
-      this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+      const nextIndex = this.state.replayEventIndex + 1
+      this.props.advanceReviewReplayTo(this.props.event.events[nextIndex].id)
+      this.setState({ replayEventIndex: nextIndex, activePage: Math.ceil((nextIndex + 1) / maxEventsPerPage) })
     } else {
       this.setState({ replayState: PAUSE })
     }
@@ -273,11 +255,9 @@ class ReviewReplay extends Component {
 
   replayReverse() {
     if (this.state.replayEventIndex > 0) {
-      this.setState((prevState) => ({
-        replayEventIndex: prevState.replayEventIndex - 1,
-        activePage: Math.ceil(prevState.replayEventIndex / maxEventsPerPage)
-      }))
-      this.props.advanceReviewReplayTo(this.props.event.events[this.state.replayEventIndex].id)
+      const prevIndex = this.state.replayEventIndex - 1
+      this.props.advanceReviewReplayTo(this.props.event.events[prevIndex].id)
+      this.setState({ replayEventIndex: prevIndex, activePage: Math.ceil((prevIndex + 1) / maxEventsPerPage) })
     } else {
       this.setState({ replayState: PAUSE })
     }
@@ -295,6 +275,7 @@ class ReviewReplay extends Component {
             key={`pause_${this.props.cruise.id}`}
             onClick={() => this.handleReviewReplayPause()}
             icon='pause'
+            role='button'
           />
         ) : (
           <FontAwesomeIcon
@@ -302,6 +283,7 @@ class ReviewReplay extends Component {
             key={`play_${this.props.cruise.id}`}
             onClick={() => this.handleReviewReplayPlay()}
             icon='play'
+            role='button'
           />
         )
 
@@ -313,12 +295,14 @@ class ReviewReplay extends Component {
               key={`start_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayStart()}
               icon='step-backward'
+              role='button'
             />{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`frev_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayFRev()}
               icon='backward'
+              role='button'
             />{' '}
             {playPause}{' '}
             <FontAwesomeIcon
@@ -326,12 +310,14 @@ class ReviewReplay extends Component {
               key={`ffwd_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayFFwd()}
               icon='forward'
+              role='button'
             />{' '}
             <FontAwesomeIcon
               className='text-primary'
               key={`end_${this.props.cruise.id}`}
               onClick={() => this.handleReviewReplayEnd()}
               icon='step-forward'
+              role='button'
             />
           </span>
         ) : (
@@ -371,7 +357,7 @@ class ReviewReplay extends Component {
       <div>
         Filtered Events
         <span className='float-end'>
-          <span className='me-2 text-primary' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
+          <span className='me-2 text-primary clickable' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
             {this.props.event.hideASNAP ? 'Show ASNAP' : 'Hide ASNAP'}
           </span>
           <ExportDropdown
@@ -411,11 +397,17 @@ class ReviewReplay extends Component {
 
           let eventComment = comment_exists ? (
             <OverlayTrigger placement='left' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Edit/View Comment</Tooltip>}>
-              <FontAwesomeIcon onClick={() => this.handleEventCommentModal(index)} icon='comment' fixedWidth transform='grow-4' />
+              <FontAwesomeIcon
+                onClick={() => this.handleEventCommentModal(index)}
+                icon='comment'
+                fixedWidth
+                transform='grow-4'
+                role='button'
+              />
             </OverlayTrigger>
           ) : (
             <OverlayTrigger placement='top' overlay={<Tooltip id={`commentTooltip_${event.id}`}>Add Comment</Tooltip>}>
-              <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw'>
+              <span onClick={() => this.handleEventCommentModal(index)} className='fa-layers fa-fw' role='button'>
                 <FontAwesomeIcon icon='comment' fixedWidth transform='grow-4' />
                 <FontAwesomeIcon icon='plus' fixedWidth transform='shrink-4' inverse style={active ? { color: 'var(--bs-primary)' } : ''} />
               </span>
@@ -424,7 +416,7 @@ class ReviewReplay extends Component {
 
           return (
             <ListGroup.Item key={event.id} className='event-list-item d-flex justify-content-between' active={active}>
-              <div onClick={() => this.handleEventClick(index)}>
+              <div onClick={() => this.handleEventClick(index)} className='event-list-item-summary'>
                 {event.ts}{' '}
                 <b>
                   <i>{event.event_author}</i>

@@ -26,22 +26,22 @@ module.exports = {
       chunks: 'all',
       cacheGroups: {
         moment: {
-          test: /[\\/]node_modules[\\/](moment)/,
-          name: 'moment',
-          chunks: 'all',
-          priority: 10
+          test: /[\\/]node_modules[\\/](moment)/, // Target only the 'moment' library
+          name: 'moment', // Name of the output file (moment.[contenthash].js)
+          chunks: 'all', // Apply to both dynamic and static imports
+          priority: 10 // Higher priority to ensure moment is separated first
         },
         leaflet: {
-          test: /[\\/]node_modules[\\/](leaflet)/,
-          name: 'leaflet',
-          chunks: 'all',
-          priority: 10
+          test: /[\\/]node_modules[\\/](leaflet)/, // Target only the 'leaflet' library
+          name: 'leaflet', // Name of the output file (leaflet.[contenthash].js)
+          chunks: 'all', // Apply to both dynamic and static imports
+          priority: 10 // Higher priority to ensure leaflet is separated first
         },
         filepond: {
-          test: /[\\/]node_modules[\\/](filepond)/,
-          name: 'filepond',
-          chunks: 'all',
-          priority: 10
+          test: /[\\/]node_modules[\\/](filepond)/, // Target only the 'filepond' library
+          name: 'filepond', // Name of the output file (filepond.[contenthash].js)
+          chunks: 'all', // Apply to both dynamic and static imports
+          priority: 10 // Higher priority to ensure filepond is separated first
         }
       }
     },
@@ -73,7 +73,12 @@ module.exports = {
           {
             loader: 'sass-loader',
             options: {
-              sourceMap: true
+              api: 'modern',
+              sourceMap: true,
+              sassOptions: {
+                quietDeps: true,
+                silenceDeprecations: ['import', 'color-functions', 'global-builtin']
+              }
             }
           }
         ]
@@ -116,6 +121,9 @@ module.exports = {
       patterns: [{ from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' }]
     })
   ],
+  performance: {
+    hints: false
+  },
   resolve: {
     fallback: {
       'process/browser': require.resolve('process/browser')

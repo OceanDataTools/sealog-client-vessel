@@ -34,3 +34,5 @@ nginx/nginx.conf
 
 # Webpack Config
 webpack.config.js
+
+CLAUDE.md

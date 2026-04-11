@@ -121,6 +121,7 @@ class Tasks extends Component {
           onMouseEnter={() => this.setState({ description: importEventsDescription })}
           onMouseLeave={() => this.setState({ description: '' })}
           onClick={() => this.handleEventImport()}
+          className='clickable'
         >
           Import Event Records
         </ListGroup.Item>
@@ -128,6 +129,7 @@ class Tasks extends Component {
           onMouseEnter={() => this.setState({ description: importAuxDataDescription })}
           onMouseLeave={() => this.setState({ description: '' })}
           onClick={() => this.handleAuxDataImport()}
+          className='clickable'
         >
           Import Aux Data Records
         </ListGroup.Item>
@@ -135,6 +137,7 @@ class Tasks extends Component {
           onMouseEnter={() => this.setState({ description: dataResetDescription })}
           onMouseLeave={() => this.setState({ description: '' })}
           onClick={() => this.handleDataWipe()}
+          className='clickable'
         >
           Wipe Local Database
         </ListGroup.Item>

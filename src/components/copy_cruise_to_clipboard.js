@@ -74,6 +74,7 @@ class CopyCruiseToClipboard extends Component {
             className={'text-primary' + (this.props.className ? ' ' + this.props.className : '')}
             icon='clipboard'
             fixedWidth
+            role='button'
           />
         </CopyToClipboard>
       </OverlayTrigger>

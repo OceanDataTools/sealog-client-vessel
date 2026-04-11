@@ -40,12 +40,7 @@ class CruiseMenu extends Component {
 
     if (this.props.cruises !== prevProps.cruises && this.props.cruises.length > 0) {
       this.buildYearList()
-      const currentCruise = this.props.cruises
-        ? this.props.cruises.find((cruise) => {
-            const now = moment.utc()
-            return now.isBetween(moment.utc(cruise.start_ts), moment.utc(cruise.stop_ts))
-          })
-        : null
+      const currentCruise = this.findCurrentCruise()
 
       this.setState({
         activeYear: currentCruise ? moment.utc(currentCruise.start_ts).format('YYYY') : null,
@@ -63,6 +58,12 @@ class CruiseMenu extends Component {
         activeCruise: this.props.cruise
       })
     }
+  }
+
+  findCurrentCruise() {
+    if (!this.props.cruises) return null
+    const now = moment.utc()
+    return this.props.cruises.find((cruise) => now.isBetween(moment.utc(cruise.start_ts), moment.utc(cruise.stop_ts))) || null
   }
 
   handleYearSelect(activeYear) {
@@ -242,13 +243,18 @@ class CruiseMenu extends Component {
     if (this.state.yearCruises) {
       Object.entries(this.state.yearCruises).forEach(([year, cruises]) => {
         let yearTxt = (
-          <span className={year == this.state.activeYear || this.state.years.size == 1 ? 'text-warning' : 'text-primary'}>{year}</span>
+          <span className={(year == this.state.activeYear || this.state.years.size == 1 ? 'text-warning' : 'text-primary') + ' clickable'}>
+            {year}
+          </span>
         )
         let yearCruises = cruises.map((cruise) => {
           return (
             <div
               key={`select_${cruise.id}`}
-              className={this.state.activeCruise && cruise.id === this.state.activeCruise.id ? 'ms-2 text-warning' : 'ms-2 text-primary'}
+              className={
+                (this.state.activeCruise && cruise.id === this.state.activeCruise.id ? 'ms-2 text-warning' : 'ms-2 text-primary') +
+                ' clickable'
+              }
               onClick={() => this.handleCruiseSelect(cruise.id)}
             >
               {cruise.cruise_id}

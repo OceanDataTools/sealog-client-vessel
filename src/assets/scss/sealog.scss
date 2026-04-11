@@ -133,6 +133,11 @@ button.btn-template {
 
 .event-image-data-card {
   font-size: .8rem;
+  cursor: pointer;
+}
+
+.event-image-data-card:hover {
+  opacity: 0.7;
 }
 
 .event-list-item {
@@ -140,6 +145,23 @@ button.btn-template {
   padding-right: 0.5rem !important;
   padding-bottom: 0.125rem !important;
   padding-top: 0.125rem !important;
+}
+
+.event-list-item:hover {
+  color: var(--bs-primary);
+}
+
+.event-list-item.active {
+  color: $white;
+}
+
+.event-list-item-summary {
+  width: 100%;
+  cursor: pointer;
+}
+
+tbody {
+  font-size: .85rem;
 }
 
 // Utility class to hide arrow from dropdown
@@ -254,4 +276,8 @@ td.rdtYear:hover {
 .rdtCounter .rdtBtn:hover {
   background: $body-bg;
   color: $info;
+}
+
+.clickable {
+  cursor: pointer;
 }
