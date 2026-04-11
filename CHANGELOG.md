@@ -8,8 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.4.3] - 2026-04-11
 
 ### Changed
-- Clickable elements (icons, event list items, image cards, text with `onClick`) now show a pointer cursor
-- Removed underlines from links for a cleaner appearance
+- Icons and action buttons across event history, event management, cruises, users, review map, and replay now render with `role="button"` and a pointer cursor
+- Clickable text throughout the app shows a pointer cursor instead of the default cursor
+- Event list items' clickable area now spans the full row width (up to the comment icon) rather than just the text length
+- Event image cards show a pointer cursor and dim on hover to signal interactivity
+- Active event list items show white text; hovered items show primary-colour text
+- Removed underline-on-hover from `.clickable` elements
 
 ### Internal
 - Upgraded `babel-loader` to v10, `eslint-config-prettier` to v10, `sass-loader` to v16, `webpack-cli` to v7
