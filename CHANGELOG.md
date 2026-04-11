@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.3] - 2026-04-11
+
+### Changed
+- Clickable elements (icons, event list items, image cards, text with `onClick`) now show a pointer cursor
+- Removed underlines from links for a cleaner appearance
+
+### Internal
+- Upgraded `babel-loader` to v10, `eslint-config-prettier` to v10, `sass-loader` to v16, `webpack-cli` to v7
+- Updated `webpack.config.js.dist`: sass-loader modern API, suppressed Dart Sass deprecation warnings from Bootstrap (`quietDeps`, `silenceDeprecations`), disabled bundle size hints
+- Updated build scripts to use `--config-node-env` flag (webpack-cli v7)
+
 ## [2.4.2] - 2026-04-10
 
 ### Added
