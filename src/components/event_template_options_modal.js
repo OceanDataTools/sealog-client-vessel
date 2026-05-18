@@ -101,7 +101,7 @@ class EventTemplateOptionsModal extends Component {
       }
     })
 
-    const event_files = [...new Set(this.pond.getFiles().map((file) => file.filename))]
+    const event_files = [...new Set(this.pond.getFiles().map((file) => file.serverId))]
 
     //Submit event
     if (this.props.event) {

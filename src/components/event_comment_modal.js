@@ -104,7 +104,7 @@ class EventCommentModal extends Component {
     }
 
     const files = this.pond.getFiles()
-    const filenames = [...new Set(files.map((file) => file.filename))]
+    const filenames = [...new Set(files.map((file) => file.serverId))]
     let data_array = this.state.event_aux_data ? this.state.event_aux_data.data_array : []
     filenames.forEach((filename) => {
       data_array.push({
