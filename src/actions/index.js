@@ -773,8 +773,8 @@ export const updateEventRequest = async (formProps) => {
     let data_array = []
     formProps.event_files.forEach((file) => {
       data_array.push({
-        data_name: 'camera_name',
-        data_value: file
+        data_name: 'source',
+        data_value: file.replace(/^[a-f0-9]{24}_/i, '')
       })
       data_array.push({
         data_name: 'filename',

@@ -101,19 +101,24 @@ class EventTemplateOptionsModal extends Component {
       }
     })
 
-    const event_files = [...new Set(this.pond.getFiles().map((file) => file.serverId))]
+    const fileMap = new Map(
+      this.pond
+        .getFiles()
+        .filter((file) => file.serverId)
+        .map((file) => [file.serverId, file.filename])
+    )
 
     //Submit event
     if (this.props.event) {
       await this.props.handleUpdateEvent(formProps)
 
-      if (event_files.length) {
+      if (fileMap.size) {
         await create_event_aux_data({
           event_id: this.props.event.id,
           data_source: 'eventFileAttachments',
-          data_array: event_files.flatMap((filename) => [
-            { data_name: 'camera_name', data_value: filename },
-            { data_name: 'filename', data_value: filename }
+          data_array: [...fileMap.entries()].flatMap(([serverId, originalName]) => [
+            { data_name: 'source', data_value: originalName },
+            { data_name: 'filename', data_value: serverId }
           ])
         })
       }

@@ -103,17 +103,17 @@ class EventCommentModal extends Component {
       })
     }
 
-    const files = this.pond.getFiles()
-    const filenames = [...new Set(files.map((file) => file.serverId))]
+    const pondFiles = this.pond.getFiles().filter((file) => file.serverId)
+    const fileMap = new Map(pondFiles.map((file) => [file.serverId, file.filename]))
     let data_array = this.state.event_aux_data ? this.state.event_aux_data.data_array : []
-    filenames.forEach((filename) => {
+    fileMap.forEach((originalName, serverId) => {
       data_array.push({
-        data_name: 'camera_name',
-        data_value: filename
+        data_name: 'source',
+        data_value: originalName
       })
       data_array.push({
         data_name: 'filename',
-        data_value: filename
+        data_value: serverId
       })
     })
 
@@ -148,8 +148,14 @@ class EventCommentModal extends Component {
     delete updated_aux_data['id']
     await delete_event_aux_data(this.state.event_aux_data['id'])
 
-    // update aux_data_record
-    const update_data_array = updated_aux_data.data_array.filter((elem) => elem['data_value'] !== file)
+    // update aux_data_record — remove the source+filename pair where filename matches
+    const update_data_array = []
+    for (let i = 0; i + 1 < updated_aux_data.data_array.length; i += 2) {
+      if (updated_aux_data.data_array[i + 1].data_value !== file) {
+        update_data_array.push(updated_aux_data.data_array[i])
+        update_data_array.push(updated_aux_data.data_array[i + 1])
+      }
+    }
 
     if (update_data_array.length) {
       await create_event_aux_data({ ...updated_aux_data, data_array: update_data_array })
