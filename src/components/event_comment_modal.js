@@ -65,15 +65,13 @@ class EventCommentModal extends Component {
 
     event_aux_data = event_aux_data.length ? event_aux_data[0] : null
 
-    const files = event_aux_data
-      ? event_aux_data['data_array']
-          .filter((data_item) => {
-            if (data_item['data_name'] == 'filename') {
-              return data_item
-            }
-          })
-          .map((elem) => elem['data_value'])
-      : []
+    const files = []
+    if (event_aux_data) {
+      const arr = event_aux_data['data_array']
+      for (let i = 0; i + 1 < arr.length; i += 2) {
+        files.push({ source: arr[i].data_value, filename: arr[i + 1].data_value })
+      }
+    }
 
     this.setState({ event_aux_data, files })
   }
@@ -167,16 +165,16 @@ class EventCommentModal extends Component {
 
   renderFiles() {
     if (this.state.files && this.state.files.length) {
-      let files = this.state.files.map((file, index) => {
+      let files = this.state.files.map(({ source, filename }, index) => {
         return (
           <div key={`file_${index}`} className='d-flex align-items-center mb-1'>
             <img
-              src={getImageUrl(file)}
-              alt={file}
+              src={getImageUrl(filename)}
+              alt={source}
               style={{ width: '48px', height: '48px', objectFit: 'cover', marginRight: '8px', borderRadius: '4px' }}
             />
-            <span className='me-2 text-truncate'>{file}</span>
-            <FontAwesomeIcon onClick={() => this.handleDelete(file)} className='text-danger' icon='trash' fixedWidth />
+            <span className='me-2 text-truncate'>{source}</span>
+            <FontAwesomeIcon onClick={() => this.handleDelete(filename)} className='text-danger' icon='trash' fixedWidth />
           </div>
         )
       })
