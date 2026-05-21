@@ -25,6 +25,7 @@ import Tasks from './components/tasks'
 import EventLogging from './components/event_logging'
 import EventManagement from './components/event_management'
 import EventTemplates from './components/event_templates'
+import ReviewGallery from './components/review_gallery'
 import ReviewMap from './components/review_map'
 import ReviewReplay from './components/review_replay'
 import Cruises from './components/cruises'
@@ -138,6 +139,7 @@ ReactDOM.render(
           <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
           <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
           <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
+          <Route path={`/review_gallery/:id`} exact={true} component={RequireAuth(ReviewGallery)} />
           <Route path={`/review_map/:id`} exact={true} component={RequireAuth(ReviewMap)} />
           <Route path={`/review_replay/:id`} exact={true} component={RequireAuth(ReviewReplay)} />
           <Route path={`/event_management`} exact={true} component={RequireAuth(EventManagement)} />

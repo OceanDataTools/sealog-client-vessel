@@ -449,6 +449,12 @@ export const gotoCruiseMenu = () => {
   }
 }
 
+export const gotoReviewGallery = (id) => {
+  return (dispatch) => {
+    return dispatch(push(`/review_gallery/${id}`))
+  }
+}
+
 export const gotoReviewReplay = (id) => {
   return (dispatch) => {
     return dispatch(push(`/review_replay/${id}`))

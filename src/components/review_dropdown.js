@@ -43,6 +43,11 @@ class ReviewDropdown extends Component {
                 Map View
               </Dropdown.Item>
             ) : null}
+            {this.props.activeMode !== 'Gallery' ? (
+              <Dropdown.Item key='gallery' onClick={() => this.props.gotoReviewGallery(this.props.cruiseID)}>
+                Gallery View
+              </Dropdown.Item>
+            ) : null}
           </Dropdown.Menu>
         </Dropdown>
       )
@@ -56,6 +61,7 @@ ReviewDropdown.propTypes = {
   className: PropTypes.string,
   cruiseID: PropTypes.string,
   disabled: PropTypes.bool,
+  gotoReviewGallery: PropTypes.func.isRequired,
   gotoReviewMap: PropTypes.func.isRequired,
   gotoReviewReplay: PropTypes.func.isRequired,
   id: PropTypes.string
