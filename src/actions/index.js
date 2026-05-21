@@ -6,7 +6,6 @@ import { _Cruise_ } from '../vocab'
 import {
   create_cruise,
   create_event,
-  create_event_aux_data,
   create_event_template,
   create_user,
   delete_cruise,
@@ -769,30 +768,6 @@ export const updateEventFilterForm = (formProps) => {
 }
 
 export const updateEventRequest = async (formProps) => {
-  if (formProps.event_files) {
-    let data_array = []
-    formProps.event_files.forEach((file) => {
-      data_array.push({
-        data_name: 'source',
-        data_value: file.replace(/^[a-f0-9]{24}_/i, '')
-      })
-      data_array.push({
-        data_name: 'filename',
-        data_value: file
-      })
-    })
-
-    const aux_data_record = {
-      event_id: formProps.id,
-      data_source: 'eventFileAttachments',
-      data_array
-    }
-
-    await create_event_aux_data(aux_data_record)
-  }
-
-  delete formProps.event_files
-
   let fields = { ...formProps }
   delete fields.id
   return await update_event(fields, formProps.id)
