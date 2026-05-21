@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import Path from 'path'
 import { Modal, Image } from 'react-bootstrap'
 import { connectModal } from 'redux-modal'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -26,7 +25,7 @@ class ImagePreviewModal extends Component {
         <Modal size='xl' show={show} onHide={handleHide}>
           <Modal.Header className='bg-light' closeButton>
             <Modal.Title as='h5'>
-              Image Preview - {Path.basename(this.props.filepath)}{' '}
+              Image Preview - {this.props.name}{' '}
               <FontAwesomeIcon
                 onClick={() => handle_image_file_download(this.props.filepath)}
                 className='text-primary'
