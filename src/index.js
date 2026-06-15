@@ -41,6 +41,7 @@ import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
 import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
+import { faCopy } from '@fortawesome/free-solid-svg-icons/faCopy'
 import { faComment } from '@fortawesome/free-solid-svg-icons/faComment'
 import { faCompress } from '@fortawesome/free-solid-svg-icons/faCompress'
 import { faDownload } from '@fortawesome/free-solid-svg-icons/faDownload'
@@ -70,6 +71,7 @@ library.add(
   faChevronRight,
   faChevronUp,
   faClipboard,
+  faCopy,
   faComment,
   faCompress,
   faDownload,

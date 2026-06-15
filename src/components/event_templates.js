@@ -86,6 +86,12 @@ class EventTemplates extends Component {
     })
   }
 
+  handleEventTemplateDuplicate(template) {
+    const copy = { ...template }
+    delete copy.id
+    this.props.createEventTemplate({ ...copy, event_name: `Copy of ${template.event_name}` })
+  }
+
   handleEventTemplateTest(event_template) {
     this.props.showModal('eventOptions', {
       eventTemplate: event_template,
@@ -209,6 +215,7 @@ class EventTemplates extends Component {
   renderEventTemplates(system = false) {
     const editTooltip = <Tooltip id='editTooltip'>Edit this template.</Tooltip>
     const deleteTooltip = <Tooltip id='deleteTooltip'>Delete this template.</Tooltip>
+    const duplicateTooltip = <Tooltip id='duplicateTooltip'>Duplicate this template.</Tooltip>
     const testTooltip = <Tooltip id='testTooltip'>Test this template.</Tooltip>
 
     let templatesPerPage = system ? maxSystemTemplatesPerPage : maxTemplatesPerPage
@@ -253,6 +260,17 @@ class EventTemplates extends Component {
           />
         </OverlayTrigger>
       )
+      const duplicate_icon = this.props.roles.some((item) => edit_roles.includes(item)) ? (
+        <OverlayTrigger placement='top' overlay={duplicateTooltip}>
+          <FontAwesomeIcon
+            className='text-info'
+            onClick={() => this.handleEventTemplateDuplicate(template)}
+            icon='copy'
+            fixedWidth
+            role='button'
+          />
+        </OverlayTrigger>
+      ) : null
       const delete_icon = this.props.roles.some((item) => edit_roles.includes(item)) ? (
         <OverlayTrigger placement='top' overlay={deleteTooltip}>
           <FontAwesomeIcon
@@ -277,7 +295,7 @@ class EventTemplates extends Component {
             {template.event_value}
           </td>
           <td className='text-center'>
-            {edit_icon} {test_icon} {delete_icon}
+            {edit_icon} {test_icon} {duplicate_icon} {delete_icon}
           </td>
         </tr>
       )
@@ -291,7 +309,7 @@ class EventTemplates extends Component {
           <tr>
             <th>Button Name</th>
             <th>Event Value</th>
-            <th className='text-center' style={{ width: '90px' }}>
+            <th className='text-center' style={{ width: '110px' }}>
               Actions
             </th>
           </tr>
@@ -409,6 +427,7 @@ class EventTemplates extends Component {
 }
 
 EventTemplates.propTypes = {
+  createEventTemplate: PropTypes.func.isRequired,
   deleteAllEventTemplates: PropTypes.func.isRequired,
   deleteEventTemplate: PropTypes.func.isRequired,
   event_templateid: PropTypes.string,
