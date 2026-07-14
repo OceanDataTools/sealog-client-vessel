@@ -6,7 +6,7 @@ import EventTemplateOptionsModal from './event_template_options_modal'
 import { Client } from '@hapi/nes/lib/client'
 import { connectWSClient } from '../utils'
 import cookies from '../cookies'
-import { WS_ROOT_URL, CATEGORY_SORT_ORDER } from '../client_settings'
+import { WS_ROOT_URL, CATEGORY_SORT_ORDER, DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR } from '../client_settings'
 import * as mapDispatchToProps from '../actions'
 
 const sortCategories = (category_list) => {
@@ -162,7 +162,7 @@ class EventTemplateList extends Component {
                       return (
                         <Button
                           className='btn-template'
-                          variant='primary'
+                          variant={event_template.event_button_color || DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR}
                           to='#'
                           key={`template_${event_template.id}`}
                           onClick={(e) => this.handleEventSubmit(event_template, e)}
@@ -181,7 +181,7 @@ class EventTemplateList extends Component {
                   return (
                     <Button
                       className='btn-template'
-                      variant='primary'
+                      variant={event_template.event_button_color || DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR}
                       to='#'
                       key={`template_${event_template.id}`}
                       onClick={(e) => this.handleEventSubmit(event_template, e)}
@@ -200,7 +200,7 @@ class EventTemplateList extends Component {
             return (
               <Button
                 className='btn-template'
-                variant='primary'
+                variant={event_template.event_button_color || DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR}
                 to='#'
                 key={`template_${event_template.id}`}
                 onClick={(e) => this.handleEventSubmit(event_template, e)}

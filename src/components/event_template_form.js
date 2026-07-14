@@ -7,7 +7,11 @@ import { Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { renderAlert, renderHidden, renderMessage, renderSelectField, renderSwitch, renderTextField, renderTextArea } from './form_elements'
 import * as mapDispatchToProps from '../actions'
-import { EventTemplateOptionTypes, EventTemplateVisibilityOptionTypes } from '../event_template_option_types'
+import {
+  EventTemplateOptionTypes,
+  EventTemplateVisibilityOptionTypes,
+  EventTemplateButtonColorOptions
+} from '../event_template_option_types'
 
 class EventTemplateForm extends Component {
   constructor(props) {
@@ -270,6 +274,16 @@ class EventTemplateForm extends Component {
               <Row>
                 <Field name='event_name' component={renderTextField} label='Button Name' required={true} sm={6} lg={6} />
                 <Field name='event_value' component={renderTextField} label='Event Value' required={true} sm={6} lg={6} />
+              </Row>
+              <Row>
+                <Field
+                  name='event_button_color'
+                  component={renderSelectField}
+                  options={EventTemplateButtonColorOptions}
+                  label='Button Color'
+                  sm={6}
+                  lg={6}
+                />
               </Row>
               <Row>
                 <Field

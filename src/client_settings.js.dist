@@ -104,6 +104,10 @@ const AUX_DATA_DATASOURCE_REPLACE = null
 // i.e. ['science','problem']
 const CATEGORY_SORT_ORDER = null
 
+// Default button color (Bootstrap variant name) used for event templates
+// that do not specify their own event_button_color.
+const DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR = 'primary'
+
 module.exports = {
   API_ROOT_URL,
   WS_ROOT_URL,
@@ -126,5 +130,6 @@ module.exports = {
   IMAGES_AUX_DATA_SOURCES,
   AUX_DATA_SORT_ORDER,
   AUX_DATA_DATASOURCE_REPLACE,
-  CATEGORY_SORT_ORDER
+  CATEGORY_SORT_ORDER,
+  DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR
 }
