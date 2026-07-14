@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.5] - 2026-07-14
+
+### Added
+- **Duplicate button for event templates** — a copy icon on each row in both the System and non-system event template tables creates a new template identical to the original with "Copy of " prepended to the event name
+- **Per-template event button color** — event templates can set an `event_button_color` field to override the button's Bootstrap variant in the event logging UI, falling back to the new `DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR` client setting (defaults to `primary`, preserving prior behavior) when unset
+
+### Internal
+- Updated `axios`, `@babel/*`, `concurrently`, `eslint-plugin-prettier`, `prettier`, `sass`, `webpack`, `webpack-cli`, and `webpack-dev-server`
+
+## [2.4.4] - 2026-05-21
+
+### Added
+- **Gallery view with Attached Images tab** — new Review Gallery fetches all configured image aux data sources across the cruise; `eventFileAttachments` are grouped under a single "Attached Images" tab while other sources (e.g. framegrabber) are tabbed by camera name; includes an ASNAP toggle, per-page image count selector, and keyboard navigation
+
+### Changed
+- Event file attachments now store FilePond's server-returned `serverId` (prefixed with `{event_id}_`) instead of the local filename in aux_data records
+- `eventFileAttachments` aux_data now stores a `source` (original filename) + `filename` (prefixed) pair instead of `camera_name`, so the original filename displays as the label in the event comment modal and image preview title while the prefixed name is used for the image URL
+
+### Fixed
+- Attachment delete in the event comment modal now removes `source`+`filename` pairs by position rather than matching on `data_value`, which broke once the two entries held different values
+
+### Docs
+- Rewrote README with full feature documentation
+- Rewrote INSTALL.md with accurate and complete instructions
+
+### Internal
+- Removed dead `event_files` code path from `updateEventRequest` (unreachable — no component ever set it)
+- Updated `axios`, `webpack`, `webpack-dev-server`, and other dependencies to latest patch versions
+
 ## [2.4.3] - 2026-04-11
 
 ### Changed
