@@ -177,9 +177,12 @@ tbody {
   padding: 4px 0px 0px 20px;
 }
 
-// Keep color-select-field dropdown items showing their own variant color
-// (instead of the default grey) when hovered, focused, or selected.
+// Show each color-select-field dropdown item in its own variant color
+// (instead of the default grey), darkening slightly on hover, focus, or selection.
 .color-select-menu .dropdown-item {
+  background-color: var(--bs-btn-bg);
+  color: var(--bs-btn-color);
+
   &:hover,
   &:focus,
   &.active {
