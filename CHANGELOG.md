@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.6] - 2026-07-16
+
+### Added
+- **Color-coded button color picker** — the event template "Button Color" field now renders as a dropdown where each option is shown in its own Bootstrap variant color, previewing what the button will look like
+
+### Security
+- Pinned `uuid` to `11.1.1` to resolve Dependabot alert #75 (transitively pulled in via `webpack-dev-server` → `sockjs`)
+
 ## [2.4.5] - 2026-07-14
 
 ### Added
