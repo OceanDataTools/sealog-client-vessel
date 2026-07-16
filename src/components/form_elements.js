@@ -1,5 +1,5 @@
 import React from 'react'
-import { Alert, Col, Form, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { Alert, Col, Dropdown, Form, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import Datetime from 'react-datetime'
 import moment from 'moment'
 
@@ -112,6 +112,59 @@ export const renderSelectField = ({
         {optionList}
       </Form.Select>
       <Form.Control.Feedback type='invalid'>{error}</Form.Control.Feedback>
+    </Form.Group>
+  )
+}
+
+export const renderColorSelectField = ({
+  input,
+  className = 'pb-2',
+  label,
+  required,
+  options,
+  addDefaultOption = true,
+  meta: { touched, error },
+  disabled = false,
+  xs = 12,
+  sm = 12,
+  md = 12,
+  lg = 12
+}) => {
+  const requiredField = required ? <span className='text-danger'> *</span> : ''
+
+  return (
+    <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
+      <Form.Label>
+        {label}
+        {requiredField}
+      </Form.Label>
+      <Dropdown onSelect={(eventKey) => input.onChange(eventKey || '')}>
+        <Dropdown.Toggle
+          id={input.name}
+          variant={input.value || 'outline-secondary'}
+          disabled={disabled}
+          className='form-select text-start'
+        >
+          {input.value || 'Choose...'}
+        </Dropdown.Toggle>
+        <Dropdown.Menu className='color-select-menu w-100'>
+          {addDefaultOption ? (
+            <Dropdown.Item eventKey='' active={!input.value}>
+              &nbsp;
+            </Dropdown.Item>
+          ) : null}
+          {options.map((option, index) => (
+            <Dropdown.Item key={`${input.name}.${index}`} eventKey={option} active={input.value === option} className={`btn-${option}`}>
+              {option}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
+      {touched && error ? (
+        <div className='text-danger' style={{ fontSize: '.7rem' }}>
+          {error}
+        </div>
+      ) : null}
     </Form.Group>
   )
 }

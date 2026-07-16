@@ -5,7 +5,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { reduxForm, Field, FieldArray, formValueSelector } from 'redux-form'
 import { Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
-import { renderAlert, renderHidden, renderMessage, renderSelectField, renderSwitch, renderTextField, renderTextArea } from './form_elements'
+import {
+  renderAlert,
+  renderColorSelectField,
+  renderHidden,
+  renderMessage,
+  renderSelectField,
+  renderSwitch,
+  renderTextField,
+  renderTextArea
+} from './form_elements'
 import * as mapDispatchToProps from '../actions'
 import {
   EventTemplateOptionTypes,
@@ -278,7 +287,7 @@ class EventTemplateForm extends Component {
               <Row>
                 <Field
                   name='event_button_color'
-                  component={renderSelectField}
+                  component={renderColorSelectField}
                   options={EventTemplateButtonColorOptions}
                   label='Button Color'
                   sm={6}
