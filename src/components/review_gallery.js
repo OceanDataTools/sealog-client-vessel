@@ -164,12 +164,12 @@ class ReviewGallery extends Component {
                 {imgCountOptions}
               </Form.Select>
             </Form.Group>
+            <Form style={{ marginTop: '-4px' }} className='float-end me-2'>
+              <FormControl size='sm' type='text' placeholder='Search' onChange={this.handleSearchChange} />
+            </Form>
             <span className='me-2 text-primary float-end clickable' style={{ fontSize: '.85rem' }} onClick={this.toggleASNAP}>
               {this.props.event.hideASNAP ? 'Show ASNAP' : 'Hide ASNAP'}
             </span>
-            <Form className='float-end me-2'>
-              <FormControl size='sm' type='text' placeholder='Search' onChange={this.handleSearchChange} />
-            </Form>
           </span>
         </Row>
         <Row>
