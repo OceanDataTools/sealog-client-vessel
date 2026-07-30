@@ -115,7 +115,7 @@ module.exports = {
       template: './src/assets/index.html'
     }),
     new MiniCssExtractPlugin({
-      filename: 'style/[[name].[contenthash].css'
+      filename: 'style/[name].[contenthash].css'
     }),
     new CopyPlugin({
       patterns: [{ from: path.resolve(__dirname, 'src/assets/images/'), to: 'images' }]
