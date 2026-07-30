@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.8] - 2026-07-30
+
+### Fixed
+- **CSS output filename** — `MiniCssExtractPlugin`'s `filename` option had a duplicated leading bracket, producing CSS asset files with a literal `[` in the name and a broken, URL-encoded `href` in `index.html` that failed to load in production
+- **Self-hosted fonts** — removed a leftover live `@import` of Open Sans from `fonts.googleapis.com` in `_bootswatch.scss`; the font is already bundled and served from the same origin via `@fontsource/open-sans`, so the external request broke styling on network-restricted deployments
+
+### Security
+- Added an explicit `fast-uri` override (`^3.1.4`) to guard against Dependabot alert #86 regressing
+
 ## [2.4.7] - 2026-07-25
 
 ### Added
