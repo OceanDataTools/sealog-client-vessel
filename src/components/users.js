@@ -208,7 +208,7 @@ class Users extends Component {
 
     let userList = Array.isArray(users) ? users : this.props.users.filter((user) => user.system_user === system)
 
-    userList = userList.slice((this.state.activePage - 1) * usersPerPage, activePage * usersPerPage)
+    userList = userList.slice((activePage - 1) * usersPerPage, activePage * usersPerPage)
 
     if (!userList.length) {
       return (
@@ -353,8 +353,8 @@ class Users extends Component {
       ? this.state.filteredSystemUsers.length
       : this.props.users.filter((user) => user.system_user === true).length
 
-    const filteredUsers = this.state.filteredSystemUsers
-      ? this.state.filteredSystemUsers.length
+    const filteredUsers = this.state.filteredUsers
+      ? this.state.filteredUsers.length
       : this.props.users.filter((user) => user.system_user === false).length
 
     if (this.props.roles.some((item) => ['admin', 'cruise_manager'].includes(item))) {
