@@ -48,7 +48,7 @@ class EventTemplateOptionsModal extends Component {
       if (option.event_option_default_value && option.event_option_type !== 'checkboxes') {
         event_options[`option_${index}`] = option.event_option_default_value
       } else if (option.event_option_default_value && option.event_option_type === 'checkboxes') {
-        event_options[`option_${index}`] = option.event_option_default_value.split(',')
+        event_options[`option_${index}`] = option.event_option_default_value.split(',').map((item) => item.trim())
       }
     })
     this.props.initialize({ id: this.state.event_id, ts, event_options })
