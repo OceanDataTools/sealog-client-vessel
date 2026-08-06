@@ -419,24 +419,26 @@ const validate = (formProps) => {
           event_optionErrors.event_option_values = 'Required'
         } else {
           try {
-            valueArray =
+            valueArray = (
               typeof event_option.event_option_values === 'object'
                 ? event_option.event_option_values
                 : event_option.event_option_values.split(',')
+            ).map((item) => item.trim())
           } catch (err) {
             event_optionErrors.event_option_values = 'Invalid csv list'
           }
         }
 
         if (['dropdown', 'radio buttons'].includes(event_option.event_option_type)) {
-          if (event_option.event_option_default_value && !valueArray.includes(event_option.event_option_default_value)) {
+          if (event_option.event_option_default_value && !valueArray.includes(event_option.event_option_default_value.trim())) {
             event_optionErrors.event_option_default_value = 'Value is not in options list'
           }
         } else if (event_option.event_option_default_value) {
-          let defaultValueArray =
+          let defaultValueArray = (
             typeof event_option.event_option_default_value === 'object'
               ? event_option.event_option_default_value
               : event_option.event_option_default_value.split(',')
+          ).map((item) => item.trim())
           if (event_option.event_option_default_value && !defaultValueArray.every((element) => valueArray.includes(element))) {
             event_optionErrors.event_option_default_value = 'Value(s) is/are not in options list'
           }
