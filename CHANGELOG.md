@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.10] - 2026-08-06
+
+### Fixed
+- **System users table pagination expanded instead of paginating** — the users table's row slicing always used the non-system table's page state for the start index regardless of which table was being paged, so paging the system users table grew the visible range instead of moving to the next page, and paging the non-system table could make the system table appear to show 0 records
+- **Non-system user count used the wrong filtered list** — the displayed count for non-system users read from the system users' filtered list instead of its own
+
 ## [2.4.9] - 2026-08-06
 
 ### Fixed
