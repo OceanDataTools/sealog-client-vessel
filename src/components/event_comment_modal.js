@@ -31,7 +31,10 @@ class EventCommentModal extends Component {
       filepondPristine: true
     }
 
+    this.finalized = false
+
     this.handleFormSubmit = this.handleFormSubmit.bind(this)
+    this.handleFormHide = this.handleFormHide.bind(this)
   }
 
   componentDidMount() {
@@ -42,6 +45,22 @@ class EventCommentModal extends Component {
     if (prevProps.event !== this.props.event) {
       this.populateDefaultValues()
     }
+  }
+
+  componentWillUnmount() {
+    // if the modal unmounts (e.g. the user navigates away) without being
+    // explicitly submitted or canceled, abort/revert any in-flight or
+    // just-completed uploads so they don't become orphaned files
+    if (!this.finalized) {
+      this.finalized = true
+      this.pond?.removeFiles()
+    }
+  }
+
+  handleFormHide() {
+    this.finalized = true
+    this.pond?.removeFiles()
+    this.props.handleHide()
   }
 
   async populateDefaultValues() {
@@ -77,6 +96,7 @@ class EventCommentModal extends Component {
   }
 
   async handleFormSubmit(formProps) {
+    this.finalized = true
     const { event, handleUpdateEvent, handleHide } = this.props
     let existing_comment = false
     let event_options =
@@ -186,10 +206,10 @@ class EventCommentModal extends Component {
   }
 
   render() {
-    const { show, handleHide, handleSubmit, submitting, valid, event } = this.props
+    const { show, handleSubmit, submitting, valid, event } = this.props
     if (event) {
       return (
-        <Modal size='md' show={show} onHide={handleHide} onEntered={() => document.getElementsByName('event_comment')[0].focus()}>
+        <Modal size='md' show={show} onHide={this.handleFormHide} onEntered={() => document.getElementsByName('event_comment')[0].focus()}>
           <Form onSubmit={handleSubmit(this.handleFormSubmit)}>
             <Modal.Header className='bg-light' closeButton>
               <Modal.Title>Add/Update Comment</Modal.Title>
@@ -223,7 +243,7 @@ class EventCommentModal extends Component {
             </Modal.Body>
 
             <Modal.Footer>
-              <Button variant='secondary' size='sm' disabled={submitting} onClick={handleHide}>
+              <Button variant='secondary' size='sm' disabled={submitting} onClick={this.handleFormHide}>
                 Cancel
               </Button>
               <Button variant='primary' size='sm' type='submit' disabled={(submitting || !valid) && this.state.filepondPristine}>

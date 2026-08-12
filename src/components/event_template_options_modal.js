@@ -33,11 +33,26 @@ class EventTemplateOptionsModal extends Component {
       event_id: this.props.event ? this.props.event.id : null
     }
 
+    this.finalized = false
+
     this.handleFormHide = this.handleFormHide.bind(this)
   }
 
   componentDidMount() {
     this.populateDefaultValues()
+  }
+
+  componentWillUnmount() {
+    // if the modal unmounts (e.g. the user navigates away) without the
+    // event being explicitly submitted or canceled, delete the
+    // optimistically-created event so it isn't orphaned in the database
+    if (this.props.event && !this.finalized) {
+      this.finalized = true
+      // abort/revert any in-flight or just-completed uploads so they don't
+      // land (or persist) after the event they're attached to is deleted
+      this.pond?.removeFiles()
+      this.props.handleDeleteEvent(this.props.event.id)
+    }
   }
 
   async populateDefaultValues() {
@@ -123,11 +138,16 @@ class EventTemplateOptionsModal extends Component {
         })
       }
     }
+    this.finalized = true
     this.props.handleHide()
   }
 
   handleFormHide() {
     if (this.props.event) {
+      this.finalized = true
+      // abort/revert any in-flight or just-completed uploads so they don't
+      // land (or persist) after the event they're attached to is deleted
+      this.pond?.removeFiles()
       this.props.handleDeleteEvent(this.props.event.id)
     }
     this.props.handleHide()
