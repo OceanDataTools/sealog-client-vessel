@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.12] - 2026-08-18
+
+### Added
+- **Toast on failed event submission** — `createEvent`/`updateEvent` previously swallowed REST failures silently, so an event that never reached the server (or was rejected) was indistinguishable from a successful submission; failures now surface as a transient toast
+- **Websocket connection status in footer** — the footer now shows "Server: Connected"/"Disconnected", reflecting the status of the websocket connection used for live status updates
+
+### Security
+- Bumped `nanoid` to 3.3.18 to fix an indefinite-loop DoS advisory (GHSA-2v37-7h3g-55p8)
+
 ## [2.4.10] - 2026-08-06
 
 ### Fixed
