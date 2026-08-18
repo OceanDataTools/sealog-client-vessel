@@ -35,9 +35,11 @@ import {
   AUTH_ERROR,
   AUTH_SUCCESS,
   AUTH_USER,
+  CLEAR_EVENT_ERROR,
   CLEAR_SELECTED_EVENT,
   CREATE_CRUISE_ERROR,
   CREATE_CRUISE_SUCCESS,
+  CREATE_EVENT_ERROR,
   CREATE_EVENT_TEMPLATE_ERROR,
   CREATE_EVENT_TEMPLATE_SUCCESS,
   CREATE_USER_ERROR,
@@ -67,6 +69,7 @@ import {
   UPDATE_CRUISE_ERROR,
   UPDATE_CRUISE_SUCCESS,
   UPDATE_EVENT,
+  UPDATE_EVENT_ERROR,
   UPDATE_EVENT_FILTER_FORM,
   UPDATE_EVENT_TEMPLATE_CATEGORY,
   UPDATE_EVENT_TEMPLATE_ERROR,
@@ -174,8 +177,32 @@ export const createCruiseSuccess = (message) => {
   }
 }
 
+const _eventErrorMessage = (error) => {
+  return (error.response && error.response.data && error.response.data.message) || 'Unable to reach server'
+}
+
+export const createEventError = (message) => {
+  return {
+    type: CREATE_EVENT_ERROR,
+    payload: message
+  }
+}
+
+export const updateEventError = (message) => {
+  return {
+    type: UPDATE_EVENT_ERROR,
+    payload: message
+  }
+}
+
+export const clearEventError = () => {
+  return {
+    type: CLEAR_EVENT_ERROR
+  }
+}
+
 export const createEvent = ({ event_value, event_free_text = '', event_options = [], ts = null, publish = true }) => {
-  return async () => {
+  return async (dispatch) => {
     const fields = { event_value, event_free_text, event_options, ts, publish }
     if (!fields.ts) {
       delete fields.ts
@@ -185,6 +212,7 @@ export const createEvent = ({ event_value, event_free_text = '', event_options =
     if (response.success) {
       return response.data.insertedEvent
     }
+    dispatch(createEventError(_eventErrorMessage(response.error)))
   }
 }
 
@@ -764,6 +792,7 @@ export const updateEvent = (formProps) => {
     if (response.success) {
       return dispatch({ type: UPDATE_EVENT, payload: formProps })
     }
+    dispatch(updateEventError(_eventErrorMessage(response.error)))
   }
 }
 

@@ -22,6 +22,7 @@ import RequireUnauth from './components/auth/require_unauth'
 import CruiseMenu from './components/cruise_menu'
 import Users from './components/users'
 import Tasks from './components/tasks'
+import EventErrorToast from './components/event_error_toast'
 import EventLogging from './components/event_logging'
 import EventManagement from './components/event_management'
 import EventTemplates from './components/event_templates'
@@ -128,6 +129,7 @@ ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <Header />
+      <EventErrorToast />
       <Container fluid style={{ maxWidth: '1200px', paddingBottom: '70px' }}>
         <Switch>
           <Route path={`/`} exact={true} component={RequireAuth(DISABLE_EVENT_LOGGING ? CruiseMenu : EventLogging)} />

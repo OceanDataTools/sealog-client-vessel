@@ -7,10 +7,13 @@ import {
   SET_SELECTED_EVENT,
   EVENT_FETCHING,
   TOGGLE_ASNAP,
+  CREATE_EVENT_ERROR,
+  UPDATE_EVENT_ERROR,
+  CLEAR_EVENT_ERROR,
 
 } from '../actions/types';
 
-export default ( state={ selected_event: {}, events: [], eventFilter: {}, hideASNAP: false, fetching: false}, action) => {
+export default ( state={ selected_event: {}, events: [], eventFilter: {}, hideASNAP: false, fetching: false, event_error: '', event_error_id: 0}, action) => {
   switch(action.type){
 
     case INIT_EVENT:
@@ -54,6 +57,13 @@ export default ( state={ selected_event: {}, events: [], eventFilter: {}, hideAS
     case TOGGLE_ASNAP:
       const newASNAP = !state.hideASNAP
       return { ...state, hideASNAP: newASNAP};
+
+    case CREATE_EVENT_ERROR:
+    case UPDATE_EVENT_ERROR:
+      return { ...state, event_error: action.payload, event_error_id: state.event_error_id + 1 };
+
+    case CLEAR_EVENT_ERROR:
+      return { ...state, event_error: '' };
   }
 
   return state;
