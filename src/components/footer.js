@@ -19,10 +19,13 @@ class Footer extends Component {
     this.state = {
       asnapStatus: null,
       freeSpaceInBytes: null,
-      freeSpacePercentage: null
+      freeSpacePercentage: null,
+      wsConnected: false
     }
 
     this.client = new Client(`${WS_ROOT_URL}`)
+    this.client.onConnect = () => this.setState({ wsConnected: true })
+    this.client.onDisconnect = () => this.setState({ wsConnected: false })
     this.connectToWS = this.connectToWS.bind(this)
   }
 
@@ -83,6 +86,16 @@ class Footer extends Component {
   render() {
     let freeSpaceStatus = null
     let asnapStatus = null
+    let wsStatus = null
+
+    if (!DISABLE_EVENT_LOGGING && this.props.authenticated) {
+      const wsStatusStyle = this.state.wsConnected ? 'text-success' : 'text-danger'
+      wsStatus = (
+        <React.Fragment>
+          Server: <span className={wsStatusStyle + ' me-3'}>{this.state.wsConnected ? 'Connected' : 'Disconnected'}</span>
+        </React.Fragment>
+      )
+    }
 
     if (DISABLE_EVENT_LOGGING) {
       freeSpaceStatus = null
@@ -116,6 +129,7 @@ class Footer extends Component {
     return (
       <Navbar className='bg-light footer' collapseOnSelect expand='sm' variant='light' fixed='bottom'>
         <Navbar.Text className='ms-4'>
+          {wsStatus}
           {asnapStatus}
           {freeSpaceStatus}
         </Navbar.Text>
