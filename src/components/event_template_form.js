@@ -42,7 +42,7 @@ class EventTemplateForm extends Component {
     formProps.template_categories = formProps.template_categories || []
 
     if (typeof formProps.template_categories === 'string') {
-      formProps.template_categories = formProps.template_categories.split(',').map((item) => item.trim().toLowerCase())
+      formProps.template_categories = formProps.template_categories.split(',').map((item) => item.trim())
     }
 
     formProps.event_free_text_required = formProps.event_free_text_required || false
