@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.4.13] - 2026-09-05
+## [2.4.13] - 2026-09-08
 
 ### Added
 - **Warning that button name isn't stored** — a note beside the Button Name and Event Value fields in the event template form clarifies that the button label isn't part of the saved event data or exports
