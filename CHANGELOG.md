@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.14] - 2026-09-08
+
+### Fixed
+- **Event Management filter form didn't filter events** — `fetchEvents()` read the retired `eventFilter.value` field instead of `eventFilter.fulltext`, and spread `author`/`datasource` as unsplit comma-joined strings instead of arrays, so filtering by full text, author, or datasource had no effect
+- **Event History search box didn't filter events** — `buildEventQuery()` and `event_history.js`'s event-export fallback query still sent the search term under the retired `value` query param instead of `fulltext`, so search terms had no effect on the server
+- **Export dropdown produced an empty file when the event filter form had values** — `export_dropdown.js` still referenced the retired `eventFilter.value` field and spread `fulltext`/`author`/`datasource` as raw comma-joined strings instead of arrays, so filtered exports matched zero events on the server
+- **Review Gallery "Hide ASNAP" toggle didn't filter images** — `initCruiseImages()` sent the ASNAP exclusion under the retired `value` query param instead of merging it into `fulltext` alongside the search box's term, so the server never applied it and ASNAP-tagged images stayed visible regardless of the toggle
+- **Review Gallery's full-text filter wasn't retained when navigating from Review Map/Replay** — the gallery's search box kept its term in local component state, disconnected from the shared `eventFilter` Redux state that Review Map/Replay read and wrote via `EventFilterForm`, so a filter set on one page was silently lost when switching to the gallery
+
 ## [2.4.13] - 2026-09-08
 
 ### Added
