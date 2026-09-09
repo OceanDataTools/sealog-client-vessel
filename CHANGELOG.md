@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.16] - Unreleased
+
+### Security
+- Pinned `qs` (pulled in transitively via `webpack-dev-server`'s `express` dependency, dev-server only) to `^6.16.0` via `overrides`, resolving 2 moderate-severity advisories (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g) that `npm audit fix` couldn't reach because `express@4.22.2` pins `qs` below the patched version
+
+### Internal
+- Removed unused dependencies: `jquery`, `eslint-plugin-import`, `eslint-plugin-react-hooks`, `@fortawesome/fontawesome-common-types`, `@fortawesome/fontawesome-free`
+- Declared `prop-types` and `history` as explicit dependencies — both were imported directly throughout the app but only ever resolved transitively via other packages
+- Moved `@babel/runtime`, `@fontsource/open-sans`, `@fortawesome/fontawesome-svg-core`, `@fortawesome/free-solid-svg-icons`, and `@fortawesome/react-fontawesome` from `devDependencies` to `dependencies`, since they ship in and run from the production bundle rather than being build-only tooling
+
 ## [2.4.15] - 2026-09-08
 
 No functional changes. Version bump only, to keep release numbering aligned with `sealog-client-vehicle` (whose 2.4.15 fixes were already included here as part of [2.4.14](#2414---2026-09-08)).
