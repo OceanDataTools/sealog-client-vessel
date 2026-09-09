@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.4.16] - Unreleased
 
+### Added
+- **Deployment configuration via `.env`** — server hostname/port, vessel name, cruise ID regex, default event-template button color, and other per-deployment `client_settings.js` settings now read from a `.env` file (`SEALOG_*` keys) at build time instead of requiring `client_settings.js` itself to be hand-edited. `.env.dist` ships fully commented out, so the default build needs no edits; a deployment only uncomments and sets the settings it wants to change
+
 ### Fixed
 - **Review Gallery search silently overrode the "Hide ASNAP" toggle** — the search term and ASNAP exclusion were combined into one `fulltext` filter with OR instead of AND semantics, so typing a search term re-showed ASNAP events even with the toggle active; the same gap meant Review Map/Replay never picked up a Gallery search term, since the search handler didn't call `eventUpdateReviewReplay()` the way the ASNAP toggle did
 
