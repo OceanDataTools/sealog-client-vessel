@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.4.16] - Unreleased
 
+### Fixed
+- **Review Gallery search silently overrode the "Hide ASNAP" toggle** — the search term and ASNAP exclusion were combined into one `fulltext` filter with OR instead of AND semantics, so typing a search term re-showed ASNAP events even with the toggle active; the same gap meant Review Map/Replay never picked up a Gallery search term, since the search handler didn't call `eventUpdateReviewReplay()` the way the ASNAP toggle did
+
 ### Security
 - Pinned `qs` (pulled in transitively via `webpack-dev-server`'s `express` dependency, dev-server only) to `^6.16.0` via `overrides`, resolving 2 moderate-severity advisories (GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g) that `npm audit fix` couldn't reach because `express@4.22.2` pins `qs` below the patched version
 

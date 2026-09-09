@@ -9,6 +9,7 @@ import ReviewDropdown from './review_dropdown'
 import { get_event_aux_data_by_cruise } from '../api'
 import { IMAGES_AUX_DATA_SOURCES } from '../client_settings'
 import { _Cruises_ } from '../vocab'
+import { combineFulltextFilter } from '../utils'
 import * as mapDispatchToProps from '../actions'
 
 const ATTACHED_IMAGES_LABEL = 'Attached Images'
@@ -50,6 +51,10 @@ class ReviewGallery extends Component {
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.state.filterTimer)
+  }
+
   toggleASNAP() {
     this.props.toggleASNAP()
     this.props.eventUpdateReviewReplay()
@@ -58,7 +63,7 @@ class ReviewGallery extends Component {
   async initCruiseImages(id) {
     this.setState({ fetching: true })
 
-    const fulltext = this.state.eventFilter || (this.props.event.hideASNAP ? '!ASNAP' : null)
+    const fulltext = combineFulltextFilter(this.state.eventFilter, this.props.event.hideASNAP)
     const query = {
       datasource: IMAGES_AUX_DATA_SOURCES,
       fulltext: fulltext ? fulltext.split(',') : null
@@ -103,6 +108,7 @@ class ReviewGallery extends Component {
       filterTimer: setTimeout(() => {
         this.setState({ eventFilter: eventFilterValue })
         this.props.updateEventFilterForm({ ...this.props.event.eventFilter, fulltext: eventFilterValue })
+        this.props.eventUpdateReviewReplay()
       }, 500)
     })
   }
