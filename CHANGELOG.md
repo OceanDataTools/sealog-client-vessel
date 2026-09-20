@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Default basemaps in `map_tilelayers.js.dist`** — the Carto Dark and Carto Voyager layers are replaced with Esri Dark Gray, Esri Light Gray and Esri Ocean, with Esri Ocean as the default base layer. Esri Ocean Labels is added as an optional overlay. `maxNativeZoom` is set per layer (11 for the gray layers, 10 for Ocean and Ocean Labels) so Leaflet upscales the last real tiles instead of showing Esri's "Map data not yet available" placeholder in open water. Existing deployments must update their own `src/map_tilelayers.js` to pick this up
+
 ## [2.4.17] - 2026-09-15
 
 ### Added
