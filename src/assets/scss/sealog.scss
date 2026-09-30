@@ -232,6 +232,15 @@ div {
 }
 
 
+.form-static-text {
+  height: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background-color: $input-disabled-bg;
+  color: $input-disabled-color;
+  border-color: $input-disabled-border-color;
+}
+
 // react-datetime styles
 @import "~react-datetime/css/react-datetime.css";
 
