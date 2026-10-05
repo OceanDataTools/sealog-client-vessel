@@ -68,3 +68,7 @@ export const LEAVE_CRUISE_FORM = 'leave_updagte_cruise_form'
 export const CREATE_CRUISE_SUCCESS = 'create_cruise_success'
 export const CREATE_CRUISE_ERROR = 'create_cruise_error'
 export const FETCH_CRUISES = 'fetch_cruises'
+
+export const UPDATE_AUX_DATA_STATUS = 'update_aux_data_status'
+export const CLEAR_AUX_DATA_STATUS = 'clear_aux_data_status'
+export const SHOW_AUX_DATA_TOAST = 'show_aux_data_toast'
