@@ -5,10 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.4.18] - 2026-10-05
+
+### Added
+- **Missing aux data warning** — optional `SEALOG_REQUIRED_AUX_DATA_SOURCES` setting lists the aux data sources (e.g. `vesselRealtimeNavData,framegrabber`) expected on every event logged during a cruise. When set, each new event is checked after a grace period (`SEALOG_REQUIRED_AUX_DATA_GRACE_PERIOD`, default 10s), or sooner once every required source has arrived. The footer shows `Aux Data: OK` or `Aux Data: Missing` (missing sources in a hover tooltip), and a warning toast lists the missing sources, at most once per `SEALOG_REQUIRED_AUX_DATA_TOAST_COOLDOWN` (default 300s) unless the set of missing sources changes. Clicking `Missing` re-shows the toast. The last result and cooldown persist in `localStorage` (scoped by `ROOT_PATH`) across page refreshes. Disabled by default, with no extra API/WebSocket traffic when unset (#77)
 
 ### Changed
 - **Default basemaps in `map_tilelayers.js.dist`** — the Carto Dark and Carto Voyager layers are replaced with Esri Dark Gray, Esri Light Gray and Esri Ocean, with Esri Ocean as the default base layer. Esri Ocean Labels is added as an optional overlay. `maxNativeZoom` is set per layer (11 for the gray layers, 10 for Ocean and Ocean Labels) so Leaflet upscales the last real tiles instead of showing Esri's "Map data not yet available" placeholder in open water. Existing deployments must update their own `src/map_tilelayers.js` to pick this up
+
+### Fixed
+- **Email logins dropped the email address** — the login form sent email addresses in a field the login action ignored, so the request went out without them; email addresses are now passed through the `username` field expected by the login action and server
+- **Long static event option values were clipped** — static options rendered as disabled single-line inputs; they now render as wrapping output fields that preserve newlines and grow vertically
+- **Bursts of redundant requests from aux data updates** — every aux data WebSocket notification (up to one per data source per event, including hidden ASNAP events) reloaded the event history and the displayed event. Aux data notifications now refresh only the displayed event, debounced to 200 ms with a 1 s maximum wait (#75)
+
+### Security
+- Bumped `moment` from 2.30.1 to 2.31.0, which fixes CVE-2026-17495 (GHSA-4p3w-j4w9-5jqw)
 
 ## [2.4.17] - 2026-09-15
 
