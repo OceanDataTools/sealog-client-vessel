@@ -30,7 +30,7 @@ class Footer extends Component {
   }
 
   componentDidMount() {
-    if (this.props.authenticated) {
+    if (this.props.authenticated && !DISABLE_EVENT_LOGGING) {
       this.fetchCustomVars()
 
       if (!DISABLE_EVENT_LOGGING) {
@@ -130,7 +130,10 @@ class Footer extends Component {
     if (!DISABLE_EVENT_LOGGING && this.props.authenticated && REQUIRED_AUX_DATA_SOURCES.length) {
       const missing = this.props.auxDataMissing
       let auxDataStatusSpan = <span className='text-warning me-3'>Unknown</span>
-      if (missing && missing.length) {
+      if (this.props.auxDataCruiseActive === false) {
+        // The check only runs on events logged during a cruise.
+        auxDataStatusSpan = <span className='text-secondary me-3'>Disabled</span>
+      } else if (missing && missing.length) {
         // Clicking re-shows the toast listing the missing sources.
         auxDataStatusSpan = (
           <span
@@ -182,13 +185,15 @@ class Footer extends Component {
 Footer.propTypes = {
   authenticated: PropTypes.bool.isRequired,
   auxDataMissing: PropTypes.array,
+  auxDataCruiseActive: PropTypes.bool,
   showAuxDataToast: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => {
   return {
     authenticated: state.auth.authenticated,
-    auxDataMissing: state.aux_data_status.missing
+    auxDataMissing: state.aux_data_status.missing,
+    auxDataCruiseActive: state.aux_data_status.cruise_active
   }
 }
 
