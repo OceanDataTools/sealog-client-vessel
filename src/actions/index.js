@@ -562,6 +562,12 @@ export const gotoVocabularies = () => {
   }
 }
 
+export const gotoVocabulary = (code) => {
+  return (dispatch) => {
+    return dispatch(push(`/vocabularies/${code}`))
+  }
+}
+
 export const gotoUsers = () => {
   return (dispatch) => {
     return dispatch(push(`/users`))
