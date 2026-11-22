@@ -32,10 +32,9 @@ class VocabularyTermModal extends Component {
       prefLabel: term.prefLabel || '',
       altLabel: term.altLabel || '',
       definition: term.definition || '',
-      broader: term.broader || [],
       deprecated: Boolean(term.deprecated),
-      // Open when an existing term already uses these fields
-      showMore: Boolean(term.altLabel || (term.broader && term.broader.length)),
+      // Open when an existing term already has one
+      showMore: Boolean(term.altLabel),
       error: null,
       submitting: false
     }
@@ -81,8 +80,7 @@ class VocabularyTermModal extends Component {
     const fields = {
       prefLabel: this.state.prefLabel.trim(),
       altLabel: this.state.altLabel.trim(),
-      definition: this.state.definition.trim(),
-      broader: this.state.broader
+      definition: this.state.definition.trim()
     }
 
     const response = term
@@ -137,51 +135,11 @@ class VocabularyTermModal extends Component {
     )
   }
 
-  renderBroader() {
-    const { broaderOptions = [] } = this.props
-
-    if (!broaderOptions.length) {
-      return null
-    }
-
-    const labels = {}
-    broaderOptions.forEach((group) => group.terms.forEach((item) => (labels[item.notation] = `${item.prefLabel} (${item.notation})`)))
-
-    return (
-      <Form.Group className='mb-2'>
-        <Form.Label>Broader terms</Form.Label>
-        <Form.Select multiple size='sm' htmlSize={8} value={this.state.broader} onChange={(e) => this.handleBroaderChange(e)}>
-          {broaderOptions.map((group) => (
-            <optgroup key={group.collection} label={`${group.collection} — ${group.title}`}>
-              {group.terms.map((item) => (
-                <option key={item.notation} value={item.notation}>
-                  {item.prefLabel} ({item.id})
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </Form.Select>
-        <Form.Text>
-          Groups this term with NVS categories, e.g. L05 &quot;CTD&quot; or L06 &quot;ROV&quot;, so it shows up under them in category
-          filters. Ctrl/Cmd-click to choose more than one.
-          {this.state.broader.length > 0 && (
-            <div>Selected: {this.state.broader.map((notation) => labels[notation] || notation).join(', ')}</div>
-          )}
-        </Form.Text>
-      </Form.Group>
-    )
-  }
-
-  handleBroaderChange(event) {
-    const broader = Array.from(event.target.selectedOptions).map((option) => option.value)
-    this.setState({ broader, error: null })
-  }
-
   renderMore() {
     if (!this.state.showMore) {
       return (
         <Button variant='link' size='sm' className='p-0' onClick={() => this.setState({ showMore: true })}>
-          More options (alternative label, broader terms)
+          Add an alternative label
         </Button>
       )
     }
@@ -197,7 +155,6 @@ class VocabularyTermModal extends Component {
             onChange={(e) => this.setState({ altLabel: e.target.value, error: null })}
           />
         </Form.Group>
-        {this.renderBroader()}
       </React.Fragment>
     )
   }
@@ -263,7 +220,6 @@ class VocabularyTermModal extends Component {
 
 // Only missing while the modal animates closed
 VocabularyTermModal.propTypes = {
-  broaderOptions: PropTypes.array,
   handleDone: PropTypes.func,
   handleHide: PropTypes.func.isRequired,
   show: PropTypes.bool.isRequired,

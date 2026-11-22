@@ -27,9 +27,6 @@ const ALL_TERMS = { include_hidden: true, include_deprecated: true }
 // category through the terms' broader links
 const hasCategories = (vocabulary) => vocabulary.collection === 'L22' || vocabulary.source === 'local'
 
-// NVS collections a local term can be grouped under (its broader terms)
-const BROADER_COLLECTIONS = ['L05', 'L06']
-
 const sameSet = (a, b) => a.size === b.size && [...a].every((item) => b.has(item))
 
 // Choose which terms of a vocabulary this server shows (#93), and edit the
@@ -42,7 +39,6 @@ class VocabularyTerms extends Component {
       vocabulary: null,
       terms: [],
       categories: [],
-      broaderOptions: [],
       saved: null,
       mode: 'hide_listed',
       listed: new Set(),
@@ -89,22 +85,15 @@ class VocabularyTerms extends Component {
       return
     }
 
-    const cached = BROADER_COLLECTIONS.map((collection) => vocabularies.find((item) => item.collection === collection)).filter(Boolean)
-    const needed = cached.filter((item) => (vocabulary.source === 'local' ? true : item.collection === 'L05' && hasCategories(vocabulary)))
-    const broaderOptions = await Promise.all(
-      needed.map(async (item) => ({
-        collection: item.collection,
-        title: item.title,
-        terms: (await get_vocabulary_terms(item.collection)) || []
-      }))
-    )
-    const l05 = broaderOptions.find((group) => group.collection === 'L05')
+    let categories = []
+    if (hasCategories(vocabulary) && vocabularies.some((item) => item.collection === 'L05')) {
+      categories = (await get_vocabulary_terms('L05')) || []
+    }
 
     this.setState({
       vocabulary,
       terms,
-      categories: hasCategories(vocabulary) && l05 ? l05.terms : [],
-      broaderOptions: vocabulary.source === 'local' ? broaderOptions : [],
+      categories,
       saved: visibility,
       mode: visibility.mode,
       listed: new Set(visibility.terms),
@@ -135,7 +124,6 @@ class VocabularyTerms extends Component {
     this.props.showModal('vocabularyTerm', {
       vocabulary: this.state.vocabulary,
       term,
-      broaderOptions: this.state.broaderOptions,
       handleDone: (message) => {
         const hidden =
           !term && this.state.mode === 'show_only_listed'
