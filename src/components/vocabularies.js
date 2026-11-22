@@ -196,6 +196,12 @@ class Vocabularies extends Component {
     }
 
     actions.push(
+      <OverlayTrigger key='terms' placement='top' overlay={<Tooltip id={`terms_${code}`}>Choose visible terms</Tooltip>}>
+        <FontAwesomeIcon className='text-success' onClick={() => this.props.gotoVocabulary(code)} icon='eye' fixedWidth role='button' />
+      </OverlayTrigger>
+    )
+
+    actions.push(
       <OverlayTrigger key='export' placement='top' overlay={<Tooltip id={`export_${code}`}>Export this vocabulary</Tooltip>}>
         <FontAwesomeIcon className='text-primary' onClick={() => this.handleExport([code])} icon='download' fixedWidth role='button' />
       </OverlayTrigger>
@@ -315,7 +321,7 @@ class Vocabularies extends Component {
                     <th>Version</th>
                     <th>Fetched (UTC)</th>
                     <th className='text-end'>Terms</th>
-                    <th className='text-center' style={{ width: '90px' }}>
+                    <th className='text-center' style={{ width: '110px' }}>
                       Actions
                     </th>
                   </tr>
@@ -340,6 +346,7 @@ class Vocabularies extends Component {
 }
 
 Vocabularies.propTypes = {
+  gotoVocabulary: PropTypes.func.isRequired,
   roles: PropTypes.array,
   showModal: PropTypes.func.isRequired
 }

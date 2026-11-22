@@ -583,6 +583,44 @@ export const get_vocabularies = async () => {
     })
 }
 
+// Terms of a vocabulary; null if it isn't cached. Pass include_hidden and
+// include_deprecated to get every term.
+export const get_vocabulary_terms = async (code, queryDict = {}) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms?${_buildQueryString(queryDict)}`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return null
+    })
+}
+
+export const get_vocabulary_visibility = async (code) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies/${code}/visibility`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return null
+    })
+}
+
+export const set_vocabulary_visibility = async (code, payload) => {
+  return await axios
+    .put(`${API_ROOT_URL}/api/v1/vocabularies/${code}/visibility`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
 export const create_vocabulary = async (payload) => {
   return await axios
     .post(`${API_ROOT_URL}/api/v1/vocabularies`, payload, authorizationHeader())

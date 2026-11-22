@@ -23,6 +23,7 @@ import CruiseMenu from './components/cruise_menu'
 import Users from './components/users'
 import Tasks from './components/tasks'
 import Vocabularies from './components/vocabularies'
+import VocabularyTerms from './components/vocabulary_terms'
 import EventErrorToast from './components/event_error_toast'
 import RequiredAuxDataMonitor from './components/required_aux_data_monitor'
 import EventLogging from './components/event_logging'
@@ -147,6 +148,7 @@ ReactDOM.render(
           <Route path={`/users`} exact={true} component={RequireAuth(Users)} />
           <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
           <Route path={`/vocabularies`} exact={true} component={RequireAuth(Vocabularies)} />
+          <Route path={`/vocabularies/:code`} exact={true} component={RequireAuth(VocabularyTerms)} />
           <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
           <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
           <Route path={`/review_gallery/:id`} exact={true} component={RequireAuth(ReviewGallery)} />
