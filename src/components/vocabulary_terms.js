@@ -474,7 +474,7 @@ class VocabularyTerms extends Component {
                   <th className='text-center' style={{ width: '60px' }}>
                     Shown
                   </th>
-                  <th>Term</th>
+                  <th>Label</th>
                   <th>Notation</th>
                   <th>Definition</th>
                   {this.isLocal() && (

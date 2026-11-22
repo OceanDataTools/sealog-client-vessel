@@ -134,7 +134,7 @@ class VocabularyTermModal extends Component {
                 onChange={(e) => this.setState({ id: e.target.value.trim(), error: null })}
               />
               <Form.Text>
-                Identified as <code>{notation}</code>.{!term && " The ID can't be changed later."}
+                The last part of the term&apos;s notation: <code>{notation}</code>.{!term && " The ID can't be changed later."}
               </Form.Text>
             </Form.Group>
             <Form.Group className='mb-2'>
