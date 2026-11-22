@@ -90,7 +90,6 @@ class ReviewReplay extends Component {
   updateEventFilter(filter) {
     this.handleReviewReplayPause()
     this.setState({ activePage: 1, replayEventIndex: 0 })
-    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
     this.props.updateEventFilterForm(filter)
     this.props.eventUpdateReviewReplay()
   }
@@ -98,10 +97,8 @@ class ReviewReplay extends Component {
   toggleASNAP() {
     this.handleReviewReplayPause()
     this.props.toggleASNAP()
-    this.setState({ replayEventIndex: 0 })
-    this.props.advanceReviewReplayTo(this.props.event.events[0].id)
+    this.setState({ activePage: 1, replayEventIndex: 0 })
     this.props.eventUpdateReviewReplay()
-    this.handleEventClick(0)
   }
 
   sliderTooltipFormatter(v) {
@@ -163,6 +160,11 @@ class ReviewReplay extends Component {
 
   handleKeyDown(event) {
     if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      return
+    }
+
+    // Nothing to navigate when the filter matched no events.
+    if (!this.props.event.events || !this.props.event.events.length) {
       return
     }
 
