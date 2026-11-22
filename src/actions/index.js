@@ -556,6 +556,12 @@ export const gotoTasks = () => {
   }
 }
 
+export const gotoVocabularies = () => {
+  return (dispatch) => {
+    return dispatch(push(`/vocabularies`))
+  }
+}
+
 export const gotoUsers = () => {
   return (dispatch) => {
     return dispatch(push(`/users`))
