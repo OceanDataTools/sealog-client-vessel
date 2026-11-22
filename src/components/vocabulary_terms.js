@@ -1,10 +1,19 @@
 import React, { Component } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { connect } from 'react-redux'
-import { Alert, Badge, Button, Card, Col, Form, Row, Table } from 'react-bootstrap'
+import { Alert, Badge, Button, Card, Col, Form, OverlayTrigger, Row, Table, Tooltip } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { Client } from '@hapi/nes/lib/client'
 import CustomPagination from './custom_pagination'
-import { get_vocabularies, get_vocabulary_terms, get_vocabulary_visibility, set_vocabulary_visibility } from '../api'
+import DeleteModal from './delete_modal'
+import VocabularyTermModal from './vocabulary_term_modal'
+import {
+  delete_vocabulary_term,
+  get_vocabularies,
+  get_vocabulary_terms,
+  get_vocabulary_visibility,
+  set_vocabulary_visibility
+} from '../api'
 import { apiErrorMessage, connectWSClient } from '../utils'
 import { WS_ROOT_URL } from '../client_settings'
 import * as mapDispatchToProps from '../actions'
@@ -20,7 +29,8 @@ const hasCategories = (vocabulary) => vocabulary.collection === 'L22' || vocabul
 
 const sameSet = (a, b) => a.size === b.size && [...a].every((item) => b.has(item))
 
-// Choose which terms of a vocabulary this server shows (sealog-client-vessel #93)
+// Choose which terms of a vocabulary this server shows (#93), and edit the
+// terms of local vocabularies (#94)
 class VocabularyTerms extends Component {
   constructor(props) {
     super(props)
@@ -103,6 +113,46 @@ class VocabularyTerms extends Component {
     } else {
       this.load()
     }
+  }
+
+  isLocal() {
+    return this.state.vocabulary && this.state.vocabulary.source === 'local'
+  }
+
+  handleTermModal(term = null) {
+    this.setState({ error: null, message: null })
+    this.props.showModal('vocabularyTerm', {
+      vocabulary: this.state.vocabulary,
+      term,
+      handleDone: (message) => {
+        const hidden =
+          !term && this.state.mode === 'show_only_listed'
+            ? ' It stays hidden until you select it, as this vocabulary only shows selected terms.'
+            : ''
+        this.setState({ message: message + hidden })
+        this.load()
+      }
+    })
+  }
+
+  handleDeleteTerm(term) {
+    this.props.showModal('deleteModal', {
+      id: term.id,
+      handleDelete: async (id) => {
+        const response = await delete_vocabulary_term(this.code, id)
+
+        if (response.error) {
+          this.setState({ error: `Could not delete ${id}: ${apiErrorMessage(response.error)}` })
+        } else if (response.data.action === 'deprecated') {
+          this.setState({ message: `${id} is recorded on events, so it was kept and marked deprecated.` })
+        } else {
+          this.setState({ message: `Deleted ${id}.` })
+        }
+
+        this.load()
+      },
+      message: `the term ${term.notation}`
+    })
   }
 
   isDirty() {
@@ -299,11 +349,69 @@ class VocabularyTerms extends Component {
             </Badge>
           )}
         </td>
-        <td className='text-nowrap small'>{term.notation}</td>
+        <td className='text-nowrap small'>
+          {term.notation}
+          {term.broader.length > 0 && <div className='text-muted'>in {term.broader.join(', ')}</div>}
+        </td>
         <td className='small' title={term.definition}>
           {term.definition && term.definition.length > 120 ? `${term.definition.slice(0, 120)}…` : term.definition}
         </td>
+        {this.isLocal() && <td className='text-center text-nowrap'>{this.renderTermActions(term)}</td>}
       </tr>
+    )
+  }
+
+  renderTermActions(term) {
+    // Saving the term reloads the page, which would discard visibility edits
+    if (this.isDirty()) {
+      return null
+    }
+
+    return (
+      <React.Fragment>
+        <OverlayTrigger placement='top' overlay={<Tooltip id={`edit_${term.id}`}>Edit this term</Tooltip>}>
+          <FontAwesomeIcon className='text-warning' onClick={() => this.handleTermModal(term)} icon='pencil-alt' fixedWidth role='button' />
+        </OverlayTrigger>
+        <OverlayTrigger placement='top' overlay={<Tooltip id={`delete_${term.id}`}>Delete this term</Tooltip>}>
+          <FontAwesomeIcon className='text-danger' onClick={() => this.handleDeleteTerm(term)} icon='trash' fixedWidth role='button' />
+        </OverlayTrigger>
+      </React.Fragment>
+    )
+  }
+
+  renderSource() {
+    const { vocabulary } = this.state
+
+    if (this.isLocal()) {
+      return (
+        <div className='d-flex align-items-center mb-2'>
+          <span>
+            <Badge bg='success'>Local</Badge> Terms are identified as{' '}
+            <code>
+              {vocabulary.prefix}:{vocabulary.collection}::&lt;id&gt;
+            </code>
+            .
+          </span>
+          <Button
+            size='sm'
+            variant='outline-primary'
+            className='ms-auto'
+            disabled={this.isDirty()}
+            title={this.isDirty() ? 'Save or discard your visibility changes first' : ''}
+            onClick={() => this.handleTermModal()}
+          >
+            Add Term
+          </Button>
+        </div>
+      )
+    }
+
+    const from = vocabulary.source === 'url' ? ` from ${vocabulary.source_url}` : ''
+    return (
+      <div className='small text-muted mb-2'>
+        Downloaded vocabulary ({vocabulary.source}
+        {from}): its terms can be hidden here but not edited.
+      </div>
     )
   }
 
@@ -345,6 +453,7 @@ class VocabularyTerms extends Component {
             </span>
           </Card.Header>
           <Card.Body>
+            {this.renderSource()}
             {this.renderModes()}
             {this.renderFilters(matching)}
             <Table bordered striped size='sm' className='mb-0'>
@@ -353,9 +462,14 @@ class VocabularyTerms extends Component {
                   <th className='text-center' style={{ width: '60px' }}>
                     Shown
                   </th>
-                  <th>Term</th>
+                  <th>Label</th>
                   <th>Notation</th>
                   <th>Definition</th>
+                  {this.isLocal() && (
+                    <th className='text-center' style={{ width: '60px' }}>
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -363,7 +477,7 @@ class VocabularyTerms extends Component {
                   matching.slice((page - 1) * TERMS_PER_PAGE, page * TERMS_PER_PAGE).map((term) => this.renderTerm(term))
                 ) : (
                   <tr>
-                    <td colSpan='4'>No matching terms</td>
+                    <td colSpan={this.isLocal() ? 5 : 4}>No matching terms</td>
                   </tr>
                 )}
               </tbody>
@@ -408,11 +522,15 @@ class VocabularyTerms extends Component {
     }
 
     return (
-      <Row className='py-2 px-1 d-flex justify-content-center'>
-        <Col className='px-1' sm={12} xl={10}>
-          {body}
-        </Col>
-      </Row>
+      <React.Fragment>
+        <DeleteModal />
+        <VocabularyTermModal />
+        <Row className='py-2 px-1 d-flex justify-content-center'>
+          <Col className='px-1' sm={12} xl={10}>
+            {body}
+          </Col>
+        </Row>
+      </React.Fragment>
     )
   }
 }
@@ -420,7 +538,8 @@ class VocabularyTerms extends Component {
 VocabularyTerms.propTypes = {
   gotoVocabularies: PropTypes.func.isRequired,
   match: PropTypes.object.isRequired,
-  roles: PropTypes.array
+  roles: PropTypes.array,
+  showModal: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => {

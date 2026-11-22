@@ -621,6 +621,45 @@ export const set_vocabulary_visibility = async (code, payload) => {
     })
 }
 
+// Terms of local vocabularies
+export const create_vocabulary_term = async (code, payload) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const update_vocabulary_term = async (code, id, payload) => {
+  return await axios
+    .patch(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms/${id}`, payload, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Resolves to { id, action: 'deleted' | 'deprecated' }: a term recorded on
+// events is deprecated instead of deleted
+export const delete_vocabulary_term = async (code, id) => {
+  return await axios
+    .delete(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms/${id}`, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      console.debug(error)
+      return { error }
+    })
+}
+
 export const create_vocabulary = async (payload) => {
   return await axios
     .post(`${API_ROOT_URL}/api/v1/vocabularies`, payload, authorizationHeader())
