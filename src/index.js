@@ -22,6 +22,7 @@ import RequireUnauth from './components/auth/require_unauth'
 import CruiseMenu from './components/cruise_menu'
 import Users from './components/users'
 import Tasks from './components/tasks'
+import Vocabularies from './components/vocabularies'
 import EventErrorToast from './components/event_error_toast'
 import RequiredAuxDataMonitor from './components/required_aux_data_monitor'
 import EventLogging from './components/event_logging'
@@ -58,6 +59,7 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons/faPlay'
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus'
 import { faStepBackward } from '@fortawesome/free-solid-svg-icons/faStepBackward'
 import { faStepForward } from '@fortawesome/free-solid-svg-icons/faStepForward'
+import { faSyncAlt } from '@fortawesome/free-solid-svg-icons/faSyncAlt'
 import { faTimes } from '@fortawesome/free-solid-svg-icons/faTimes'
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash'
 import { faVial } from '@fortawesome/free-solid-svg-icons/faVial'
@@ -88,6 +90,7 @@ library.add(
   faPlus,
   faStepBackward,
   faStepForward,
+  faSyncAlt,
   faTimes,
   faTrash,
   faVial,
@@ -143,6 +146,7 @@ ReactDOM.render(
           <Route path={`/logout`} exact={true} component={Logout} />
           <Route path={`/users`} exact={true} component={RequireAuth(Users)} />
           <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
+          <Route path={`/vocabularies`} exact={true} component={RequireAuth(Vocabularies)} />
           <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
           <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
           <Route path={`/review_gallery/:id`} exact={true} component={RequireAuth(ReviewGallery)} />

@@ -1,4 +1,5 @@
 import axios from 'axios'
+import moment from 'moment'
 import { basename } from 'path'
 import cookies from './cookies'
 import FileDownload from 'js-file-download'
@@ -562,6 +563,111 @@ export const update_user = async (payload, id) => {
     .patch(`${API_ROOT_URL}/api/v1/users/${id}`, payload, authorizationHeader())
     .then(() => {
       return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Vocabularies
+export const get_vocabularies = async () => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return []
+    })
+}
+
+export const create_vocabulary = async (payload) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const delete_vocabulary = async (code) => {
+  return await axios
+    .delete(`${API_ROOT_URL}/api/v1/vocabularies/${code}`, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      console.debug(error)
+      return { error }
+    })
+}
+
+export const refresh_vocabulary = async (code) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/${code}/refresh`, null, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const add_vocabulary_source = async (code, url) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/${code}/source`, { url }, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Download a vocabulary bundle: every vocabulary, or only those in collections
+export const export_vocabularies = async (collections = []) => {
+  const queryStr = _buildQueryString({ collection: collections })
+  const filename = `sealog_vocabularies${collections.length === 1 ? `_${collections[0]}` : ''}_${moment.utc().format('YYYYMMDD')}.json`
+
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies/export?${queryStr}`, { ...authorizationHeader(), responseType: 'blob' })
+    .then((response) => {
+      FileDownload(response.data, filename)
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot401(error)
+      return { error }
+    })
+}
+
+// Load a vocabulary bundle from a .json or gzipped .json.gz file
+export const import_vocabularies = async (file) => {
+  let data = await file.arrayBuffer()
+  const bytes = new Uint8Array(data)
+
+  if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+    data = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+  }
+
+  let payload
+  try {
+    payload = JSON.parse(new TextDecoder().decode(data))
+  } catch (err) {
+    return { error: new Error(`${file.name} is not a JSON file`) }
+  }
+
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/import`, payload, { ...authorizationHeader(), maxBodyLength: Infinity })
+    .then((response) => {
+      return { success: true, data: response.data }
     })
     .catch((error) => {
       _errorNot400(error)
