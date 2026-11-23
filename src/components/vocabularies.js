@@ -154,6 +154,9 @@ class Vocabularies extends Component {
     let detail = null
     if (vocabulary.source === 'url') {
       detail = <div className='small text-muted text-break'>{vocabulary.source_url}</div>
+    } else if (['nvs', 'seed'].includes(vocabulary.source) && vocabulary.uri) {
+      // Where the collection was downloaded from
+      detail = <div className='small text-muted text-break'>{vocabulary.uri}</div>
     } else if (vocabulary.source === 'local') {
       detail = <div className='small text-muted'>prefix {vocabulary.prefix}</div>
     }
@@ -267,7 +270,7 @@ class Vocabularies extends Component {
           disabled={this.state.busy.import}
           onClick={() => this.importInput.current.click()}
         >
-          {this.state.busy.import ? 'Importing…' : 'Import Bundle'}
+          {this.state.busy.import ? 'Importing…' : 'Import From File'}
         </Button>
         <Button
           className='me-1'
