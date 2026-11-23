@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Card, Col } from 'react-bootstrap'
+import VocabularyTermLink from './vocabulary_term_link'
 
 class EventOptionsCard extends Component {
   render() {
@@ -17,6 +18,17 @@ class EventOptionsCard extends Component {
               {event_option.event_option_value}
             </span>
             <br />
+            {event_option.event_option_notation && (
+              // The vocabulary term IDs behind the value (checkboxes: joined with ';')
+              <div className='small text-end text-break'>
+                {event_option.event_option_notation.split(';').map((notation, i) => (
+                  <React.Fragment key={notation}>
+                    {i > 0 && ', '}
+                    <VocabularyTermLink notation={notation} />
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
           </div>
         )
       }
