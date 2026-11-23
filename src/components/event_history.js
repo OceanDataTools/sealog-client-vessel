@@ -105,9 +105,11 @@ class EventHistory extends Component {
       if (this.state.events.length === 0) {
         await this.fetchEvents()
       } else {
+        // Includes updates to the oldest event shown (e.g. its options,
+        // sent after the event was created)
         const oldest_ts = Moment(this.state.events.slice(-1)[0].ts)
         const update_ts = Moment(update.ts)
-        if (update_ts > oldest_ts) {
+        if (!update_ts.isBefore(oldest_ts)) {
           await this.fetchEvents()
         }
       }
