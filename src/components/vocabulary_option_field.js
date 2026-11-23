@@ -26,6 +26,17 @@ const cached = (key, revision, load) => {
   return cache.get(cacheKey)
 }
 
+// A vocabulary's terms (hidden and deprecated included), or null when the
+// vocabulary doesn't exist
+export const loadVocabularyTerms = async (collection, revision) => {
+  const vocabularies = (await cached('vocabularies', revision, get_vocabularies)) || []
+  if (!vocabularies.some((item) => item.collection === collection)) {
+    return null
+  }
+
+  return (await cached(collection, revision, () => get_vocabulary_terms(collection, ALL_TERMS))) || []
+}
+
 const byLabel = (a, b) => a.prefLabel.localeCompare(b.prefLabel)
 
 // The values the server fills in for a reference (see sealog-server
