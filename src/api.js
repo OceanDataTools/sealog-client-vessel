@@ -597,19 +597,6 @@ export const get_vocabulary_terms = async (code, queryDict = {}) => {
     })
 }
 
-// One term, hidden and deprecated ones included; null if it isn't found
-export const get_vocabulary_term = async (code, id) => {
-  return await axios
-    .get(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms/${encodeURIComponent(id)}`, authorizationHeader())
-    .then((response) => {
-      return response.data
-    })
-    .catch((error) => {
-      _errorNot404(error)
-      return null
-    })
-}
-
 export const get_vocabulary_visibility = async (code) => {
   return await axios
     .get(`${API_ROOT_URL}/api/v1/vocabularies/${code}/visibility`, authorizationHeader())
