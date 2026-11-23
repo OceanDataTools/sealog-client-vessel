@@ -57,9 +57,9 @@ const SWITCH_COL = { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' }
 const vocabularySummary = (vocab) =>
   `${vocab.collection}: ${vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}`
 
-// One line describing a collapsed option
+// One line describing a collapsed option (its name is in the header)
 const optionSummary = (option) => {
-  const parts = [option.event_option_name || 'Unnamed', option.event_option_type || 'no type']
+  const parts = [option.event_option_type || 'no type']
   const vocab = option.event_option_vocab
 
   if (vocab && vocab.collection) {
@@ -420,7 +420,11 @@ class EventTemplateForm extends Component {
                   onClick={() => !invalid && this.toggleOption(index)}
                 >
                   <FontAwesomeIcon className='text-primary me-1' icon={open ? 'chevron-down' : 'chevron-right'} fixedWidth />
-                  <Form.Label className='mb-0 text-nowrap'>Option #{index + 1}</Form.Label>
+                  <Form.Label
+                    className={`mb-0 text-nowrap ${options[index] && options[index].event_option_name ? '' : 'fst-italic text-muted'}`}
+                  >
+                    {(options[index] && options[index].event_option_name) || 'New option'}
+                  </Form.Label>
                   {open ? (
                     this.renderVocabularyBadge(index)
                   ) : (
