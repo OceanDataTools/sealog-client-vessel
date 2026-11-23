@@ -6,7 +6,7 @@ import { loadVocabularyTerms, resolveValues } from './vocabulary_option_field'
 // The option types whose values can be ticked in a visibility condition
 export const CONDITION_OPTION_TYPES = ['dropdown', 'radio buttons', 'checkboxes']
 
-const asList = (value) => {
+export const asList = (value) => {
   if (Array.isArray(value)) {
     return value
   }
@@ -105,6 +105,7 @@ class VisibilityValuesField extends Component {
         key={value}
         id={`${input.name}.${value}`}
         label={isStale ? <span className='text-warning'>{value}</span> : value}
+        inline
         checked={selected.includes(value)}
         onChange={(event) => toggle(value, event.target.checked)}
       />
@@ -126,12 +127,12 @@ class VisibilityValuesField extends Component {
         <Form.Label>
           Event option values<span className='text-danger'> *</span>
         </Form.Label>
-        {values.map((value) => checkbox(value, false))}
+        <div>{values.map((value) => checkbox(value, false))}</div>
         {empty}
         {stale.length > 0 && (
           <div className='mt-1'>
             <div className='small text-warning'>No longer offered by {controller.event_option_name}; untick to remove:</div>
-            {stale.map((value) => checkbox(value, true))}
+            <div>{stale.map((value) => checkbox(value, true))}</div>
           </div>
         )}
         {meta.error && <div className='small text-danger'>{meta.error}</div>}

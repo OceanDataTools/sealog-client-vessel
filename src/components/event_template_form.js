@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { reduxForm, Field, FieldArray, formValueSelector } from 'redux-form'
-import { Badge, Button, Card, Form, Row } from 'react-bootstrap'
+import { Alert, Badge, Button, Card, Col, Form, OverlayTrigger, Row, Tooltip } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { Client } from '@hapi/nes/lib/client'
 import {
@@ -17,7 +17,7 @@ import {
   renderTextArea
 } from './form_elements'
 import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
-import VisibilityValuesField from './visibility_values_field'
+import VisibilityValuesField, { asList } from './visibility_values_field'
 import * as mapDispatchToProps from '../actions'
 import { WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
@@ -26,6 +26,67 @@ import {
   EventTemplateVisibilityOptionTypes,
   EventTemplateButtonColorOptions
 } from '../event_template_option_types'
+
+const isConditional = (option) =>
+  Boolean(option && option.event_option_visibility && ['show if', 'hide if'].includes(option.event_option_visibility.show_hide))
+
+// The option names around a loop of visibility conditions that leads back
+// to the option at index, or null
+const visibilityLoop = (options, index) => {
+  const names = []
+  const visited = new Set()
+  let current = index
+
+  while (isConditional(options[current]) && !visited.has(current)) {
+    visited.add(current)
+    names.push(options[current].event_option_name)
+
+    const controller = options[current].event_option_visibility.event_option_name
+    current = options.findIndex((option) => option.event_option_name === controller)
+    if (current === index) {
+      return [...names, options[index].event_option_name]
+    }
+  }
+
+  return null
+}
+
+// Switches that sit side by side on one line
+const SWITCH_COL = { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' }
+
+const vocabularySummary = (vocab) =>
+  `${vocab.collection}: ${vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}`
+
+// One line describing a collapsed option
+const optionSummary = (option) => {
+  const parts = [option.event_option_name || 'Unnamed', option.event_option_type || 'no type']
+  const vocab = option.event_option_vocab
+
+  if (vocab && vocab.collection) {
+    parts.push(vocabularySummary(vocab))
+  } else if (['dropdown', 'radio buttons', 'checkboxes'].includes(option.event_option_type)) {
+    const values = asList(option.event_option_values)
+    if (values.length) {
+      parts.push(values.length > 3 ? `${values.slice(0, 3).join(', ')} +${values.length - 3} more` : values.join(', '))
+    }
+  } else if (option.event_option_default_value) {
+    parts.push(
+      option.event_option_type === 'static text' ? option.event_option_default_value : `default ${option.event_option_default_value}`
+    )
+  }
+
+  if (isConditional(option)) {
+    parts.push(`${option.event_option_visibility.show_hide} ${option.event_option_visibility.event_option_name || '?'}`)
+  }
+
+  if (option.event_option_required) {
+    parts.push('required')
+  }
+
+  return parts.join(' · ')
+}
+
+const hasErrors = (errors) => Boolean(errors) && (typeof errors === 'string' || Object.values(errors).some((value) => hasErrors(value)))
 
 class EventTemplateForm extends Component {
   constructor(props) {
@@ -37,7 +98,9 @@ class EventTemplateForm extends Component {
 
     this.state = {
       // Bumped when a vocabulary changes, so vocabulary options reload terms
-      vocabularyRevision: 0
+      vocabularyRevision: 0,
+      // Indexes of the expanded options
+      openOptions: new Set()
     }
 
     this.client = new Client(`${WS_ROOT_URL}`)
@@ -46,6 +109,28 @@ class EventTemplateForm extends Component {
   componentDidMount() {
     connectWSClient(this.client, {
       '/ws/status/updateVocabularies': () => this.setState((state) => ({ vocabularyRevision: state.vocabularyRevision + 1 }))
+    })
+  }
+
+  componentDidUpdate(prevProps) {
+    // Another template: start with its options collapsed
+    if (prevProps.event_template.id !== this.props.event_template.id) {
+      this.setState({ openOptions: new Set() })
+    }
+  }
+
+  // Expanded options follow theirs through moves and removals
+  remapOpenOptions(map) {
+    this.setState((state) => ({
+      openOptions: new Set([...state.openOptions].map(map).filter((index) => index !== null))
+    }))
+  }
+
+  toggleOption(index) {
+    this.setState((state) => {
+      const openOptions = new Set(state.openOptions)
+      openOptions.has(index) ? openOptions.delete(index) : openOptions.add(index)
+      return { openOptions }
     })
   }
 
@@ -251,6 +336,7 @@ class EventTemplateForm extends Component {
     }
 
     const controller = options.find((option, i) => i !== index && option.event_option_name === visibility.event_option_name)
+    const loop = visibilityLoop(options, index)
 
     return (
       <>
@@ -270,6 +356,13 @@ class EventTemplateForm extends Component {
           controller={controller}
           revision={this.state.vocabularyRevision}
         />
+        {loop && (
+          <Col xs={12}>
+            <Alert variant='warning' className='py-1 small'>
+              Circular visibility: {loop.join(' → ')}. These options depend on each other and may never be shown.
+            </Alert>
+          </Col>
+        )}
       </>
     )
   }
@@ -284,84 +377,132 @@ class EventTemplateForm extends Component {
 
     return (
       <Badge bg='info' className='ms-2 fw-normal'>
-        {vocab.collection}: {vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}
+        {vocabularySummary(vocab)}
       </Badge>
     )
   }
 
   renderOptions({ fields, meta: { touched, error } }) {
-    const promote = (index, fields) => {
-      if (index > 0) {
-        return (
-          <FontAwesomeIcon className='text-primary float-end' icon='chevron-up' fixedWidth onClick={() => fields.swap(index, index - 1)} />
-        )
-      }
+    const options = this.props.event_options || []
+    // Options with errors stay open
+    const optionErrors = validate({ event_options: options }).event_options || []
+
+    const swap = (from, to) => {
+      fields.swap(from, to)
+      this.remapOpenOptions((i) => (i === from ? to : i === to ? from : i))
     }
 
-    const demote = (index, fields) => {
-      if (index < fields.length - 1) {
-        return (
-          <FontAwesomeIcon
-            className='text-primary float-end'
-            icon='chevron-down'
-            fixedWidth
-            onClick={() => fields.swap(index, index + 1)}
-          />
-        )
-      }
+    const remove = (index) => {
+      fields.remove(index)
+      this.remapOpenOptions((i) => (i === index ? null : i > index ? i - 1 : i))
+    }
+
+    const add = () => {
+      const index = fields.length
+      fields.push({})
+      this.setState((state) => ({ openOptions: new Set([...state.openOptions, index]) }))
     }
 
     return (
       <div>
-        {fields.map((options, index) => (
-          <div key={`option_${index}`}>
-            <hr className='border-secondary' />
-            <span>
-              <Form.Label>Option #{index + 1}</Form.Label>
-              {this.renderVocabularyBadge(index)}
-              <FontAwesomeIcon className='text-danger float-end' icon='times' fixedWidth onClick={() => fields.remove(index)} />
-              {promote(index, fields)}
-              {demote(index, fields)}
-            </span>
-            <Row>
-              <Field
-                name={`${options}.event_option_name`}
-                component={renderTextField}
-                label='Name'
-                required={true}
-                onFocus={() => (this.nameAtFocus = this.props.event_options[index].event_option_name)}
-                onBlur={(event, name) => this.handleRename(index, this.nameAtFocus, name)}
-                sm={6}
-                lg={6}
-              />
-              <Field
-                name={`${options}.event_option_type`}
-                component={renderSelectField}
-                options={EventTemplateOptionTypes}
-                label='Type'
-                required={true}
-                sm={6}
-                lg={6}
-              />
-            </Row>
-            {this.renderOptionOptions(options, index)}
-            <Row>
-              <Field
-                name={`${options}.event_option_visibility.show_hide`}
-                component={renderSelectField}
-                options={EventTemplateVisibilityOptionTypes}
-                addDefaultOption={false}
-                label='Visibility'
-                required={true}
-                sm={6}
-                lg={6}
-              />
-              {this.renderVisibilityOptions(options, index)}
-            </Row>
-            <Field name={`${options}.event_option_required`} component={renderSwitch} label='Required?' />
-          </div>
-        ))}
-        <span className='text-primary' onClick={() => fields.push({})}>
+        {fields.map((prefix, index) => {
+          const invalid = hasErrors(optionErrors[index])
+          const open = invalid || this.state.openOptions.has(index)
+
+          return (
+            <div key={`option_${index}`}>
+              <hr className='border-secondary my-2' />
+              <div className='d-flex align-items-center mb-1'>
+                <span
+                  className='d-flex align-items-center flex-grow-1 text-truncate'
+                  role='button'
+                  title={invalid ? 'Fix this option to collapse it' : open ? 'Collapse' : 'Expand'}
+                  onClick={() => !invalid && this.toggleOption(index)}
+                >
+                  <FontAwesomeIcon className='text-primary me-1' icon={open ? 'chevron-down' : 'chevron-right'} fixedWidth />
+                  <Form.Label className='mb-0 text-nowrap'>Option #{index + 1}</Form.Label>
+                  {open ? (
+                    this.renderVocabularyBadge(index)
+                  ) : (
+                    <span className='ms-2 small text-muted text-truncate'>{optionSummary(options[index] || {})}</span>
+                  )}
+                </span>
+                {/* Missing arrows keep their space so the arrows line up */}
+                <FontAwesomeIcon
+                  className={`text-primary ms-1 ${index < fields.length - 1 ? '' : 'invisible'}`}
+                  icon='chevron-down'
+                  fixedWidth
+                  role='button'
+                  title='Move down'
+                  onClick={() => index < fields.length - 1 && swap(index, index + 1)}
+                />
+                <FontAwesomeIcon
+                  className={`text-primary ms-1 ${index > 0 ? '' : 'invisible'}`}
+                  icon='chevron-up'
+                  fixedWidth
+                  role='button'
+                  title='Move up'
+                  onClick={() => index > 0 && swap(index, index - 1)}
+                />
+                <FontAwesomeIcon
+                  className='text-danger ms-1'
+                  icon='times'
+                  fixedWidth
+                  role='button'
+                  title='Remove'
+                  onClick={() => remove(index)}
+                />
+              </div>
+              {/* Collapsed options stay mounted so their errors still count */}
+              <div className={open ? undefined : 'd-none'}>
+                <Row>
+                  <Field
+                    name={`${prefix}.event_option_name`}
+                    component={renderTextField}
+                    label='Name'
+                    required={true}
+                    onFocus={() => (this.nameAtFocus = this.props.event_options[index].event_option_name)}
+                    onBlur={(event, name) => this.handleRename(index, this.nameAtFocus, name)}
+                    sm={5}
+                    lg={5}
+                  />
+                  <Field
+                    name={`${prefix}.event_option_type`}
+                    component={renderSelectField}
+                    options={EventTemplateOptionTypes}
+                    label='Type'
+                    required={true}
+                    sm={4}
+                    lg={4}
+                  />
+                  <Field
+                    name={`${prefix}.event_option_required`}
+                    component={renderSwitch}
+                    label='Required'
+                    className='pb-3 d-flex align-items-end'
+                    sm={3}
+                    lg={3}
+                  />
+                </Row>
+                {this.renderOptionOptions(prefix, index)}
+                <Row>
+                  <Field
+                    name={`${prefix}.event_option_visibility.show_hide`}
+                    component={renderSelectField}
+                    options={EventTemplateVisibilityOptionTypes}
+                    addDefaultOption={false}
+                    label='Visibility'
+                    required={true}
+                    sm={6}
+                    lg={6}
+                  />
+                  {this.renderVisibilityOptions(prefix, index)}
+                </Row>
+              </div>
+            </div>
+          )
+        })}
+        <span className='text-primary' role='button' onClick={add}>
           <FontAwesomeIcon icon='plus' fixedWidth /> Add Option
         </span>
         {touched && error && <span>{error}</span>}
@@ -373,9 +514,9 @@ class EventTemplateForm extends Component {
     if (this.props.roles.includes('admin')) {
       return (
         <React.Fragment>
-          <Field name='system_template' component={renderSwitch} label='System template' sm={6} lg={6} />
+          <Field name='system_template' component={renderSwitch} label='System template' {...SWITCH_COL} />
           {this.props.system_template ? (
-            <Field name='admin_only' component={renderSwitch} label='Only available to admins' sm={6} lg={6} />
+            <Field name='admin_only' component={renderSwitch} label='Only available to admins' {...SWITCH_COL} />
           ) : null}
         </React.Fragment>
       )
@@ -394,28 +535,41 @@ class EventTemplateForm extends Component {
             <Form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
               <Field name='id' component={renderHidden} />
               <Row>
-                <Field name='event_name' component={renderTextField} label='Button Name' required={true} sm={6} lg={6} />
+                <Field
+                  name='event_name'
+                  component={renderTextField}
+                  label={
+                    <OverlayTrigger
+                      placement='top'
+                      overlay={<Tooltip id='event_name_tooltip'>Button Name is not included in data</Tooltip>}
+                    >
+                      <span>
+                        Button Name <FontAwesomeIcon className='text-muted' icon='circle-info' />
+                      </span>
+                    </OverlayTrigger>
+                  }
+                  required={true}
+                  sm={6}
+                  lg={6}
+                />
                 <Field name='event_value' component={renderTextField} label='Event Value' required={true} sm={6} lg={6} />
               </Row>
-              <div className='col-12' style={{ marginTop: '-10px', marginBottom: '10px' }}>
-                <small className='text-muted'>Button Name is not included in data</small>
-              </div>
               <Row>
                 <Field
                   name='event_button_color'
                   component={renderColorSelectField}
                   options={EventTemplateButtonColorOptions}
                   label='Button Color'
-                  sm={6}
-                  lg={6}
+                  sm={4}
+                  lg={4}
                 />
-              </Row>
-              <Row>
                 <Field
                   name={'template_categories'}
                   component={renderTextField}
                   label='Template Categories (comma delimited)'
                   placeholder='i.e. biology,geology'
+                  sm={8}
+                  lg={8}
                 />
               </Row>
               <Row>
@@ -424,14 +578,18 @@ class EventTemplateForm extends Component {
                   id='event_free_text_required'
                   component={renderSwitch}
                   label={'Free text Required?'}
-                  sm={6}
-                  lg={6}
+                  {...SWITCH_COL}
                 />
-                <Field name='disabled' component={renderSwitch} label='Disable template' sm={6} lg={6} />
+                <Field name='disabled' component={renderSwitch} label='Disable template' {...SWITCH_COL} />
                 {this.renderAdminOptions(initialValues.system_template)}
               </Row>
-              {/* vocabularyRevision re-renders the options when a vocabulary changes */}
-              <FieldArray name='event_options' component={this.renderOptions} vocabularyRevision={this.state.vocabularyRevision} />
+              {/* FieldArray re-renders only on its own props: these pass the state the options use */}
+              <FieldArray
+                name='event_options'
+                component={this.renderOptions}
+                vocabularyRevision={this.state.vocabularyRevision}
+                openOptions={this.state.openOptions}
+              />
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
               <div className='float-end'>
