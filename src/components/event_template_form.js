@@ -3,8 +3,9 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { reduxForm, Field, FieldArray, formValueSelector } from 'redux-form'
-import { Button, Card, Form, Row } from 'react-bootstrap'
+import { Badge, Button, Card, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
+import { Client } from '@hapi/nes/lib/client'
 import {
   renderAlert,
   renderColorSelectField,
@@ -15,7 +16,10 @@ import {
   renderTextField,
   renderTextArea
 } from './form_elements'
+import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import * as mapDispatchToProps from '../actions'
+import { WS_ROOT_URL } from '../client_settings'
+import { connectWSClient } from '../utils'
 import {
   EventTemplateOptionTypes,
   EventTemplateVisibilityOptionTypes,
@@ -29,9 +33,23 @@ class EventTemplateForm extends Component {
     this.renderOptions = this.renderOptions.bind(this)
     this.renderOptionOptions = this.renderOptionOptions.bind(this)
     this.renderVisibilityOptions = this.renderVisibilityOptions.bind(this)
+
+    this.state = {
+      // Bumped when a vocabulary changes, so vocabulary options reload terms
+      vocabularyRevision: 0
+    }
+
+    this.client = new Client(`${WS_ROOT_URL}`)
+  }
+
+  componentDidMount() {
+    connectWSClient(this.client, {
+      '/ws/status/updateVocabularies': () => this.setState((state) => ({ vocabularyRevision: state.vocabularyRevision + 1 }))
+    })
   }
 
   componentWillUnmount() {
+    this.client.disconnect()
     this.props.leaveEventTemplateForm()
   }
 
@@ -51,6 +69,16 @@ class EventTemplateForm extends Component {
     formProps.event_options = formProps.event_options.map((event_option) => {
       event_option.event_option_allow_freeform = event_option.event_option_allow_freeform || false
       event_option.event_option_required = event_option.event_option_required || false
+
+      // The server fills in the values of vocabulary options
+      if (!event_option.event_option_vocab || !VOCABULARY_OPTION_TYPES.includes(event_option.event_option_type)) {
+        delete event_option.event_option_vocab
+      } else {
+        event_option.event_option_values = []
+        if (event_option.event_option_type === 'static text') {
+          event_option.event_option_default_value = ''
+        }
+      }
 
       if (['dropdown', 'checkboxes', 'radio buttons'].includes(event_option.event_option_type)) {
         if (typeof event_option.event_option_values === 'string') {
@@ -84,7 +112,42 @@ class EventTemplateForm extends Component {
     this.props.handleFormSubmit()
   }
 
+  renderVocabularyField(prefix, index) {
+    const option = this.props.event_options[index]
+
+    if (!VOCABULARY_OPTION_TYPES.includes(option.event_option_type)) {
+      return null
+    }
+
+    return (
+      <Field
+        name={`${prefix}.event_option_vocab`}
+        component={VocabularyOptionField}
+        optionType={option.event_option_type}
+        defaultValue={option.event_option_default_value || ''}
+        onDefaultChange={(value) => this.props.change(`${prefix}.event_option_default_value`, value)}
+        onDetach={(values) => this.props.change(`${prefix}.event_option_values`, values)}
+        revision={this.state.vocabularyRevision}
+      />
+    )
+  }
+
   renderOptionOptions(prefix, index) {
+    if (this.props.event_options && this.props.event_options.length > 0) {
+      // The value fields stay mounted (hidden) while a vocabulary supplies
+      // the values: unmounting them makes redux-form drop the option's errors
+      return (
+        <React.Fragment>
+          {this.renderVocabularyField(prefix, index)}
+          <div className={this.props.event_options[index].event_option_vocab ? 'd-none' : undefined}>
+            {this.renderValueOptions(prefix, index)}
+          </div>
+        </React.Fragment>
+      )
+    }
+  }
+
+  renderValueOptions(prefix, index) {
     if (this.props.event_options && this.props.event_options.length > 0) {
       if (this.props.event_options[index].event_option_type === 'static text') {
         return (
@@ -186,6 +249,21 @@ class EventTemplateForm extends Component {
     }
   }
 
+  renderVocabularyBadge(index) {
+    const option = this.props.event_options && this.props.event_options[index]
+    const vocab = option && option.event_option_vocab
+
+    if (!vocab || !vocab.collection) {
+      return null
+    }
+
+    return (
+      <Badge bg='info' className='ms-2 fw-normal'>
+        {vocab.collection}: {vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}
+      </Badge>
+    )
+  }
+
   renderOptions({ fields, meta: { touched, error } }) {
     const promote = (index, fields) => {
       if (index > 0) {
@@ -215,6 +293,7 @@ class EventTemplateForm extends Component {
             <hr className='border-secondary' />
             <span>
               <Form.Label>Option #{index + 1}</Form.Label>
+              {this.renderVocabularyBadge(index)}
               <FontAwesomeIcon className='text-danger float-end' icon='times' fixedWidth onClick={() => fields.remove(index)} />
               {promote(index, fields)}
               {demote(index, fields)}
@@ -317,7 +396,8 @@ class EventTemplateForm extends Component {
                 <Field name='disabled' component={renderSwitch} label='Disable template' sm={6} lg={6} />
                 {this.renderAdminOptions(initialValues.system_template)}
               </Row>
-              <FieldArray name='event_options' component={this.renderOptions} />
+              {/* vocabularyRevision re-renders the options when a vocabulary changes */}
+              <FieldArray name='event_options' component={this.renderOptions} vocabularyRevision={this.state.vocabularyRevision} />
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
               <div className='float-end'>
@@ -339,6 +419,7 @@ class EventTemplateForm extends Component {
 }
 
 EventTemplateForm.propTypes = {
+  change: PropTypes.func.isRequired,
   createEventTemplate: PropTypes.func.isRequired,
   errorMessage: PropTypes.string.isRequired,
   event_options: PropTypes.array.isRequired,
@@ -415,7 +496,17 @@ const validate = (formProps) => {
         event_optionErrors.event_option_type = 'Required'
       }
 
-      if (['dropdown', 'checkboxes', 'radio buttons'].includes(event_option.event_option_type)) {
+      const vocab = VOCABULARY_OPTION_TYPES.includes(event_option.event_option_type) && event_option.event_option_vocab
+
+      if (vocab) {
+        if (!vocab.collection) {
+          event_optionErrors.event_option_vocab = 'Choose a vocabulary'
+        } else if (event_option.event_option_type === 'static text' && (!vocab.terms || vocab.terms.length !== 1)) {
+          event_optionErrors.event_option_vocab = 'Pick a term'
+        } else if (vocab.terms && !vocab.terms.length) {
+          event_optionErrors.event_option_vocab = 'Tick at least one term, or use all shown terms'
+        }
+      } else if (['dropdown', 'checkboxes', 'radio buttons'].includes(event_option.event_option_type)) {
         let valueArray = []
 
         if (event_option.event_option_values === '') {
@@ -448,7 +539,7 @@ const validate = (formProps) => {
         }
       }
 
-      if (event_option.event_option_type === 'static text') {
+      if (event_option.event_option_type === 'static text' && !vocab) {
         if (!event_option.event_option_default_value || event_option.event_option_default_value.trim() === '') {
           event_optionErrors.event_option_default_value = 'Required'
         }
