@@ -17,6 +17,7 @@ import {
   renderTextArea
 } from './form_elements'
 import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
+import VisibilityValuesField from './visibility_values_field'
 import * as mapDispatchToProps from '../actions'
 import { WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
@@ -219,34 +220,58 @@ class EventTemplateForm extends Component {
     }
   }
 
-  renderVisibilityOptions(prefix, index) {
-    if (this.props.event_options && this.props.event_options.length > 0 && this.props.event_options[index].event_option_visibility) {
-      if (['show if', 'hide if'].includes(this.props.event_options[index].event_option_visibility.show_hide)) {
-        return (
-          <>
-            <Field
-              name={`${prefix}.event_option_visibility.event_option_name`}
-              component={renderTextField}
-              label='Event option name'
-              required={true}
-              sm={6}
-              lg={6}
-            />
-            <Field
-              name={`${prefix}.event_option_visibility.event_option_values`}
-              component={renderTextArea}
-              label='Event option values'
-              required={true}
-              rows={2}
-              sm={6}
-              lg={6}
-            />
-          </>
-        )
-      } else {
-        return
-      }
+  // Keep visibility conditions pointing at an option when it's renamed
+  handleRename(index, from, to) {
+    const options = this.props.event_options || []
+    if (!from || from === to || options.some((option, i) => i !== index && option.event_option_name === from)) {
+      return
     }
+
+    options.forEach((option, i) => {
+      if (option.event_option_visibility && option.event_option_visibility.event_option_name === from) {
+        this.props.change(`event_options[${i}].event_option_visibility.event_option_name`, to)
+      }
+    })
+  }
+
+  renderVisibilityOptions(prefix, index) {
+    const options = this.props.event_options || []
+    const visibility = options[index] && options[index].event_option_visibility
+
+    if (!visibility || !['show if', 'hide if'].includes(visibility.show_hide)) {
+      return null
+    }
+
+    // Any other named option except static text, whose value never changes
+    const names = options
+      .filter((option, i) => i !== index && option.event_option_name && option.event_option_type !== 'static text')
+      .map((option) => option.event_option_name)
+    if (visibility.event_option_name && !names.includes(visibility.event_option_name)) {
+      names.push(visibility.event_option_name)
+    }
+
+    const controller = options.find((option, i) => i !== index && option.event_option_name === visibility.event_option_name)
+
+    return (
+      <>
+        <Field
+          name={`${prefix}.event_option_visibility.event_option_name`}
+          component={renderSelectField}
+          options={names}
+          label='Event option name'
+          required={true}
+          onChange={() => this.props.change(`${prefix}.event_option_visibility.event_option_values`, [])}
+          sm={6}
+          lg={6}
+        />
+        <Field
+          name={`${prefix}.event_option_visibility.event_option_values`}
+          component={VisibilityValuesField}
+          controller={controller}
+          revision={this.state.vocabularyRevision}
+        />
+      </>
+    )
   }
 
   renderVocabularyBadge(index) {
@@ -299,7 +324,16 @@ class EventTemplateForm extends Component {
               {demote(index, fields)}
             </span>
             <Row>
-              <Field name={`${options}.event_option_name`} component={renderTextField} label='Name' required={true} sm={6} lg={6} />
+              <Field
+                name={`${options}.event_option_name`}
+                component={renderTextField}
+                label='Name'
+                required={true}
+                onFocus={() => (this.nameAtFocus = this.props.event_options[index].event_option_name)}
+                onBlur={(event, name) => this.handleRename(index, this.nameAtFocus, name)}
+                sm={6}
+                lg={6}
+              />
               <Field
                 name={`${options}.event_option_type`}
                 component={renderSelectField}
@@ -548,6 +582,11 @@ const validate = (formProps) => {
       if (event_option.event_option_visibility && ['show if', 'hide if'].includes(event_option.event_option_visibility.show_hide)) {
         if (!event_option_names.includes(event_option.event_option_visibility.event_option_name)) {
           event_optionErrors.event_option_visibility.event_option_name = 'Invalid event option name'
+        }
+
+        const values = event_option.event_option_visibility.event_option_values
+        if (!values || (Array.isArray(values) ? !values.length : !values.trim())) {
+          event_optionErrors.event_option_visibility.event_option_values = 'Pick at least one value'
         }
       }
 
