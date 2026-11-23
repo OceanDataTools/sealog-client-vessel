@@ -19,7 +19,7 @@ import {
 import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import VisibilityValuesField, { asList } from './visibility_values_field'
 import * as mapDispatchToProps from '../actions'
-import { WS_ROOT_URL } from '../client_settings'
+import { DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR, WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
 import {
   EventTemplateOptionTypes,
@@ -563,6 +563,7 @@ class EventTemplateForm extends Component {
                   name='event_button_color'
                   component={renderColorSelectField}
                   options={EventTemplateButtonColorOptions}
+                  defaultColor={DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR}
                   label='Button Color'
                   sm={4}
                   lg={4}

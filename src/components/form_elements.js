@@ -125,6 +125,7 @@ export const renderColorSelectField = ({
   required,
   options,
   addDefaultOption = true,
+  defaultColor,
   meta: { touched, error },
   disabled = false,
   xs = 12,
@@ -133,6 +134,8 @@ export const renderColorSelectField = ({
   lg = 12
 }) => {
   const requiredField = required ? <span className='text-danger'> *</span> : ''
+  // With a default color, an unset value shows (and picks) that color
+  const defaultLabel = defaultColor ? `Default (${defaultColor})` : 'Choose...'
 
   return (
     <Form.Group as={Col} xs={xs} sm={sm} md={md} lg={lg} className={className}>
@@ -143,16 +146,16 @@ export const renderColorSelectField = ({
       <Dropdown onSelect={(eventKey) => input.onChange(eventKey || '')}>
         <Dropdown.Toggle
           id={input.name}
-          variant={input.value || 'outline-secondary'}
+          variant={input.value || defaultColor || 'outline-secondary'}
           disabled={disabled}
-          className='form-select text-start'
+          className='w-100 d-flex justify-content-between align-items-center'
         >
-          {input.value || 'Choose...'}
+          {input.value || defaultLabel}
         </Dropdown.Toggle>
         <Dropdown.Menu className='color-select-menu w-100'>
           {addDefaultOption ? (
-            <Dropdown.Item eventKey='' active={!input.value}>
-              &nbsp;
+            <Dropdown.Item eventKey='' active={!input.value} className={defaultColor ? `btn-${defaultColor}` : undefined}>
+              {defaultColor ? defaultLabel : <>&nbsp;</>}
             </Dropdown.Item>
           ) : null}
           {options.map((option, index) => (
