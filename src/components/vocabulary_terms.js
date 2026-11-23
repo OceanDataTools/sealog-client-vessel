@@ -406,11 +406,20 @@ class VocabularyTerms extends Component {
       )
     }
 
-    const from = vocabulary.source === 'url' ? ` from ${vocabulary.source_url}` : ''
+    // Where the collection was downloaded from
+    const url = vocabulary.source === 'url' ? vocabulary.source_url : ['nvs', 'seed'].includes(vocabulary.source) && vocabulary.uri
     return (
       <div className='small text-muted mb-2'>
         Downloaded vocabulary ({vocabulary.source}
-        {from}): its terms can be hidden here but not edited.
+        {url && (
+          <React.Fragment>
+            {' from '}
+            <a className='text-break' href={url} target='_blank' rel='noopener noreferrer'>
+              {url}
+            </a>
+          </React.Fragment>
+        )}
+        ): its terms can be hidden here but not edited.
       </div>
     )
   }

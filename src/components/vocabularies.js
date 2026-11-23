@@ -151,15 +151,8 @@ class Vocabularies extends Component {
   }
 
   renderSource(vocabulary) {
-    let detail = null
-    if (vocabulary.source === 'url') {
-      detail = <div className='small text-muted text-break'>{vocabulary.source_url}</div>
-    } else if (['nvs', 'seed'].includes(vocabulary.source) && vocabulary.uri) {
-      // Where the collection was downloaded from
-      detail = <div className='small text-muted text-break'>{vocabulary.uri}</div>
-    } else if (vocabulary.source === 'local') {
-      detail = <div className='small text-muted'>prefix {vocabulary.prefix}</div>
-    }
+    // Source URLs are shown on the vocabulary's own page
+    const detail = vocabulary.source === 'local' ? <div className='small text-muted'>prefix {vocabulary.prefix}</div> : null
 
     return (
       <React.Fragment>
