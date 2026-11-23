@@ -3,7 +3,7 @@ import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { reduxForm, Field, FieldArray, formValueSelector } from 'redux-form'
-import { Badge, Button, Card, Form, Row } from 'react-bootstrap'
+import { Alert, Badge, Button, Card, Col, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { Client } from '@hapi/nes/lib/client'
 import {
@@ -26,6 +26,30 @@ import {
   EventTemplateVisibilityOptionTypes,
   EventTemplateButtonColorOptions
 } from '../event_template_option_types'
+
+const isConditional = (option) =>
+  Boolean(option && option.event_option_visibility && ['show if', 'hide if'].includes(option.event_option_visibility.show_hide))
+
+// The option names around a loop of visibility conditions that leads back
+// to the option at index, or null
+const visibilityLoop = (options, index) => {
+  const names = []
+  const visited = new Set()
+  let current = index
+
+  while (isConditional(options[current]) && !visited.has(current)) {
+    visited.add(current)
+    names.push(options[current].event_option_name)
+
+    const controller = options[current].event_option_visibility.event_option_name
+    current = options.findIndex((option) => option.event_option_name === controller)
+    if (current === index) {
+      return [...names, options[index].event_option_name]
+    }
+  }
+
+  return null
+}
 
 class EventTemplateForm extends Component {
   constructor(props) {
@@ -251,6 +275,7 @@ class EventTemplateForm extends Component {
     }
 
     const controller = options.find((option, i) => i !== index && option.event_option_name === visibility.event_option_name)
+    const loop = visibilityLoop(options, index)
 
     return (
       <>
@@ -270,6 +295,13 @@ class EventTemplateForm extends Component {
           controller={controller}
           revision={this.state.vocabularyRevision}
         />
+        {loop && (
+          <Col xs={12}>
+            <Alert variant='warning' className='py-1 small'>
+              Circular visibility: {loop.join(' → ')}. These options depend on each other and may never be shown.
+            </Alert>
+          </Col>
+        )}
       </>
     )
   }
