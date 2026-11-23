@@ -44,6 +44,7 @@ import { faCalculator } from '@fortawesome/free-solid-svg-icons/faCalculator'
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons/faCircleInfo'
 import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
 import { faCopy } from '@fortawesome/free-solid-svg-icons/faCopy'
 import { faComment } from '@fortawesome/free-solid-svg-icons/faComment'
@@ -75,6 +76,7 @@ library.add(
   faChevronDown,
   faChevronRight,
   faChevronUp,
+  faCircleInfo,
   faClipboard,
   faCopy,
   faComment,
