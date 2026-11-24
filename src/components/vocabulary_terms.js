@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import { Client } from '@hapi/nes/lib/client'
 import CustomPagination from './custom_pagination'
 import DeleteModal from './delete_modal'
+import { renderAlert, renderMessage } from './form_elements'
 import VocabularyTermModal from './vocabulary_term_modal'
 import {
   delete_vocabulary_term,
@@ -139,6 +140,7 @@ class VocabularyTerms extends Component {
     this.props.showModal('deleteModal', {
       id: term.id,
       handleDelete: async (id) => {
+        this.setState({ error: null, message: null })
         const response = await delete_vocabulary_term(this.code, id)
 
         if (response.error) {
@@ -441,11 +443,6 @@ class VocabularyTerms extends Component {
             (discards your unsaved changes)
           </Alert>
         )}
-        {error && (
-          <Alert variant='danger' dismissible onClose={() => this.setState({ error: null })}>
-            {error}
-          </Alert>
-        )}
         <Card className='border-secondary'>
           <Card.Header>
             <Button variant='link' size='sm' className='p-0 me-2' onClick={this.props.gotoVocabularies}>
@@ -497,9 +494,10 @@ class VocabularyTerms extends Component {
               pageSelectFunc={(next) => this.setState({ page: next })}
               maxPerPage={TERMS_PER_PAGE}
             />
+            {renderAlert(error)}
+            {renderMessage(message)}
           </Card.Body>
           <Card.Footer className='text-end'>
-            {message && <span className='text-success me-2'>{message}</span>}
             <Button size='sm' variant='secondary' className='me-1' disabled={!dirty || saving} onClick={() => this.handleDiscard()}>
               Discard Changes
             </Button>
