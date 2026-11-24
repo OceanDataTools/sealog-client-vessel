@@ -19,6 +19,7 @@ import {
 import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import VisibilityValuesField, { asList } from './visibility_values_field'
 import { get_sequences } from '../api'
+import { sequenceExample } from '../sequences'
 import * as mapDispatchToProps from '../actions'
 import { DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR, WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
@@ -57,27 +58,6 @@ const SWITCH_COL = { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' }
 
 const vocabularySummary = (vocab) =>
   `${vocab.collection}: ${vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}`
-
-const pad = (value, width) => String(value).padStart(width, '0')
-
-// An example ID in a sequence's format, with placeholder cruise and lowering
-// IDs and today's date (see sealog-server lib/sequences.js)
-export const sequenceExample = ({ format, start = 1 }) => {
-  const now = new Date()
-  const values = {
-    cruise_id: 'CRUISE',
-    lowering_id: 'LOWERING',
-    yyyy: String(now.getUTCFullYear()),
-    yy: pad(now.getUTCFullYear() % 100, 2),
-    mm: pad(now.getUTCMonth() + 1, 2),
-    dd: pad(now.getUTCDate(), 2),
-    doy: pad(Math.floor((now - Date.UTC(now.getUTCFullYear(), 0, 1)) / 86400000) + 1, 3)
-  }
-
-  return format.replace(/\{([a-z_]+)(?::(\d+))?\}/g, (match, token, width) =>
-    token === 'n' ? pad(start, Number(width || 0)) : values[token] !== undefined ? values[token] : match
-  )
-}
 
 // One line describing a collapsed option (its name is in the header)
 const optionSummary = (option, sequences) => {
