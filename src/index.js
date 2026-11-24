@@ -22,6 +22,7 @@ import RequireUnauth from './components/auth/require_unauth'
 import CruiseMenu from './components/cruise_menu'
 import Users from './components/users'
 import Tasks from './components/tasks'
+import Sequences from './components/sequences'
 import Vocabularies from './components/vocabularies'
 import VocabularyTerms from './components/vocabulary_terms'
 import EventErrorToast from './components/event_error_toast'
@@ -149,6 +150,7 @@ ReactDOM.render(
           <Route path={`/logout`} exact={true} component={Logout} />
           <Route path={`/users`} exact={true} component={RequireAuth(Users)} />
           <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
+          <Route path={`/sequences`} exact={true} component={RequireAuth(Sequences)} />
           <Route path={`/vocabularies`} exact={true} component={RequireAuth(Vocabularies)} />
           <Route path={`/vocabularies/:code`} exact={true} component={RequireAuth(VocabularyTerms)} />
           <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />

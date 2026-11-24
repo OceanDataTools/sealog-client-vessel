@@ -584,6 +584,101 @@ export const get_sequences = async () => {
     })
 }
 
+export const create_sequence = async (payload) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/sequences`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const update_sequence = async (name, payload) => {
+  return await axios
+    .patch(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}`, payload, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const delete_sequence = async (name) => {
+  return await axios
+    .delete(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}`, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// [{ scope_key, last, next }], one per cruise or lowering (or '' for global)
+export const get_sequence_counters = async (name) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/counters`, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return { error }
+    })
+}
+
+export const set_sequence_counter = async (name, scope_key, next) => {
+  return await axios
+    .put(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/counters`, { scope_key, next }, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Download the sequence definitions (no counters) as a .json file
+export const export_sequences = async () => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/export`, authorizationHeader())
+    .then((response) => {
+      FileDownload(JSON.stringify(response.data, null, 2), `sealog_sequences_${moment.utc().format('YYYYMMDD')}.json`)
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot401(error)
+      return { error }
+    })
+}
+
+// Import sequence definitions from a .json file: { created, updated }
+export const import_sequences = async (file) => {
+  let definitions
+  try {
+    definitions = JSON.parse(await file.text())
+  } catch (err) {
+    return { error: { message: `${file.name} isn't JSON` } }
+  }
+
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/sequences/import`, definitions, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
 // The ID a sequence would give the next event at ts, without taking it:
 // { data: { id, n, scope_key, prefix, suffix } } or { error: message }
 export const get_sequence_next = async (name, ts) => {
