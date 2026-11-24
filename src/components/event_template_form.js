@@ -18,6 +18,7 @@ import {
 } from './form_elements'
 import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import VisibilityValuesField, { asList } from './visibility_values_field'
+import { get_sequences } from '../api'
 import * as mapDispatchToProps from '../actions'
 import { DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR, WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
@@ -57,12 +58,36 @@ const SWITCH_COL = { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' }
 const vocabularySummary = (vocab) =>
   `${vocab.collection}: ${vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}`
 
+const pad = (value, width) => String(value).padStart(width, '0')
+
+// An example ID in a sequence's format, with placeholder cruise and lowering
+// IDs and today's date (see sealog-server lib/sequences.js)
+export const sequenceExample = ({ format, start = 1 }) => {
+  const now = new Date()
+  const values = {
+    cruise_id: 'CRUISE',
+    lowering_id: 'LOWERING',
+    yyyy: String(now.getUTCFullYear()),
+    yy: pad(now.getUTCFullYear() % 100, 2),
+    mm: pad(now.getUTCMonth() + 1, 2),
+    dd: pad(now.getUTCDate(), 2),
+    doy: pad(Math.floor((now - Date.UTC(now.getUTCFullYear(), 0, 1)) / 86400000) + 1, 3)
+  }
+
+  return format.replace(/\{([a-z_]+)(?::(\d+))?\}/g, (match, token, width) =>
+    token === 'n' ? pad(start, Number(width || 0)) : values[token] !== undefined ? values[token] : match
+  )
+}
+
 // One line describing a collapsed option (its name is in the header)
-const optionSummary = (option) => {
+const optionSummary = (option, sequences) => {
   const parts = [option.event_option_type || 'no type']
   const vocab = option.event_option_vocab
 
-  if (vocab && vocab.collection) {
+  if (option.event_option_type === 'sequence') {
+    const sequence = sequences.find((item) => item.name === option.event_option_sequence)
+    parts.push(sequence ? `${sequence.name} (${sequence.format})` : option.event_option_sequence || 'no sequence')
+  } else if (vocab && vocab.collection) {
     parts.push(vocabularySummary(vocab))
   } else if (['dropdown', 'radio buttons', 'checkboxes'].includes(option.event_option_type)) {
     const values = asList(option.event_option_values)
@@ -100,16 +125,27 @@ class EventTemplateForm extends Component {
       // Bumped when a vocabulary changes, so vocabulary options reload terms
       vocabularyRevision: 0,
       // Indexes of the expanded options
-      openOptions: new Set()
+      openOptions: new Set(),
+      // For sequence options
+      sequences: []
     }
 
     this.client = new Client(`${WS_ROOT_URL}`)
   }
 
   componentDidMount() {
+    this.fetchSequences()
     connectWSClient(this.client, {
-      '/ws/status/updateVocabularies': () => this.setState((state) => ({ vocabularyRevision: state.vocabularyRevision + 1 }))
+      '/ws/status/updateVocabularies': () => this.setState((state) => ({ vocabularyRevision: state.vocabularyRevision + 1 })),
+      '/ws/status/updateSequences': () => this.fetchSequences()
     })
+  }
+
+  async fetchSequences() {
+    const sequences = await get_sequences()
+    if (!this.unmounted) {
+      this.setState({ sequences })
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -135,6 +171,7 @@ class EventTemplateForm extends Component {
   }
 
   componentWillUnmount() {
+    this.unmounted = true
     this.client.disconnect()
     this.props.leaveEventTemplateForm()
   }
@@ -155,6 +192,13 @@ class EventTemplateForm extends Component {
     formProps.event_options = formProps.event_options.map((event_option) => {
       event_option.event_option_allow_freeform = event_option.event_option_allow_freeform || false
       event_option.event_option_required = event_option.event_option_required || false
+
+      // The server fills in sequence IDs when events are saved
+      if (event_option.event_option_type === 'sequence') {
+        event_option.event_option_default_value = ''
+      } else {
+        delete event_option.event_option_sequence
+      }
 
       // The server fills in the values of vocabulary options
       if (!event_option.event_option_vocab || !VOCABULARY_OPTION_TYPES.includes(event_option.event_option_type)) {
@@ -233,6 +277,41 @@ class EventTemplateForm extends Component {
     }
   }
 
+  renderSequenceOptions(prefix, index) {
+    const { sequences } = this.state
+    const chosen = this.props.event_options[index].event_option_sequence
+    const sequence = sequences.find((item) => item.name === chosen)
+    const names = sequences.map((item) => item.name)
+    // Keep an unknown choice selectable, so the form shows what it holds
+    if (chosen && !sequence) {
+      names.push(chosen)
+    }
+
+    return (
+      <Row>
+        <Field
+          name={`${prefix}.event_option_sequence`}
+          component={renderSelectField}
+          options={names}
+          label='Sequence'
+          required={true}
+          sm={6}
+          lg={6}
+        />
+        <Col sm={6} lg={6} className='small text-muted pt-sm-4'>
+          {sequence && (
+            <React.Fragment>
+              <code>{sequence.format}</code>, e.g. {sequenceExample(sequence)}. The server fills in the next ID (per {sequence.scope}) when
+              an event is saved; loggers can type their own.
+            </React.Fragment>
+          )}
+          {!sequences.length && 'No sequences on this server yet: an admin needs to create one.'}
+          {chosen && !sequence && sequences.length > 0 && <span className='text-danger'>{chosen} doesn&apos;t exist on this server.</span>}
+        </Col>
+      </Row>
+    )
+  }
+
   renderValueOptions(prefix, index) {
     if (this.props.event_options && this.props.event_options.length > 0) {
       if (this.props.event_options[index].event_option_type === 'static text') {
@@ -281,6 +360,8 @@ class EventTemplateForm extends Component {
             />
           </div>
         )
+      } else if (this.props.event_options[index].event_option_type === 'sequence') {
+        return this.renderSequenceOptions(prefix, index)
       } else if (this.props.event_options[index].event_option_type === 'radio buttons') {
         return (
           <Row>
@@ -428,7 +509,7 @@ class EventTemplateForm extends Component {
                   {open ? (
                     this.renderVocabularyBadge(index)
                   ) : (
-                    <span className='ms-2 small text-muted text-truncate'>{optionSummary(options[index] || {})}</span>
+                    <span className='ms-2 small text-muted text-truncate'>{optionSummary(options[index] || {}, this.state.sequences)}</span>
                   )}
                 </span>
                 {/* Missing arrows keep their space so the arrows line up */}
@@ -594,6 +675,7 @@ class EventTemplateForm extends Component {
                 component={this.renderOptions}
                 vocabularyRevision={this.state.vocabularyRevision}
                 openOptions={this.state.openOptions}
+                sequences={this.state.sequences}
               />
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
@@ -734,6 +816,10 @@ const validate = (formProps) => {
             event_optionErrors.event_option_default_value = 'Value(s) is/are not in options list'
           }
         }
+      }
+
+      if (event_option.event_option_type === 'sequence' && !event_option.event_option_sequence) {
+        event_optionErrors.event_option_sequence = 'Choose a sequence'
       }
 
       if (event_option.event_option_type === 'static text' && !vocab) {
