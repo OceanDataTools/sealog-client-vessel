@@ -675,8 +675,9 @@ export const create_vocabulary = async (payload) => {
 export const delete_vocabulary = async (code) => {
   return await axios
     .delete(`${API_ROOT_URL}/api/v1/vocabularies/${code}`, authorizationHeader())
-    .then(() => {
-      return { success: true }
+    .then((response) => {
+      // 200 with { action: 'retained', retained } when events keep some terms
+      return { success: true, data: response.data || null }
     })
     .catch((error) => {
       console.debug(error)

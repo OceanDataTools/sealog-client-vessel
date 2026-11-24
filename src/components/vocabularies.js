@@ -35,7 +35,8 @@ class Vocabularies extends Component {
       vocabularies: [],
       fetching: true,
       busy: {},
-      error: null
+      error: null,
+      notice: null
     }
 
     this.client = new Client(`${WS_ROOT_URL}`)
@@ -125,14 +126,17 @@ class Vocabularies extends Component {
     this.props.showModal('deleteModal', {
       id: code,
       handleDelete: async (id) => {
+        this.setState({ error: null, notice: null })
         const response = await delete_vocabulary(id)
         if (response.error) {
           this.showError(response.error, `Could not delete ${id}`)
+        } else if (response.data && response.data.action === 'retained') {
+          this.setState({ notice: response.data })
         }
 
         this.fetchVocabularies()
       },
-      message: `the ${code} vocabulary and its terms`
+      message: `the ${code} vocabulary and its terms (terms recorded on events are kept, marked deprecated)`
     })
   }
 
@@ -159,6 +163,24 @@ class Vocabularies extends Component {
         <Badge bg={vocabulary.source === 'local' ? 'success' : 'secondary'}>{SOURCE_LABELS[vocabulary.source] || vocabulary.source}</Badge>
         {detail}
       </React.Fragment>
+    )
+  }
+
+  // A vocabulary delete that kept the terms recorded on events
+  renderNotice({ collection, retained }) {
+    const count = `${retained.length} term${retained.length === 1 ? '' : 's'}`
+
+    return (
+      <Alert variant='warning' dismissible onClose={() => this.setState({ notice: null })}>
+        {collection} wasn&apos;t deleted: {count} recorded on events {retained.length === 1 ? 'was' : 'were'} kept, marked deprecated, so
+        those events still resolve. Its other terms were deleted.
+        <details className='mt-1'>
+          <summary>Kept terms</summary>
+          <small className='d-block' style={{ maxHeight: '10em', overflowY: 'auto' }}>
+            {retained.join(', ')}
+          </small>
+        </details>
+      </Alert>
     )
   }
 
@@ -307,6 +329,7 @@ class Vocabularies extends Component {
                 {this.state.error}
               </Alert>
             )}
+            {this.state.notice && this.renderNotice(this.state.notice)}
             <Card className='border-secondary'>
               <Card.Header>Controlled Vocabularies</Card.Header>
               <Table className='mb-0' bordered striped size='sm' responsive>
