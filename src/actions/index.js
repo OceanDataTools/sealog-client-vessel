@@ -232,11 +232,17 @@ export const showAuxDataToast = () => {
   }
 }
 
-export const createEvent = ({ event_value, event_free_text = '', event_options = [], ts = null, publish = true }) => {
+export const createEvent = ({ event_value, event_free_text = '', event_options, ts = null, publish = true }) => {
   return async (dispatch) => {
     const fields = { event_value, event_free_text, event_options, ts, publish }
     if (!fields.ts) {
       delete fields.ts
+    }
+
+    // Left out for an event whose options come later (the options dialog), so
+    // the server doesn't fill in sequence IDs for it yet
+    if (!fields.event_options) {
+      delete fields.event_options
     }
 
     const response = await createEventRequest(fields)
@@ -831,7 +837,10 @@ export const updateEvent = (formProps) => {
     if (response.success) {
       return dispatch({ type: UPDATE_EVENT, payload: formProps })
     }
-    dispatch(updateEventError(_eventErrorMessage(response.error)))
+    const message = _eventErrorMessage(response.error)
+    dispatch(updateEventError(message))
+    // For callers that show the error themselves
+    return { error: message }
   }
 }
 

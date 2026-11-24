@@ -82,7 +82,8 @@ class EventTemplateList extends Component {
     const needs_modal =
       (e && e.shiftKey) ||
       event_template.event_options.reduce((needs, option) => {
-        return option.event_option_type !== 'static text' ? true : needs
+        // The server fills in sequence IDs, so they need no input either
+        return !['static text', 'sequence'].includes(option.event_option_type) ? true : needs
       }, false)
 
     if (event_template.event_free_text_required || needs_modal) {

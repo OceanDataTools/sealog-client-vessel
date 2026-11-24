@@ -16,8 +16,8 @@ import {
   renderTextArea,
   renderTextField
 } from './form_elements'
-import { Button, Modal } from 'react-bootstrap'
-import { authorizationHeader, create_event_aux_data, IMAGE_ROUTE } from '../api'
+import { Alert, Button, Form, Modal } from 'react-bootstrap'
+import { authorizationHeader, create_event_aux_data, get_sequence_next, IMAGE_ROUTE } from '../api'
 import { API_ROOT_URL } from '../client_settings'
 
 registerPlugin(FilePondPluginFileValidateType)
@@ -25,12 +25,39 @@ registerPlugin(FilePondPluginFileValidateType)
 const required = (value) => (!value ? 'Required' : undefined)
 const requiredArray = (value) => (!value || value.length === 0 ? 'Must select at least one option' : undefined)
 
+// The number of an ID typed in a sequence's format, read with the prefix and
+// suffix of the next ID's preview; null if it isn't in the format
+const typedNumber = (value, hint) => {
+  const { prefix, suffix } = hint
+  if (!value.startsWith(prefix) || !value.endsWith(suffix) || value.length <= prefix.length + suffix.length) {
+    return null
+  }
+
+  const digits = value.slice(prefix.length, value.length - suffix.length)
+  return /^\d+$/.test(digits) ? Number(digits) : null
+}
+
+// An ID with the preview's prefix, suffix and zero padding
+const idWithNumber = (n, hint) => {
+  const digits = hint.id.slice(hint.prefix.length, hint.id.length - hint.suffix.length)
+  const width = digits.startsWith('0') ? digits.length : 0
+  return `${hint.prefix}${String(n).padStart(width, '0')}${hint.suffix}`
+}
+
 class EventTemplateOptionsModal extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      event_id: this.props.event ? this.props.event.id : null
+      event_id: this.props.event ? this.props.event.id : null,
+      // Previews of sequence options' next IDs, by option index:
+      // { id, n, prefix, suffix } or { error }
+      hints: {},
+      // A typed sequence ID that skips ahead, waiting to be confirmed
+      jump: null,
+      // Typed sequence IDs confirmed to skip ahead, by option index
+      confirmed: {},
+      submitError: null
     }
 
     this.finalized = false
@@ -40,6 +67,78 @@ class EventTemplateOptionsModal extends Component {
 
   componentDidMount() {
     this.populateDefaultValues()
+    this.fetchHints()
+  }
+
+  componentDidUpdate(prevProps) {
+    // The previews depend on the event's time (its cruise or lowering)
+    const key = (ts) => (ts && moment(ts).isValid() ? moment(ts).toISOString() : '')
+    if (key(prevProps.ts) !== key(this.props.ts)) {
+      this.fetchHints()
+    }
+  }
+
+  // The event's time: the form's Custom Time, else the event's
+  eventTs() {
+    const ts = this.props.ts || (this.props.event && this.props.event.ts)
+    return ts && moment(ts).isValid() ? moment(ts).toISOString() : new Date().toISOString()
+  }
+
+  async fetchHints() {
+    const { eventTemplate } = this.props
+    if (!eventTemplate) {
+      return {}
+    }
+
+    const ts = this.eventTs()
+    const hints = {}
+    await Promise.all(
+      eventTemplate.event_options.map(async (option, index) => {
+        if (option.event_option_type === 'sequence' && option.event_option_sequence) {
+          const response = await get_sequence_next(option.event_option_sequence, ts)
+          hints[index] = response.data || { error: response.error }
+        }
+      })
+    )
+
+    if (!this.finalized) {
+      this.setState({ hints })
+    }
+
+    return hints
+  }
+
+  // A typed sequence ID that skips numbers, not yet confirmed: { index, value, skipped }
+  async findJump(raw_event_options) {
+    const { eventTemplate } = this.props
+    const typed = eventTemplate.event_options
+      .map((option, index) => ({ option, index, value: raw_event_options[`option_${index}`] }))
+      .filter(({ option, value }) => option.event_option_type === 'sequence' && value)
+
+    if (!typed.length) {
+      return null
+    }
+
+    // Fresh previews: others may have logged since the dialog opened
+    const hints = await this.fetchHints()
+    for (const { index, value } of typed) {
+      const hint = hints[index]
+      const n = hint && !hint.error ? typedNumber(value, hint) : null
+      if (n !== null && n > hint.n && this.state.confirmed[index] !== value) {
+        const skipped = n - 1 === hint.n ? idWithNumber(hint.n, hint) : `${idWithNumber(hint.n, hint)} to ${idWithNumber(n - 1, hint)}`
+        return { index, value, skipped }
+      }
+    }
+
+    return null
+  }
+
+  handleConfirmJump() {
+    const { index, value } = this.state.jump
+    this.setState(
+      (state) => ({ jump: null, confirmed: { ...state.confirmed, [index]: value } }),
+      () => this.props.handleSubmit(this.handleFormSubmit.bind(this))()
+    )
   }
 
   componentWillUnmount() {
@@ -69,7 +168,10 @@ class EventTemplateOptionsModal extends Component {
     this.props.initialize({ id: this.state.event_id, ts, event_options })
   }
 
-  async handleFormSubmit(formProps) {
+  async handleFormSubmit(values) {
+    // A copy: the dialog can stay open after a failed submit, so the form's
+    // own values must survive for the next try
+    const formProps = { ...values }
     formProps.event_free_text = formProps.event_free_text ? formProps.event_free_text : ''
 
     if (formProps.ts) {
@@ -86,6 +188,13 @@ class EventTemplateOptionsModal extends Component {
     }
 
     let raw_event_options = JSON.parse(JSON.stringify(formProps.event_options))
+
+    this.setState({ submitError: null })
+    const jump = await this.findJump(raw_event_options)
+    if (jump) {
+      this.setState({ jump })
+      return
+    }
 
     //Convert objects to arrays
     let optionValue = []
@@ -125,7 +234,12 @@ class EventTemplateOptionsModal extends Component {
 
     //Submit event
     if (this.props.event) {
-      await this.props.handleUpdateEvent(formProps)
+      // Keep the dialog open on errors, e.g. a sequence ID already in use
+      const result = await this.props.handleUpdateEvent(formProps)
+      if (result && result.error) {
+        this.setState({ submitError: result.error })
+        return
+      }
 
       if (fileMap.size) {
         await create_event_aux_data({
@@ -257,6 +371,27 @@ class EventTemplateOptionsModal extends Component {
         )
       }
 
+      if (option.event_option_type === 'sequence') {
+        const hint = this.state.hints[index]
+        return (
+          <div key={`event_options.option_${index}`}>
+            <Field
+              name={`event_options.option_${index}`}
+              component={renderTextField}
+              label={option.event_option_name}
+              placeholder={hint && hint.id ? hint.id : ''}
+              className='pb-0'
+            />
+            <Form.Text className={`d-block pb-2 ${hint && hint.error ? 'text-danger' : 'text-muted'}`}>
+              {hint &&
+                hint.id &&
+                `Next: ${hint.id}. Assigned when you submit (it may differ if someone logs first); leave blank to use it.`}
+              {hint && hint.error}
+            </Form.Text>
+          </div>
+        )
+      }
+
       return null
     })
   }
@@ -274,6 +409,19 @@ class EventTemplateOptionsModal extends Component {
 
             <Modal.Body>
               {this.renderEventOptions()}
+              {this.state.jump && (
+                <Alert variant='warning' className='py-2'>
+                  {this.state.jump.value} skips {this.state.jump.skipped}, which won&apos;t be assigned automatically.{' '}
+                  <Button size='sm' variant='outline-dark' onClick={() => this.handleConfirmJump()}>
+                    Use it anyway
+                  </Button>
+                </Alert>
+              )}
+              {this.state.submitError && (
+                <Alert variant='danger' className='py-2'>
+                  {this.state.submitError}
+                </Alert>
+              )}
               <Field
                 name='event_free_text'
                 component={renderTextArea}
@@ -339,6 +487,8 @@ EventTemplateOptionsModal.propTypes = {
   change: PropTypes.func.isRequired,
   show: PropTypes.bool.isRequired,
   submitting: PropTypes.bool.isRequired,
+  // The form's Custom Time: a moment or an ISO string
+  ts: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   valid: PropTypes.bool.isRequired
 }
 
@@ -378,7 +528,8 @@ const mapStateToProps = (state) => {
   }
 
   return {
-    formValues
+    formValues,
+    ts: formState.ts
   }
 }
 
