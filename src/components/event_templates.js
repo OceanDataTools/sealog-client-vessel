@@ -160,7 +160,7 @@ class EventTemplates extends Component {
 
     if (item) {
       result.skipped = true
-      result.error = { message: 'duplicate template', id: id || 'unknown' }
+      result.error = { message: 'duplicate template', id: id || 'unknown', name: event_name }
       return result
     }
 
@@ -189,7 +189,7 @@ class EventTemplates extends Component {
     //   return result
     // }
 
-    result.error = { ...response.error.response.data, id: id || 'unknown' }
+    result.error = { ...response.error.response.data, id: id || 'unknown', name: event_name }
     return result
   }
 

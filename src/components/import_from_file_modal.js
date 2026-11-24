@@ -101,7 +101,8 @@ class ImportFromFileModal extends Component {
                 <br />
                 <pre style={{ fontSize: '.85rem' }}>
                   {this.state.error_log.map((error) => {
-                    return `Record: ${error.id}: ${error.message}\n`
+                    // name, when the importer gives one, says which record it is
+                    return `Record: ${error.name ? `${error.name} (${error.id})` : error.id}: ${error.message}\n`
                   })}
                 </pre>
               </Col>
