@@ -467,6 +467,13 @@ class EventTemplateForm extends Component {
     return (
       <div>
         {fields.map((prefix, index) => {
+          // While the form re-initializes (e.g. when the template list
+          // refreshes), fields can briefly list an option that
+          // this.props.event_options doesn't have yet; the next render has it
+          if (!options[index]) {
+            return null
+          }
+
           const invalid = hasErrors(optionErrors[index])
           const open = invalid || this.state.openOptions.has(index)
 
