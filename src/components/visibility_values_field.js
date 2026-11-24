@@ -73,7 +73,8 @@ class VisibilityValuesField extends Component {
     return (
       <Form.Group as={Col} xs={12} className='pb-2'>
         <Form.Label>
-          Event option values<span className='text-danger'> *</span>
+          {this.props.label}
+          <span className='text-danger'> *</span>
         </Form.Label>
         <Form.Control as='textarea' rows={2} {...input} isInvalid={meta.touched && !!meta.error} />
         <Form.Text muted>Comma separated</Form.Text>
@@ -125,7 +126,8 @@ class VisibilityValuesField extends Component {
     return (
       <Form.Group as={Col} xs={12} className='pb-2'>
         <Form.Label>
-          Event option values<span className='text-danger'> *</span>
+          {this.props.label}
+          <span className='text-danger'> *</span>
         </Form.Label>
         <div>{values.map((value) => checkbox(value, false))}</div>
         {empty}
@@ -141,8 +143,13 @@ class VisibilityValuesField extends Component {
   }
 }
 
+VisibilityValuesField.defaultProps = {
+  label: 'Event option values'
+}
+
 VisibilityValuesField.propTypes = {
   controller: PropTypes.object,
+  label: PropTypes.string,
   input: PropTypes.object.isRequired,
   meta: PropTypes.object.isRequired,
   revision: PropTypes.number.isRequired
