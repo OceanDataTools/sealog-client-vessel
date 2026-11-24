@@ -571,6 +571,19 @@ export const update_user = async (payload, id) => {
 }
 
 // Vocabularies
+// The ID sequences (sealog-server lib/sequences.js)
+export const get_sequences = async () => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return []
+    })
+}
+
 export const get_vocabularies = async () => {
   return await axios
     .get(`${API_ROOT_URL}/api/v1/vocabularies`, authorizationHeader())
