@@ -76,7 +76,7 @@ class Vocabularies extends Component {
   }
 
   async handleRefresh(code) {
-    this.setState({ error: null })
+    this.setState({ error: null, notice: null })
     this.setBusy(code, true)
 
     const response = await refresh_vocabulary(code)
@@ -92,7 +92,7 @@ class Vocabularies extends Component {
   }
 
   async handleExport(collections = []) {
-    this.setState({ error: null })
+    this.setState({ error: null, notice: null })
 
     const response = await export_vocabularies(collections)
     if (response.error) {
@@ -107,7 +107,7 @@ class Vocabularies extends Component {
       return
     }
 
-    this.setState({ error: null })
+    this.setState({ error: null, notice: null })
     this.setBusy('import', true)
 
     const response = await import_vocabularies(file)
@@ -141,7 +141,7 @@ class Vocabularies extends Component {
   }
 
   handleAdd(mode) {
-    this.setState({ error: null })
+    this.setState({ error: null, notice: null })
     this.props.showModal('vocabularyAdd', {
       mode,
       handleDone: (result) => {
