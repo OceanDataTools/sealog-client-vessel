@@ -679,6 +679,19 @@ export const import_sequences = async (file) => {
     })
 }
 
+// The ID an event at ts that doesn't take a new one would reuse:
+// { data: { id } } or { error: message }
+export const get_sequence_current = async (name, ts) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/current`, { ...authorizationHeader(), params: { ts } })
+    .then((response) => {
+      return { data: response.data }
+    })
+    .catch((error) => {
+      return { error: (error.response && error.response.data && error.response.data.message) || 'Unable to reach server' }
+    })
+}
+
 // The ID a sequence would give the next event at ts, without taking it:
 // { data: { id, n, scope_key, prefix, suffix } } or { error: message }
 export const get_sequence_next = async (name, ts) => {

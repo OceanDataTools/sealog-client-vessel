@@ -67,6 +67,12 @@ const optionSummary = (option, sequences) => {
   if (option.event_option_type === 'sequence') {
     const sequence = sequences.find((item) => item.name === option.event_option_sequence)
     parts.push(sequence ? `${sequence.name} (${sequence.format})` : option.event_option_sequence || 'no sequence')
+    const conditions = option.event_option_sequence_new_when || []
+    if (conditions.length) {
+      parts.push(
+        `new when ${conditions.map((condition) => `${condition.event_option_name || '?'} = ${asList(condition.event_option_values).join('/') || '?'}`).join(', ')}`
+      )
+    }
   } else if (vocab && vocab.collection) {
     parts.push(vocabularySummary(vocab))
   } else if (['dropdown', 'radio buttons', 'checkboxes'].includes(option.event_option_type)) {
@@ -176,8 +182,20 @@ class EventTemplateForm extends Component {
       // The server fills in sequence IDs when events are saved
       if (event_option.event_option_type === 'sequence') {
         event_option.event_option_default_value = ''
+        const conditions = (event_option.event_option_sequence_new_when || [])
+          .filter((condition) => condition && condition.event_option_name)
+          .map((condition) => ({
+            event_option_name: condition.event_option_name,
+            event_option_values: asList(condition.event_option_values)
+          }))
+        if (conditions.length) {
+          event_option.event_option_sequence_new_when = conditions
+        } else {
+          delete event_option.event_option_sequence_new_when
+        }
       } else {
         delete event_option.event_option_sequence
+        delete event_option.event_option_sequence_new_when
       }
 
       // The server fills in the values of vocabulary options
@@ -288,7 +306,85 @@ class EventTemplateForm extends Component {
           {!sequences.length && 'No sequences on this server yet: an admin needs to create one.'}
           {chosen && !sequence && sequences.length > 0 && <span className='text-danger'>{chosen} doesn&apos;t exist on this server.</span>}
         </Col>
+        {this.renderSequenceConditions(prefix, index)}
       </Row>
+    )
+  }
+
+  // When the option takes a new ID: conditions on the template's other
+  // options, all of which must match; otherwise the current ID is reused
+  renderSequenceConditions(prefix, index) {
+    const options = this.props.event_options || []
+    const conditions = options[index].event_option_sequence_new_when || []
+    const path = `${prefix}.event_option_sequence_new_when`
+    const names = options
+      .filter((option, i) => i !== index && option.event_option_name && !['static text', 'sequence'].includes(option.event_option_type))
+      .map((option) => option.event_option_name)
+
+    return (
+      <Col xs={12} className='pb-2'>
+        <Form.Label className='mb-0'>Take a new ID when</Form.Label>{' '}
+        <small className='text-muted'>
+          {conditions.length
+            ? 'all of these match; other events reuse the current ID (e.g. a cast ID carried by the rest of the cast).'
+            : 'always. Add a condition to reuse the current ID until it matches.'}
+        </small>
+        {conditions.map((condition, c) => {
+          const choices =
+            condition.event_option_name && !names.includes(condition.event_option_name) ? [...names, condition.event_option_name] : names
+          const controller = options.find((option, i) => i !== index && option.event_option_name === condition.event_option_name)
+
+          return (
+            <Row key={`${prefix}.condition_${c}`} className='align-items-start'>
+              <Field
+                name={`${path}[${c}].event_option_name`}
+                component={renderSelectField}
+                options={choices}
+                label='Option'
+                required={true}
+                onChange={() => this.props.change(`${path}[${c}].event_option_values`, [])}
+                sm={4}
+                lg={4}
+              />
+              <Col sm={7} lg={7}>
+                <Row>
+                  <Field
+                    name={`${path}[${c}].event_option_values`}
+                    component={VisibilityValuesField}
+                    controller={controller}
+                    label='Values'
+                    revision={this.state.vocabularyRevision}
+                  />
+                </Row>
+              </Col>
+              <Col sm={1} lg={1} className='pt-sm-4'>
+                <FontAwesomeIcon
+                  className='text-danger'
+                  icon='times'
+                  fixedWidth
+                  role='button'
+                  title='Remove this condition'
+                  onClick={() =>
+                    this.props.change(
+                      path,
+                      conditions.filter((item, i) => i !== c)
+                    )
+                  }
+                />
+              </Col>
+            </Row>
+          )
+        })}
+        <div>
+          <span
+            className='text-primary small'
+            role='button'
+            onClick={() => this.props.change(path, [...conditions, { event_option_name: '', event_option_values: [] }])}
+          >
+            <FontAwesomeIcon icon='plus' fixedWidth /> Add condition
+          </span>
+        </div>
+      </Col>
     )
   }
 
@@ -377,6 +473,12 @@ class EventTemplateForm extends Component {
       if (option.event_option_visibility && option.event_option_visibility.event_option_name === from) {
         this.props.change(`event_options[${i}].event_option_visibility.event_option_name`, to)
       }
+
+      ;(option.event_option_sequence_new_when || []).forEach((condition, c) => {
+        if (condition && condition.event_option_name === from) {
+          this.props.change(`event_options[${i}].event_option_sequence_new_when[${c}].event_option_name`, to)
+        }
+      })
     })
   }
 
@@ -807,6 +909,22 @@ const validate = (formProps) => {
 
       if (event_option.event_option_type === 'sequence' && !event_option.event_option_sequence) {
         event_optionErrors.event_option_sequence = 'Choose a sequence'
+      }
+
+      if (event_option.event_option_type === 'sequence' && event_option.event_option_sequence_new_when) {
+        const conditionErrors = event_option.event_option_sequence_new_when.map((condition) => {
+          const conditionError = {}
+          if (!condition || !condition.event_option_name || !event_option_names.includes(condition.event_option_name)) {
+            conditionError.event_option_name = 'Choose an option'
+          }
+          if (!condition || !asList(condition.event_option_values).length) {
+            conditionError.event_option_values = 'Pick at least one value'
+          }
+          return conditionError
+        })
+        if (conditionErrors.some((conditionError) => Object.keys(conditionError).length)) {
+          event_optionErrors.event_option_sequence_new_when = conditionErrors
+        }
       }
 
       if (event_option.event_option_type === 'static text' && !vocab) {

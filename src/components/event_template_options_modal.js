@@ -17,7 +17,7 @@ import {
   renderTextField
 } from './form_elements'
 import { Alert, Button, Form, Modal } from 'react-bootstrap'
-import { authorizationHeader, create_event_aux_data, get_sequence_next, IMAGE_ROUTE } from '../api'
+import { authorizationHeader, create_event_aux_data, get_sequence_current, get_sequence_next, IMAGE_ROUTE } from '../api'
 import { API_ROOT_URL } from '../client_settings'
 
 registerPlugin(FilePondPluginFileValidateType)
@@ -37,6 +37,13 @@ const typedNumber = (value, hint) => {
   return /^\d+$/.test(digits) ? Number(digits) : null
 }
 
+// The values that make a sequence option take a new ID, e.g.
+// 'Process: deployment and Action: start'
+const describeConditions = (option) =>
+  (option.event_option_sequence_new_when || [])
+    .map((condition) => `${condition.event_option_name}: ${condition.event_option_values.join(' or ')}`)
+    .join(' and ')
+
 // An ID with the preview's prefix, suffix and zero padding
 const idWithNumber = (n, hint) => {
   const digits = hint.id.slice(hint.prefix.length, hint.id.length - hint.suffix.length)
@@ -50,8 +57,10 @@ class EventTemplateOptionsModal extends Component {
 
     this.state = {
       event_id: this.props.event ? this.props.event.id : null,
-      // Previews of sequence options' next IDs, by option index:
-      // { id, n, prefix, suffix } or { error }
+      // Previews of sequence options' IDs, by option index: the next ID
+      // ({ id, n, prefix, suffix, mode: 'next' }) or, for an option that
+      // doesn't take a new one, the current ID ({ id, mode: 'current' }),
+      // or { error, mode }
       hints: {},
       // A typed sequence ID that skips ahead, waiting to be confirmed
       jump: null,
@@ -73,9 +82,36 @@ class EventTemplateOptionsModal extends Component {
   componentDidUpdate(prevProps) {
     // The previews depend on the event's time (its cruise or lowering)
     const key = (ts) => (ts && moment(ts).isValid() ? moment(ts).toISOString() : '')
-    if (key(prevProps.ts) !== key(this.props.ts)) {
+    // ...and, for options with conditions, on whether they take a new ID
+    if (key(prevProps.ts) !== key(this.props.ts) || this.sequenceModes() !== this.fetchedModes) {
       this.fetchHints()
     }
+  }
+
+  // Whether a sequence option takes a new ID with the values picked: all its
+  // conditions match (any ticked value, for checkboxes), or it has none
+  takesNewId(option) {
+    const conditions = option.event_option_sequence_new_when || []
+    const options = this.props.eventTemplate.event_options
+
+    return conditions.every((condition) => {
+      const index = options.findIndex((item) => item.event_option_name === condition.event_option_name)
+      const value = this.props.formValues ? this.props.formValues[`option_${index}`] : undefined
+      const values = Array.isArray(value) ? value : value ? String(value).split(';') : []
+      return values.some((item) => condition.event_option_values.includes(item))
+    })
+  }
+
+  // 'next' or 'current' for each sequence option, as a string to compare
+  sequenceModes() {
+    const { eventTemplate } = this.props
+    if (!eventTemplate) {
+      return ''
+    }
+
+    return eventTemplate.event_options
+      .map((option) => (option.event_option_type === 'sequence' ? (this.takesNewId(option) ? 'next' : 'current') : ''))
+      .join(',')
   }
 
   // The event's time: the form's Custom Time, else the event's
@@ -91,12 +127,14 @@ class EventTemplateOptionsModal extends Component {
     }
 
     const ts = this.eventTs()
+    this.fetchedModes = this.sequenceModes()
     const hints = {}
     await Promise.all(
       eventTemplate.event_options.map(async (option, index) => {
         if (option.event_option_type === 'sequence' && option.event_option_sequence) {
-          const response = await get_sequence_next(option.event_option_sequence, ts)
-          hints[index] = response.data || { error: response.error }
+          const mode = this.takesNewId(option) ? 'next' : 'current'
+          const response = await (mode === 'next' ? get_sequence_next : get_sequence_current)(option.event_option_sequence, ts)
+          hints[index] = { ...(response.data || { error: response.error }), mode }
         }
       })
     )
@@ -123,7 +161,8 @@ class EventTemplateOptionsModal extends Component {
     const hints = await this.fetchHints()
     for (const { index, value } of typed) {
       const hint = hints[index]
-      const n = hint && !hint.error ? typedNumber(value, hint) : null
+      // Only an ID taken new can skip numbers; reused ones are any earlier ID
+      const n = hint && !hint.error && hint.mode === 'next' ? typedNumber(value, hint) : null
       if (n !== null && n > hint.n && this.state.confirmed[index] !== value) {
         const skipped = n - 1 === hint.n ? idWithNumber(hint.n, hint) : `${idWithNumber(hint.n, hint)} to ${idWithNumber(n - 1, hint)}`
         return { index, value, skipped }
@@ -385,8 +424,11 @@ class EventTemplateOptionsModal extends Component {
             <Form.Text className={`d-block pb-2 ${hint && hint.error ? 'text-danger' : 'text-muted'}`}>
               {hint &&
                 hint.id &&
-                `Next: ${hint.id}. Assigned when you submit (it may differ if someone logs first); leave blank to use it.`}
+                (hint.mode === 'current'
+                  ? `Current: ${hint.id}, reused from the earlier events; leave blank to use it.`
+                  : `Next: ${hint.id}. Assigned when you submit (it may differ if someone logs first); leave blank to use it.`)}
               {hint && hint.error}
+              {hint && hint.error && hint.mode === 'current' && `. Pick ${describeConditions(option)} to take a new one.`}
             </Form.Text>
           </div>
         )
