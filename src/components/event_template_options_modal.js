@@ -71,6 +71,10 @@ class EventTemplateOptionsModal extends Component {
 
     this.finalized = false
 
+    // The IDs the dialog filled sequence fields with, by option index: a
+    // field still holding one is untouched (see prefillSequenceFields)
+    this.prefilled = {}
+
     this.handleFormHide = this.handleFormHide.bind(this)
   }
 
@@ -141,9 +145,27 @@ class EventTemplateOptionsModal extends Component {
 
     if (!this.finalized) {
       this.setState({ hints })
+      this.prefillSequenceFields(hints)
     }
 
     return hints
+  }
+
+  // Fill sequence fields with their hint's ID, so a logger can edit part of
+  // it. Fields the logger has changed are left alone.
+  prefillSequenceFields(hints) {
+    Object.entries(hints).forEach(([index, hint]) => {
+      const current = this.props.formValues ? this.props.formValues[`option_${index}`] : undefined
+      if (current && current !== this.prefilled[index]) {
+        return
+      }
+
+      const id = hint.id || ''
+      if (id !== (current || '')) {
+        this.props.change(`event_options.option_${index}`, id)
+      }
+      this.prefilled[index] = id
+    })
   }
 
   // A typed sequence ID that skips numbers, not yet confirmed: { index, value, skipped }
@@ -227,6 +249,14 @@ class EventTemplateOptionsModal extends Component {
     }
 
     let raw_event_options = JSON.parse(JSON.stringify(formProps.event_options))
+
+    // Untouched pre-filled IDs are sent blank, so the server assigns the ID
+    // (atomically: another logger may have taken the one shown)
+    Object.entries(this.prefilled).forEach(([index, id]) => {
+      if (id && raw_event_options[`option_${index}`] === id) {
+        raw_event_options[`option_${index}`] = ''
+      }
+    })
 
     this.setState({ submitError: null })
     const jump = await this.findJump(raw_event_options)
@@ -425,8 +455,8 @@ class EventTemplateOptionsModal extends Component {
               {hint &&
                 hint.id &&
                 (hint.mode === 'current'
-                  ? `Current: ${hint.id}, reused from the earlier events; leave blank to use it.`
-                  : `Next: ${hint.id}. Assigned when you submit (it may differ if someone logs first); leave blank to use it.`)}
+                  ? `Current: ${hint.id}, reused from the earlier events. Edit it to use another ID.`
+                  : `Next: ${hint.id}, assigned when you submit (it may differ if someone logs first). Edit it to use another ID.`)}
               {hint && hint.error}
               {hint && hint.error && hint.mode === 'current' && `. Pick ${describeConditions(option)} to take a new one.`}
             </Form.Text>
