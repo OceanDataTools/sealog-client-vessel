@@ -22,9 +22,6 @@ class SequenceCountersModal extends Component {
       scopes: [],
       // Edited next numbers, by scope key
       next: {},
-      // The first number for an upcoming cruise
-      newKey: '',
-      newNext: '',
       error: null,
       message: null
     }
@@ -70,7 +67,7 @@ class SequenceCountersModal extends Component {
       return
     }
 
-    this.setState({ message: `The next number for ${scope_key || this.props.sequence.name} is ${next}.`, newKey: '', newNext: '' })
+    this.setState({ message: `The next number for ${scope_key || this.props.sequence.name} is ${next}.` })
     this.load()
   }
 
@@ -171,25 +168,23 @@ class SequenceCountersModal extends Component {
     )
   }
 
-  // The counters other than the current scope's, with their cruise or
-  // cruise, split into upcoming ones (set ahead of their start) and
-  // previous ones; each newest first
-  otherCounters() {
+  // The counters of cruises before the current one (or of cruises this
+  // client doesn't know), with their cruise, newest first
+  previousCounters() {
     const { scope } = this.currentScope()
     const scopes = new Map(this.state.scopes.map((item) => [item.key, item]))
     const now = new Date()
-    const others = (this.state.counters || [])
+
+    return (this.state.counters || [])
       .filter((counter) => !scope || counter.scope_key !== scope.key)
       .map((counter) => ({ counter, scope: scopes.get(counter.scope_key) }))
+      .filter((item) => !item.scope || new Date(item.scope.start) <= now)
       .sort((a, b) => new Date((b.scope && b.scope.start) || 0) - new Date((a.scope && a.scope.start) || 0))
-
-    const upcoming = (item) => item.scope && new Date(item.scope.start) > now
-    return { upcoming: others.filter(upcoming), previous: others.filter((item) => !upcoming(item)) }
   }
 
   // Counters of finished cruises
   renderPrevious() {
-    const { previous } = this.otherCounters()
+    const previous = this.previousCounters()
 
     if (!previous.length) {
       return null
@@ -215,50 +210,6 @@ class SequenceCountersModal extends Component {
             ))}
           </tbody>
         </Table>
-      </details>
-    )
-  }
-
-  // The first number for an upcoming cruise, before its first event
-  renderUpcoming() {
-    const { newKey, newNext } = this.state
-    const { upcoming } = this.otherCounters()
-
-    return (
-      <details className='mb-2' open={upcoming.length > 0}>
-        <summary>Start an upcoming cruise at a different number</summary>
-        {upcoming.map(({ counter, scope }) => (
-          <div key={counter.scope_key} className='small mt-1'>
-            {counter.scope_key} <span className='text-muted'>(starts {formatDate(scope.start)})</span> will start at {counter.next}.
-          </div>
-        ))}
-        <div className='d-flex mt-1'>
-          <Form.Control
-            size='sm'
-            value={newKey}
-            placeholder='cruise_id'
-            aria-label='Upcoming cruise_id'
-            onChange={(e) => this.setState({ newKey: e.target.value.trim() })}
-          />
-          <Form.Control
-            size='sm'
-            className='ms-1'
-            value={newNext}
-            placeholder='first number'
-            aria-label='First number for the upcoming cruise'
-            onChange={(e) => this.setState({ newNext: e.target.value })}
-          />
-          <Button
-            size='sm'
-            variant='outline-primary'
-            className='ms-1'
-            disabled={!newKey || !newNext}
-            onClick={() => this.handleSet(newKey, newNext)}
-          >
-            Set
-          </Button>
-        </div>
-        <div className='small text-muted'>Otherwise it starts at {this.props.sequence.start} with its first event.</div>
       </details>
     )
   }
@@ -309,7 +260,6 @@ class SequenceCountersModal extends Component {
         body = (
           <React.Fragment>
             {this.renderCurrent()}
-            {this.renderUpcoming()}
             {this.renderPrevious()}
           </React.Fragment>
         )
