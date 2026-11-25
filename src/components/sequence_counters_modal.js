@@ -48,15 +48,6 @@ class SequenceCountersModal extends Component {
       return
     }
 
-    const counter = (this.state.counters || []).find((item) => item.scope_key === scope_key)
-    if (
-      counter &&
-      next <= counter.last &&
-      !window.confirm(`${next} isn't after ${counter.last}, the last number issued: IDs may be issued twice. Set it anyway?`)
-    ) {
-      return
-    }
-
     this.setState({ error: null, message: null })
     const response = await set_sequence_counter(this.props.sequence.name, scope_key, next)
     if (response.error) {
