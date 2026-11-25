@@ -14,8 +14,11 @@ const PREVIEW_VALUES = 20
 const hasCategories = (vocabulary) => vocabulary.collection === 'L22' || vocabulary.source === 'local'
 
 // Loaded once per revision (bumped when a vocabulary changes) and shared by
-// every option in the form
+// every option in the form. The revision restarts with each editor, which
+// clears the cache when it opens, so changes made meanwhile aren't missed.
 const cache = new Map()
+
+export const clearVocabularyCache = () => cache.clear()
 
 const cached = (key, revision, load) => {
   const cacheKey = `${revision}:${key}`
