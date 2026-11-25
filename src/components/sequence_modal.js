@@ -17,7 +17,7 @@ class SequenceModal extends Component {
     this.state = {
       name: sequence ? sequence.name : '',
       format: sequence ? sequence.format : '',
-      scope: sequence ? sequence.scope : 'lowering',
+      scope: sequence ? sequence.scope : 'cruise',
       start: sequence ? String(sequence.start) : '1',
       description: sequence ? sequence.description || '' : '',
       error: null,
@@ -35,7 +35,7 @@ class SequenceModal extends Component {
     }
 
     if ((format.match(/\{n(:\d+)?\}/g) || []).length !== 1) {
-      return 'The format needs the counter {n} exactly once, e.g. {lowering_id}-S{n:03}'
+      return 'The format needs the counter {n} exactly once, e.g. {cruise_id}-C{n:03}'
     }
 
     if (!/^\d+$/.test(start)) {
@@ -83,8 +83,7 @@ class SequenceModal extends Component {
 
     return (
       <Form.Text className='d-block'>
-        e.g. <code>{sequenceExample({ format, start: Number(start) || 0 })}</code> (with placeholder cruise and lowering IDs and
-        today&apos;s date)
+        e.g. <code>{sequenceExample({ format, start: Number(start) || 0 })}</code> (with a placeholder cruise ID and today&apos;s date)
       </Form.Text>
     )
   }
@@ -115,7 +114,8 @@ class SequenceModal extends Component {
               <Form.Group as={Col} sm={6} className='mb-2'>
                 <Form.Label>Numbered per</Form.Label>
                 <Form.Select size='sm' value={this.state.scope} onChange={set('scope')}>
-                  {SEQUENCE_SCOPES.map((scope) => (
+                  {/* A scope this client doesn't offer stays selectable on edit */}
+                  {[...new Set([...SEQUENCE_SCOPES, this.state.scope])].map((scope) => (
                     <option key={scope} value={scope}>
                       {scope}
                     </option>
@@ -129,11 +129,11 @@ class SequenceModal extends Component {
             </Row>
             <Form.Group className='mb-2'>
               <Form.Label>Format</Form.Label>
-              <Form.Control size='sm' value={this.state.format} placeholder='e.g. {lowering_id}-S{n:03}' onChange={set('format')} />
+              <Form.Control size='sm' value={this.state.format} placeholder='e.g. {cruise_id}-C{n:03}' onChange={set('format')} />
               <Form.Text className='d-block'>
-                Fixed text with <code>{'{cruise_id}'}</code>, <code>{'{lowering_id}'}</code>, the event&apos;s date as{' '}
-                <code>{'{yyyy}'}</code> <code>{'{yy}'}</code> <code>{'{mm}'}</code> <code>{'{dd}'}</code> <code>{'{doy}'}</code> (UTC), and
-                the counter <code>{'{n}'}</code> exactly once (<code>{'{n:03}'}</code> pads it to 3 digits).
+                Fixed text with <code>{'{cruise_id}'}</code>, the event&apos;s date as <code>{'{yyyy}'}</code> <code>{'{yy}'}</code>{' '}
+                <code>{'{mm}'}</code> <code>{'{dd}'}</code> <code>{'{doy}'}</code> (UTC), and the counter <code>{'{n}'}</code> exactly once
+                (<code>{'{n:03}'}</code> pads it to 3 digits).
                 {sequence && ' Changing it leaves IDs already issued as they are.'}
               </Form.Text>
               {this.renderExample()}

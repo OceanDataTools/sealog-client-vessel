@@ -84,7 +84,7 @@ class EventTemplateOptionsModal extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // The previews depend on the event's time (its cruise or lowering)
+    // The previews depend on the event's time (its cruise)
     const key = (ts) => (ts && moment(ts).isValid() ? moment(ts).toISOString() : '')
     // ...and, for options with conditions, on whether they take a new ID
     if (key(prevProps.ts) !== key(this.props.ts) || this.sequenceModes() !== this.fetchedModes) {

@@ -1,16 +1,15 @@
 // Helpers for ID sequences (sealog-server lib/sequences.js)
 
-export const SEQUENCE_SCOPES = ['global', 'cruise', 'lowering']
+export const SEQUENCE_SCOPES = ['global', 'cruise']
 
 const pad = (value, width) => String(value).padStart(width, '0')
 
-// An example ID in a sequence's format, with placeholder cruise and lowering
-// IDs and today's date (see sealog-server lib/sequences.js)
+// An example ID in a sequence's format, with a placeholder cruise ID and
+// today's date (see sealog-server lib/sequences.js)
 export const sequenceExample = ({ format, start = 1 }) => {
   const now = new Date()
   const values = {
     cruise_id: 'CRUISE',
-    lowering_id: 'LOWERING',
     yyyy: String(now.getUTCFullYear()),
     yy: pad(now.getUTCFullYear() % 100, 2),
     mm: pad(now.getUTCMonth() + 1, 2),

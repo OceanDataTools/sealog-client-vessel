@@ -620,7 +620,7 @@ export const delete_sequence = async (name) => {
     })
 }
 
-// [{ scope_key, last, next }], one per cruise or lowering (or '' for global)
+// [{ scope_key, last, next }], one per cruise (or '' for global)
 export const get_sequence_counters = async (name) => {
   return await axios
     .get(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/counters`, authorizationHeader())
