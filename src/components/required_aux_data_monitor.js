@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Toast, ToastContainer } from 'react-bootstrap'
 import { Client } from '@hapi/nes/lib/client'
-import { get_cruises, get_event_aux_data } from '../api'
+import { get_cruises_at, get_event_aux_data } from '../api'
 import { connectWSClient } from '../utils'
 import {
   ROOT_PATH,
@@ -134,7 +134,8 @@ class RequiredAuxDataMonitor extends Component {
 
   async checkCruiseActive() {
     const active = await this.isDuringCruise(new Date().toISOString())
-    if (!this.props.authenticated || active === this.cruiseActive) return
+    // A failed lookup (null) says nothing about the cruise: keep the last state
+    if (!this.props.authenticated || active === null || active === this.cruiseActive) return
 
     this.cruiseActive = active
     this.props.updateAuxDataCruiseActive(active)
@@ -199,13 +200,16 @@ class RequiredAuxDataMonitor extends Component {
   }
 
   // Only check events logged while a cruise is in progress. The matching
-  // cruise is cached so most events don't need a lookup.
+  // cruise is cached so most events don't need a lookup. null when the
+  // lookup fails.
   async isDuringCruise(ts) {
     const inCruise = (cruise) => cruise && cruise.start_ts <= ts && (!cruise.stop_ts || ts <= cruise.stop_ts)
 
     if (inCruise(this.cruise)) return true
 
-    const cruises = await get_cruises({ startTS: ts, stopTS: ts })
+    const cruises = await get_cruises_at(ts)
+    if (cruises === null) return null
+
     this.cruise = cruises.find(inCruise) || null
     return Boolean(this.cruise)
   }

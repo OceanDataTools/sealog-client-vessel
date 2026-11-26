@@ -11,9 +11,8 @@ import VocabularyReportModal from './vocabulary_report_modal'
 import { delete_vocabulary, export_vocabularies, get_vocabularies, import_vocabularies, refresh_vocabulary } from '../api'
 import { apiErrorMessage, connectWSClient } from '../utils'
 import { WS_ROOT_URL } from '../client_settings'
+import { VOCABULARY_EDIT_ROLES } from '../vocabularies'
 import * as mapDispatchToProps from '../actions'
-
-const EDIT_ROLES = ['admin', 'cruise_manager', 'template_manager']
 
 // Vocabularies that can be refreshed: NVS collections (including the seed
 // bundle's copies) and ones pulled from a URL
@@ -313,7 +312,7 @@ class Vocabularies extends Component {
       return <div>Loading...</div>
     }
 
-    if (!this.props.roles.some((item) => EDIT_ROLES.includes(item))) {
+    if (!this.props.roles.some((item) => VOCABULARY_EDIT_ROLES.includes(item))) {
       return <div>What are YOU doing here?</div>
     }
 
