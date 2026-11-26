@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { reduxForm, Field, FieldArray, formValueSelector } from 'redux-form'
+import { reduxForm, Field, FieldArray, formValueSelector, getFormSyncErrors } from 'redux-form'
 import { Alert, Badge, Button, Card, Col, Form, OverlayTrigger, Row, Tooltip } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { Client } from '@hapi/nes/lib/client'
@@ -551,8 +551,8 @@ class EventTemplateForm extends Component {
 
   renderOptions({ fields, meta: { touched, error } }) {
     const options = this.props.event_options || []
-    // Options with errors stay open
-    const optionErrors = validate({ event_options: options }).event_options || []
+    // Options with errors stay open (from redux-form's own run of validate)
+    const optionErrors = (this.props.formSyncErrors && this.props.formSyncErrors.event_options) || []
 
     const swap = (from, to) => {
       fields.swap(from, to)
@@ -769,6 +769,7 @@ class EventTemplateForm extends Component {
                 vocabularyRevision={this.state.vocabularyRevision}
                 openOptions={this.state.openOptions}
                 sequences={this.state.sequences}
+                formSyncErrors={this.props.formSyncErrors}
               />
               {renderAlert(this.props.errorMessage)}
               {renderMessage(this.props.message)}
@@ -805,6 +806,8 @@ EventTemplateForm.propTypes = {
   reset: PropTypes.func.isRequired,
   roles: PropTypes.array,
   submitting: PropTypes.bool.isRequired,
+  // Not syncErrors: reduxForm() takes that prop for itself
+  formSyncErrors: PropTypes.object,
   system_template: PropTypes.object.isRequired,
   updateEventTemplate: PropTypes.func.isRequired,
   valid: PropTypes.bool.isRequired
@@ -973,6 +976,7 @@ const mapStateToProps = (state) => {
     event_template: state.event_template.event_template,
     roles: state.user.profile.roles,
     event_options: selector(state, 'event_options'),
+    formSyncErrors: getFormSyncErrors('editEventTemplate')(state),
     system_template: selector(state, 'system_template')
   }
 }

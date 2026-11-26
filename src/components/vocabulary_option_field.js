@@ -3,15 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Alert, Badge, Button, Col, Form, Row } from 'react-bootstrap'
 import PropTypes from 'prop-types'
 import { get_vocabularies, get_vocabulary_terms } from '../api'
+import { ALL_TERMS, hasCategories } from '../vocabularies'
+import CategorySelect from './category_select'
 
 // The option types that can take their values from a vocabulary
 export const VOCABULARY_OPTION_TYPES = ['dropdown', 'radio buttons', 'checkboxes', 'static text']
 
-const ALL_TERMS = { include_hidden: true, include_deprecated: true }
 const TERMS_SHOWN = 50
 const PREVIEW_VALUES = 20
-
-const hasCategories = (vocabulary) => vocabulary.collection === 'L22' || vocabulary.source === 'local'
 
 // Loaded once per revision (bumped when a vocabulary changes) and shared by
 // every option in the form. The revision restarts with each editor, which
@@ -339,14 +338,7 @@ class VocabularyOptionField extends Component {
           </Col>
           {categories.length > 0 && (
             <Col sm={6}>
-              <Form.Select size='sm' value={category} onChange={(e) => this.setState({ category: e.target.value })}>
-                <option value=''>All categories (L05)</option>
-                {categories.map((item) => (
-                  <option key={item.notation} value={item.notation}>
-                    {item.prefLabel} ({item.id})
-                  </option>
-                ))}
-              </Form.Select>
+              <CategorySelect categories={categories} value={category} onChange={(value) => this.setState({ category: value })} />
             </Col>
           )}
         </Row>

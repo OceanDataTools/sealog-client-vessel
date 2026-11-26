@@ -5,6 +5,7 @@ import { Alert, Badge, Button, Card, Col, Form, OverlayTrigger, Row, Table, Tool
 import PropTypes from 'prop-types'
 import { Client } from '@hapi/nes/lib/client'
 import CustomPagination from './custom_pagination'
+import CategorySelect from './category_select'
 import DeleteModal from './delete_modal'
 import { renderAlert, renderMessage } from './form_elements'
 import VocabularyTermModal from './vocabulary_term_modal'
@@ -17,16 +18,10 @@ import {
 } from '../api'
 import { apiErrorMessage, connectWSClient } from '../utils'
 import { WS_ROOT_URL } from '../client_settings'
+import { ALL_TERMS, hasCategories, VOCABULARY_EDIT_ROLES } from '../vocabularies'
 import * as mapDispatchToProps from '../actions'
 
-const EDIT_ROLES = ['admin', 'cruise_manager', 'template_manager']
 const TERMS_PER_PAGE = 50
-
-const ALL_TERMS = { include_hidden: true, include_deprecated: true }
-
-// Device catalogues (and local equipment lists) are grouped by their L05
-// category through the terms' broader links
-const hasCategories = (vocabulary) => vocabulary.collection === 'L22' || vocabulary.source === 'local'
 
 const sameSet = (a, b) => a.size === b.size && [...a].every((item) => b.has(item))
 
@@ -266,14 +261,7 @@ class VocabularyTerms extends Component {
         </Col>
         {categories.length > 0 && (
           <Col md={3}>
-            <Form.Select size='sm' value={category} onChange={(e) => this.setState({ category: e.target.value, page: 1 })}>
-              <option value=''>All categories (L05)</option>
-              {categories.map((item) => (
-                <option key={item.notation} value={item.notation}>
-                  {item.prefLabel} ({item.id})
-                </option>
-              ))}
-            </Form.Select>
+            <CategorySelect categories={categories} value={category} onChange={(value) => this.setState({ category: value, page: 1 })} />
           </Col>
         )}
         <Col md={2}>
@@ -515,7 +503,7 @@ class VocabularyTerms extends Component {
       return <div>Loading...</div>
     }
 
-    if (!this.props.roles.some((item) => EDIT_ROLES.includes(item))) {
+    if (!this.props.roles.some((item) => VOCABULARY_EDIT_ROLES.includes(item))) {
       return <div>What are YOU doing here?</div>
     }
 

@@ -219,6 +219,24 @@ export const get_cruises = async (queryDict = {}, id = null) => {
     })
 }
 
+// The cruises covering ts: [] when there are none, null when the lookup fails
+// (get_cruises returns [] for both)
+export const get_cruises_at = async (ts) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/cruises?${_buildQueryString({ startTS: ts, stopTS: ts })}`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      if (error.response && error.response.status === 404) {
+        return []
+      }
+
+      _errorNot404(error)
+      return null
+    })
+}
+
 export const update_cruise = async (payload, id) => {
   return await axios
     .patch(`${API_ROOT_URL}/api/v1/cruises/${id}`, payload, authorizationHeader())
@@ -679,6 +697,9 @@ export const import_sequences = async (file) => {
     })
 }
 
+// The server's message for a failed sequence preview
+const sequencePreviewError = (error) => (error.response && error.response.data && error.response.data.message) || 'Unable to reach server'
+
 // The ID an event at ts that doesn't take a new one would reuse:
 // { data: { id } } or { error: message }
 export const get_sequence_current = async (name, ts) => {
@@ -688,7 +709,7 @@ export const get_sequence_current = async (name, ts) => {
       return { data: response.data }
     })
     .catch((error) => {
-      return { error: (error.response && error.response.data && error.response.data.message) || 'Unable to reach server' }
+      return { error: sequencePreviewError(error) }
     })
 }
 
@@ -701,7 +722,7 @@ export const get_sequence_next = async (name, ts) => {
       return { data: response.data }
     })
     .catch((error) => {
-      return { error: (error.response && error.response.data && error.response.data.message) || 'Unable to reach server' }
+      return { error: sequencePreviewError(error) }
     })
 }
 
