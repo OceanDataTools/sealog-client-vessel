@@ -16,7 +16,7 @@ import {
   renderTextField,
   renderTextArea
 } from './form_elements'
-import VocabularyOptionField, { VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
+import VocabularyOptionField, { clearVocabularyCache, VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import VisibilityValuesField, { asList } from './visibility_values_field'
 import { get_sequences } from '../api'
 import { sequenceExample } from '../sequences'
@@ -102,6 +102,10 @@ const hasErrors = (errors) => Boolean(errors) && (typeof errors === 'string' || 
 class EventTemplateForm extends Component {
   constructor(props) {
     super(props)
+
+    // Vocabularies may have changed while the editor was closed; its options
+    // load as they mount, before componentDidMount
+    clearVocabularyCache()
 
     this.renderOptions = this.renderOptions.bind(this)
     this.renderOptionOptions = this.renderOptionOptions.bind(this)
