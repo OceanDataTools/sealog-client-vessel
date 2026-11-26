@@ -854,26 +854,35 @@ export const export_vocabularies = async (collections = []) => {
       FileDownload(response.data, filename)
       return { success: true }
     })
-    .catch((error) => {
+    .catch(async (error) => {
       _errorNot401(error)
+      // With responseType 'blob' the server's error body is a Blob too
+      if (error.response && error.response.data instanceof Blob) {
+        try {
+          error.response.data = JSON.parse(await error.response.data.text())
+        } catch (err) {
+          // Not JSON: keep axios's message
+        }
+      }
       return { error }
     })
 }
 
 // Load a vocabulary bundle from a .json or gzipped .json.gz file
 export const import_vocabularies = async (file) => {
-  let data = await file.arrayBuffer()
-  const bytes = new Uint8Array(data)
-
-  if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
-    data = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
-  }
-
   let payload
   try {
+    let data = await file.arrayBuffer()
+    const bytes = new Uint8Array(data)
+
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+      data = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+    }
+
     payload = JSON.parse(new TextDecoder().decode(data))
   } catch (err) {
-    return { error: new Error(`${file.name} is not a JSON file`) }
+    // Unreadable, a corrupt gzip, or not JSON
+    return { error: new Error(`${file.name} is not a readable JSON or gzipped JSON file`) }
   }
 
   return await axios

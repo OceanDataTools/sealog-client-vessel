@@ -132,6 +132,8 @@ class EventTemplateOptionsModal extends Component {
 
     const ts = this.eventTs()
     this.fetchedModes = this.sequenceModes()
+    // Responses can arrive out of order: only the latest request's are used
+    const request = (this.hintRequest = (this.hintRequest || 0) + 1)
     const hints = {}
     await Promise.all(
       eventTemplate.event_options.map(async (option, index) => {
@@ -143,7 +145,7 @@ class EventTemplateOptionsModal extends Component {
       })
     )
 
-    if (!this.finalized) {
+    if (!this.finalized && request === this.hintRequest) {
       this.setState({ hints })
       this.prefillSequenceFields(hints)
     }
@@ -265,22 +267,12 @@ class EventTemplateOptionsModal extends Component {
       return
     }
 
-    //Convert objects to arrays
-    let optionValue = []
-    let optionIndex = Object.keys(raw_event_options)
+    //Convert objects to arrays, leaving out empty fields
+    const filled = Object.keys(raw_event_options)
       .sort()
-      .map((value) => {
-        optionValue.push(raw_event_options[value])
-        return parseInt(value.split('_')[1])
-      })
-
-    //Remove empty fields
-    optionValue.forEach((value, index) => {
-      if (value === '') {
-        optionIndex.splice(index, 1)
-        optionValue.splice(index, 1)
-      }
-    })
+      .filter((key) => raw_event_options[key] !== '')
+    const optionIndex = filled.map((key) => parseInt(key.split('_')[1]))
+    const optionValue = filled.map((key) => raw_event_options[key])
 
     //Build event_options array
     formProps.event_options = optionIndex.map((value, index) => {

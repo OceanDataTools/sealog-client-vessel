@@ -32,20 +32,15 @@ class Footer extends Component {
   componentDidMount() {
     if (this.props.authenticated && !DISABLE_EVENT_LOGGING) {
       this.fetchCustomVars()
-
-      if (!DISABLE_EVENT_LOGGING) {
-        this.connectToWS()
-      }
+      this.connectToWS()
     }
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.authenticated !== this.props.authenticated && this.props.authenticated) {
+    // Logging in: as on mount
+    if (prevProps.authenticated !== this.props.authenticated && this.props.authenticated && !DISABLE_EVENT_LOGGING) {
       this.fetchCustomVars()
-
-      if (!DISABLE_EVENT_LOGGING) {
-        this.connectToWS()
-      }
+      this.connectToWS()
     }
   }
 
