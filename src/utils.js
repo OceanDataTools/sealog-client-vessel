@@ -40,6 +40,16 @@ export const resolveStartTS = async (roles) => {
   return null
 }
 
+// The server's message for a failed API call (Boom errors carry one), else
+// the error's own message
+export const apiErrorMessage = (error) => {
+  if (error && error.response && error.response.data && error.response.data.message) {
+    return error.response.data.message
+  }
+
+  return (error && error.message) || 'Unknown error'
+}
+
 // Connects a @hapi/nes Client and subscribes to the given channels.
 // subscriptions: { '/ws/channel': handlerFn, ... }
 // Retries with exponential backoff on failure.

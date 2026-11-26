@@ -22,6 +22,9 @@ import RequireUnauth from './components/auth/require_unauth'
 import CruiseMenu from './components/cruise_menu'
 import Users from './components/users'
 import Tasks from './components/tasks'
+import Sequences from './components/sequences'
+import Vocabularies from './components/vocabularies'
+import VocabularyTerms from './components/vocabulary_terms'
 import EventErrorToast from './components/event_error_toast'
 import RequiredAuxDataMonitor from './components/required_aux_data_monitor'
 import EventLogging from './components/event_logging'
@@ -42,6 +45,7 @@ import { faCalculator } from '@fortawesome/free-solid-svg-icons/faCalculator'
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons/faChevronDown'
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
 import { faChevronUp } from '@fortawesome/free-solid-svg-icons/faChevronUp'
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons/faCircleInfo'
 import { faClipboard } from '@fortawesome/free-solid-svg-icons/faClipboard'
 import { faCopy } from '@fortawesome/free-solid-svg-icons/faCopy'
 import { faComment } from '@fortawesome/free-solid-svg-icons/faComment'
@@ -58,6 +62,7 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons/faPlay'
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus'
 import { faStepBackward } from '@fortawesome/free-solid-svg-icons/faStepBackward'
 import { faStepForward } from '@fortawesome/free-solid-svg-icons/faStepForward'
+import { faSyncAlt } from '@fortawesome/free-solid-svg-icons/faSyncAlt'
 import { faTimes } from '@fortawesome/free-solid-svg-icons/faTimes'
 import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash'
 import { faVial } from '@fortawesome/free-solid-svg-icons/faVial'
@@ -72,6 +77,7 @@ library.add(
   faChevronDown,
   faChevronRight,
   faChevronUp,
+  faCircleInfo,
   faClipboard,
   faCopy,
   faComment,
@@ -88,6 +94,7 @@ library.add(
   faPlus,
   faStepBackward,
   faStepForward,
+  faSyncAlt,
   faTimes,
   faTrash,
   faVial,
@@ -143,6 +150,9 @@ ReactDOM.render(
           <Route path={`/logout`} exact={true} component={Logout} />
           <Route path={`/users`} exact={true} component={RequireAuth(Users)} />
           <Route path={`/tasks`} exact={true} component={RequireAuth(Tasks)} />
+          <Route path={`/sequences`} exact={true} component={RequireAuth(Sequences)} />
+          <Route path={`/vocabularies`} exact={true} component={RequireAuth(Vocabularies)} />
+          <Route path={`/vocabularies/:code`} exact={true} component={RequireAuth(VocabularyTerms)} />
           <Route path={`/cruises`} exact={true} component={RequireAuth(Cruises)} />
           <Route path={`/cruise_menu`} exact={true} component={RequireAuth(CruiseMenu)} />
           <Route path={`/review_gallery/:id`} exact={true} component={RequireAuth(ReviewGallery)} />

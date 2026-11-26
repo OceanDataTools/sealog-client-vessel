@@ -1,4 +1,5 @@
 import axios from 'axios'
+import moment from 'moment'
 import { basename } from 'path'
 import cookies from './cookies'
 import FileDownload from 'js-file-download'
@@ -562,6 +563,332 @@ export const update_user = async (payload, id) => {
     .patch(`${API_ROOT_URL}/api/v1/users/${id}`, payload, authorizationHeader())
     .then(() => {
       return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Vocabularies
+// The ID sequences (sealog-server lib/sequences.js)
+export const get_sequences = async () => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return []
+    })
+}
+
+export const create_sequence = async (payload) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/sequences`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const update_sequence = async (name, payload) => {
+  return await axios
+    .patch(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}`, payload, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const delete_sequence = async (name) => {
+  return await axios
+    .delete(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}`, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// [{ scope_key, last, next }], one per cruise (or '' for global)
+export const get_sequence_counters = async (name) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/counters`, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return { error }
+    })
+}
+
+export const set_sequence_counter = async (name, scope_key, next) => {
+  return await axios
+    .put(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/counters`, { scope_key, next }, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Download the sequence definitions (no counters) as a .json file
+export const export_sequences = async () => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/export`, authorizationHeader())
+    .then((response) => {
+      FileDownload(JSON.stringify(response.data, null, 2), `sealog_sequences_${moment.utc().format('YYYYMMDD')}.json`)
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot401(error)
+      return { error }
+    })
+}
+
+// Import sequence definitions from a .json file: { created, updated }
+export const import_sequences = async (file) => {
+  let definitions
+  try {
+    definitions = JSON.parse(await file.text())
+  } catch (err) {
+    return { error: { message: `${file.name} isn't JSON` } }
+  }
+
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/sequences/import`, definitions, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// The ID an event at ts that doesn't take a new one would reuse:
+// { data: { id } } or { error: message }
+export const get_sequence_current = async (name, ts) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/current`, { ...authorizationHeader(), params: { ts } })
+    .then((response) => {
+      return { data: response.data }
+    })
+    .catch((error) => {
+      return { error: (error.response && error.response.data && error.response.data.message) || 'Unable to reach server' }
+    })
+}
+
+// The ID a sequence would give the next event at ts, without taking it:
+// { data: { id, n, scope_key, prefix, suffix } } or { error: message }
+export const get_sequence_next = async (name, ts) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/sequences/${encodeURIComponent(name)}/next`, { ...authorizationHeader(), params: { ts } })
+    .then((response) => {
+      return { data: response.data }
+    })
+    .catch((error) => {
+      return { error: (error.response && error.response.data && error.response.data.message) || 'Unable to reach server' }
+    })
+}
+
+export const get_vocabularies = async () => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return []
+    })
+}
+
+// Terms of a vocabulary; null if it isn't cached. Pass include_hidden and
+// include_deprecated to get every term.
+export const get_vocabulary_terms = async (code, queryDict = {}) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms?${_buildQueryString(queryDict)}`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return null
+    })
+}
+
+export const get_vocabulary_visibility = async (code) => {
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies/${code}/visibility`, authorizationHeader())
+    .then((response) => {
+      return response.data
+    })
+    .catch((error) => {
+      _errorNot404(error)
+      return null
+    })
+}
+
+export const set_vocabulary_visibility = async (code, payload) => {
+  return await axios
+    .put(`${API_ROOT_URL}/api/v1/vocabularies/${code}/visibility`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Terms of local vocabularies
+export const create_vocabulary_term = async (code, payload) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const update_vocabulary_term = async (code, id, payload) => {
+  return await axios
+    .patch(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms/${id}`, payload, authorizationHeader())
+    .then(() => {
+      return { success: true }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Resolves to { id, action: 'deleted' | 'deprecated' }: a term recorded on
+// events is deprecated instead of deleted
+export const delete_vocabulary_term = async (code, id) => {
+  return await axios
+    .delete(`${API_ROOT_URL}/api/v1/vocabularies/${code}/terms/${id}`, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      console.debug(error)
+      return { error }
+    })
+}
+
+export const create_vocabulary = async (payload) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies`, payload, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const delete_vocabulary = async (code) => {
+  return await axios
+    .delete(`${API_ROOT_URL}/api/v1/vocabularies/${code}`, authorizationHeader())
+    .then((response) => {
+      // 200 with { action: 'retained', retained } when events keep some terms
+      return { success: true, data: response.data || null }
+    })
+    .catch((error) => {
+      console.debug(error)
+      return { error }
+    })
+}
+
+export const refresh_vocabulary = async (code) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/${code}/refresh`, null, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+export const add_vocabulary_source = async (code, url) => {
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/${code}/source`, { url }, authorizationHeader())
+    .then((response) => {
+      return { success: true, data: response.data }
+    })
+    .catch((error) => {
+      _errorNot400(error)
+      return { error }
+    })
+}
+
+// Download a vocabulary bundle: every vocabulary, or only those in collections
+export const export_vocabularies = async (collections = []) => {
+  const queryStr = _buildQueryString({ collection: collections })
+  const filename = `sealog_vocabularies${collections.length === 1 ? `_${collections[0]}` : ''}_${moment.utc().format('YYYYMMDD')}.json`
+
+  return await axios
+    .get(`${API_ROOT_URL}/api/v1/vocabularies/export?${queryStr}`, { ...authorizationHeader(), responseType: 'blob' })
+    .then((response) => {
+      FileDownload(response.data, filename)
+      return { success: true }
+    })
+    .catch(async (error) => {
+      _errorNot401(error)
+      // With responseType 'blob' the server's error body is a Blob too
+      if (error.response && error.response.data instanceof Blob) {
+        try {
+          error.response.data = JSON.parse(await error.response.data.text())
+        } catch (err) {
+          // Not JSON: keep axios's message
+        }
+      }
+      return { error }
+    })
+}
+
+// Load a vocabulary bundle from a .json or gzipped .json.gz file
+export const import_vocabularies = async (file) => {
+  let payload
+  try {
+    let data = await file.arrayBuffer()
+    const bytes = new Uint8Array(data)
+
+    if (bytes[0] === 0x1f && bytes[1] === 0x8b) {
+      data = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
+    }
+
+    payload = JSON.parse(new TextDecoder().decode(data))
+  } catch (err) {
+    // Unreadable, a corrupt gzip, or not JSON
+    return { error: new Error(`${file.name} is not a readable JSON or gzipped JSON file`) }
+  }
+
+  return await axios
+    .post(`${API_ROOT_URL}/api/v1/vocabularies/import`, payload, { ...authorizationHeader(), maxBodyLength: Infinity })
+    .then((response) => {
+      return { success: true, data: response.data }
     })
     .catch((error) => {
       _errorNot400(error)

@@ -19,6 +19,9 @@ import * as mapDispatchToProps from '../actions'
 // same origin (e.g. /sealog-vehicle/ and /sealog-vessel/) don't share state.
 const storageKey = `sealogRequiredAuxData:${ROOT_PATH}`
 
+// How often (seconds) to re-check whether a cruise is in progress.
+const CRUISE_CHECK_INTERVAL = 60
+
 const loadStoredState = () => {
   try {
     return JSON.parse(window.localStorage.getItem(storageKey)) || {}
@@ -34,6 +37,8 @@ const loadStoredState = () => {
 // REQUIRED_AUX_DATA_TOAST_COOLDOWN unless the set of missing sources changes.
 // The last result and the toast cooldown are persisted in localStorage so
 // they survive page refreshes.
+// Whether a cruise is currently in progress is also checked periodically
+// and stored in redux so the footer can show the check as disabled.
 // Only mount this component when REQUIRED_AUX_DATA_SOURCES is non-empty.
 class RequiredAuxDataMonitor extends Component {
   constructor(props) {
@@ -48,6 +53,8 @@ class RequiredAuxDataMonitor extends Component {
     // event_id -> { ts, seen: Set of datasources reported over WS, timer }
     this.pending = {}
     this.cruise = null
+    this.cruiseActive = null
+    this.cruiseTimer = null
 
     const stored = loadStoredState()
     this.lastEvaluatedEventID = stored.lastEvaluatedEventID || null
@@ -61,12 +68,14 @@ class RequiredAuxDataMonitor extends Component {
 
     this.client = new Client(`${WS_ROOT_URL}`)
     this.connectToWS = this.connectToWS.bind(this)
+    this.checkCruiseActive = this.checkCruiseActive.bind(this)
     this.handleToastClose = this.handleToastClose.bind(this)
   }
 
   componentDidMount() {
     if (this.props.authenticated) {
       this.restoreStatus()
+      this.startCruiseCheck()
       this.connectToWS()
     }
   }
@@ -75,6 +84,7 @@ class RequiredAuxDataMonitor extends Component {
     if (prevProps.authenticated !== this.props.authenticated) {
       if (this.props.authenticated) {
         this.restoreStatus()
+        this.startCruiseCheck()
         this.connectToWS()
       } else {
         this.reset()
@@ -90,6 +100,7 @@ class RequiredAuxDataMonitor extends Component {
 
   componentWillUnmount() {
     Object.values(this.pending).forEach((item) => clearTimeout(item.timer))
+    clearInterval(this.cruiseTimer)
     if (this.props.authenticated) {
       this.client.disconnect()
     }
@@ -98,6 +109,9 @@ class RequiredAuxDataMonitor extends Component {
   reset() {
     Object.values(this.pending).forEach((item) => clearTimeout(item.timer))
     this.pending = {}
+    clearInterval(this.cruiseTimer)
+    this.cruiseTimer = null
+    this.cruiseActive = null
     this.lastEvaluatedEventID = null
     this.lastEvaluatedTS = null
     this.lastMissing = null
@@ -110,6 +124,20 @@ class RequiredAuxDataMonitor extends Component {
     if (this.lastMissing) {
       this.props.updateAuxDataStatus(this.lastEvaluatedEventID, this.lastMissing)
     }
+  }
+
+  startCruiseCheck() {
+    clearInterval(this.cruiseTimer)
+    this.checkCruiseActive()
+    this.cruiseTimer = setInterval(this.checkCruiseActive, CRUISE_CHECK_INTERVAL * 1000)
+  }
+
+  async checkCruiseActive() {
+    const active = await this.isDuringCruise(new Date().toISOString())
+    if (!this.props.authenticated || active === this.cruiseActive) return
+
+    this.cruiseActive = active
+    this.props.updateAuxDataCruiseActive(active)
   }
 
   saveState() {
@@ -245,6 +273,7 @@ RequiredAuxDataMonitor.propTypes = {
   authenticated: PropTypes.bool.isRequired,
   updateAuxDataStatus: PropTypes.func.isRequired,
   clearAuxDataStatus: PropTypes.func.isRequired,
+  updateAuxDataCruiseActive: PropTypes.func.isRequired,
   toastRequest: PropTypes.number.isRequired
 }
 

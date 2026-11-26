@@ -61,6 +61,18 @@ class Header extends Component {
     }
   }
 
+  renderVocabularyOptions() {
+    if (!DISABLE_EVENT_LOGGING && this.props.roles.some((item) => ['admin', 'cruise_manager', 'template_manager'].includes(item))) {
+      return <NavDropdown.Item onClick={this.props.gotoVocabularies}>Vocabularies</NavDropdown.Item>
+    }
+  }
+
+  renderSequenceOptions() {
+    if (!DISABLE_EVENT_LOGGING && this.props.roles.includes('admin')) {
+      return <NavDropdown.Item onClick={this.props.gotoSequences}>Sequences</NavDropdown.Item>
+    }
+  }
+
   renderCruiseOptions() {
     if (this.props.roles.some((item) => ['admin', 'cruise_manager'].includes(item))) {
       return <NavDropdown.Item onClick={this.props.gotoCruises}>{_Cruises_}</NavDropdown.Item>
@@ -89,6 +101,8 @@ class Header extends Component {
           {this.renderCruiseOptions()}
           {this.renderEventManagementOptions()}
           {this.renderEventTemplateOptions()}
+          {this.renderVocabularyOptions()}
+          {this.renderSequenceOptions()}
           {this.renderTaskOptions()}
           {this.renderUserOptions()}
           {this.renderToggleASNAP()}
@@ -165,6 +179,8 @@ Header.propTypes = {
   gotoProfile: PropTypes.func.isRequired,
   gotoTasks: PropTypes.func.isRequired,
   gotoUsers: PropTypes.func.isRequired,
+  gotoSequences: PropTypes.func.isRequired,
+  gotoVocabularies: PropTypes.func.isRequired,
   logout: PropTypes.func.isRequired,
   roles: PropTypes.array,
   switch2Guest: PropTypes.func.isRequired,

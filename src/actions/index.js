@@ -69,6 +69,7 @@ import {
   TOGGLE_ASNAP,
   UNAUTH_USER,
   UPDATE_AUX_DATA_STATUS,
+  UPDATE_AUX_DATA_CRUISE_ACTIVE,
   UPDATE_CRUISE_ERROR,
   UPDATE_CRUISE_SUCCESS,
   UPDATE_EVENT,
@@ -218,17 +219,30 @@ export const clearAuxDataStatus = () => {
   }
 }
 
+export const updateAuxDataCruiseActive = (cruise_active) => {
+  return {
+    type: UPDATE_AUX_DATA_CRUISE_ACTIVE,
+    payload: cruise_active
+  }
+}
+
 export const showAuxDataToast = () => {
   return {
     type: SHOW_AUX_DATA_TOAST
   }
 }
 
-export const createEvent = ({ event_value, event_free_text = '', event_options = [], ts = null, publish = true }) => {
+export const createEvent = ({ event_value, event_free_text = '', event_options, ts = null, publish = true }) => {
   return async (dispatch) => {
     const fields = { event_value, event_free_text, event_options, ts, publish }
     if (!fields.ts) {
       delete fields.ts
+    }
+
+    // Left out for an event whose options come later (the options dialog), so
+    // the server doesn't fill in sequence IDs for it yet
+    if (!fields.event_options) {
+      delete fields.event_options
     }
 
     const response = await createEventRequest(fields)
@@ -548,6 +562,24 @@ export const gotoTasks = () => {
   }
 }
 
+export const gotoSequences = () => {
+  return (dispatch) => {
+    return dispatch(push(`/sequences`))
+  }
+}
+
+export const gotoVocabularies = () => {
+  return (dispatch) => {
+    return dispatch(push(`/vocabularies`))
+  }
+}
+
+export const gotoVocabulary = (code) => {
+  return (dispatch) => {
+    return dispatch(push(`/vocabularies/${code}`))
+  }
+}
+
 export const gotoUsers = () => {
   return (dispatch) => {
     return dispatch(push(`/users`))
@@ -811,7 +843,10 @@ export const updateEvent = (formProps) => {
     if (response.success) {
       return dispatch({ type: UPDATE_EVENT, payload: formProps })
     }
-    dispatch(updateEventError(_eventErrorMessage(response.error)))
+    const message = _eventErrorMessage(response.error)
+    dispatch(updateEventError(message))
+    // For callers that show the error themselves
+    return { error: message }
   }
 }
 
