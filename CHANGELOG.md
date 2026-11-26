@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-11-26
+
+Requires sealog-server 2.5.0 for the vocabulary and sequence features.
+
+### Added
+- **Vocabularies page** (System Management → Vocabularies) — lists the server's cached NVS, imported, URL-sourced and local vocabularies. From here they can be refreshed from their source, exported and imported, added from a URL (admins), or created as local vocabularies. The details page links the URL a vocabulary was downloaded from (#96, #101, #102)
+- **Vocabulary terms page** — choose which terms this install shows, either "hide the ones I hide" or "show only the ones I select", with search and category filters. Local vocabularies have their terms added, edited and deleted here. Deleting a vocabulary or term that events still record reports the terms that were kept, marked deprecated (#97, #98, #117, #121, #123)
+- **Vocabulary-backed template options** — dropdown, radio buttons, checkboxes and static text options can take their values from a vocabulary, using all its shown terms or a ticked list. The editor has a term picker with a category filter, flags deprecated or hidden terms (with "Switch to" a replacement), and shows a preview of the values (#100)
+- **ID sequences**
+  - **Sequences page** (System Management → Sequences, admins) — create, edit and delete sequences with a live example ID; import and export them.
+  - **Counters** — show the cruise in progress, where its next number can be set, with past cruises as read-only history.
+  - **Template editor** — a `sequence` option type, with optional "Take a new ID when" conditions so an option can reuse the current ID (e.g. a CTD cast ID) until the conditions are met.
+  - **Options dialog** — sequence fields are pre-filled with the next or current ID and can be edited. A typed ID that skips numbers asks for confirmation, and a duplicate keeps the dialog open with the server's message. Templates whose options are only static text and sequences log in one click (#124–#140)
+- **Visibility conditions picked from the template** — a "show if" or "hide if" condition picks the other option from a dropdown and its values from checkboxes. Renames are followed, values the option no longer offers are flagged, and circular conditions are warned about (#104)
+
+### Changed
+- **More compact template editor** — options collapse to a one-line summary headed by the option's name, and Name, Type and Required share a row. The header puts Button Color beside Template Categories, puts the switches on one line, and moves the Button Name note into a tooltip (#106, #114)
+- **Button Color** shows "Default (\<color\>)" in the default color until a custom color is chosen, and choosing Default clears it (#115)
+- **Template import log** names each rejected template, e.g. one whose vocabulary isn't installed (#119)
+- **Footer Aux Data** shows `Disabled` when no cruise is active (#89)
+
+### Fixed
+- **Event history missed updates to its oldest event** — e.g. the first event's options, sent after the event was created (#112)
+- **Template editor crash while the form re-initializes** ("option is undefined") (#130)
+- **Stale vocabulary terms in the template editor** until a hard refresh, after changing a vocabulary elsewhere (#142)
+- **Event filter reset after a search with no results** (#90)
+- **The draft event created when the options dialog opens** is sent without options, so the server doesn't assign it sequence IDs. A failed submit keeps the dialog open and can be retried (#128)
+
 ## [2.4.18] - 2026-10-05
 
 ### Added
