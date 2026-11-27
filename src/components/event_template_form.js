@@ -19,7 +19,7 @@ import {
 import VocabularyOptionField, { clearVocabularyCache, VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import VisibilityValuesField, { asList } from './visibility_values_field'
 import { get_sequences } from '../api'
-import { sequenceExample } from '../sequences'
+import { sequenceExample, sequenceRefs } from '../sequences'
 import * as mapDispatchToProps from '../actions'
 import { DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR, WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
@@ -98,6 +98,30 @@ const optionSummary = (option, sequences) => {
 }
 
 const hasErrors = (errors) => Boolean(errors) && (typeof errors === 'string' || Object.values(errors).some((value) => hasErrors(value)))
+
+// A text option's default value, which can hold {seq:name} placeholders for
+// a sequence's ID (sealog-server lib/sequences.js)
+const renderTextDefaultField = (field) => {
+  const { input, sequences } = field
+  const unknown = sequences.length ? sequenceRefs(input.value).filter((name) => !sequences.some((sequence) => sequence.name === name)) : []
+  const example = sequences.length ? sequences[0].name : 'name'
+
+  return (
+    <div>
+      {renderTextField({ ...field, className: 'pb-0' })}
+      <Form.Text className={`d-block pb-2 ${unknown.length ? 'text-danger' : 'text-muted'}`}>
+        {unknown.length ? (
+          `No sequence named ${unknown.join(', ')}`
+        ) : (
+          <React.Fragment>
+            <code>{`{seq:${example}}`}</code> puts in the sequence&apos;s current ID, with any text around it, e.g.{' '}
+            <code>{`{seq:${example}}.hex`}</code>
+          </React.Fragment>
+        )}
+      </Form.Text>
+    </div>
+  )
+}
 
 class EventTemplateForm extends Component {
   constructor(props) {
@@ -403,7 +427,12 @@ class EventTemplateForm extends Component {
       } else if (this.props.event_options[index].event_option_type === 'text') {
         return (
           <div>
-            <Field name={`${prefix}.event_option_default_value`} component={renderTextField} label='Default Value' />
+            <Field
+              name={`${prefix}.event_option_default_value`}
+              component={renderTextDefaultField}
+              label='Default Value'
+              sequences={this.state.sequences}
+            />
           </div>
         )
       } else if (this.props.event_options[index].event_option_type === 'dropdown') {
