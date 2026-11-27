@@ -19,6 +19,7 @@ import {
 import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import { authorizationHeader, create_event_aux_data, get_sequence_current, get_sequence_next, IMAGE_ROUTE } from '../api'
 import { API_ROOT_URL } from '../client_settings'
+import { fillSequenceRefs, sequenceRefs } from '../sequences'
 
 registerPlugin(FilePondPluginFileValidateType)
 
@@ -44,6 +45,9 @@ const describeConditions = (option) =>
     .map((condition) => `${condition.event_option_name}: ${condition.event_option_values.join(' or ')}`)
     .join(' and ')
 
+// A text option whose default holds {seq:name} placeholders
+const hasSequenceRefs = (option) => option.event_option_type === 'text' && sequenceRefs(option.event_option_default_value).length > 0
+
 // An ID with the preview's prefix, suffix and zero padding
 const idWithNumber = (n, hint) => {
   const digits = hint.id.slice(hint.prefix.length, hint.id.length - hint.suffix.length)
@@ -66,6 +70,9 @@ class EventTemplateOptionsModal extends Component {
       jump: null,
       // Typed sequence IDs confirmed to skip ahead, by option index
       confirmed: {},
+      // The current IDs of sequences that text placeholders name and the
+      // template has no option on, by name: { id } or { error }
+      refIds: {},
       submitError: null
     }
 
@@ -74,6 +81,9 @@ class EventTemplateOptionsModal extends Component {
     // The IDs the dialog filled sequence fields with, by option index: a
     // field still holding one is untouched (see prefillSequenceFields)
     this.prefilled = {}
+
+    // The same for text fields with placeholders (see prefillTextFields)
+    this.prefilledText = {}
 
     this.handleFormHide = this.handleFormHide.bind(this)
   }
@@ -90,6 +100,97 @@ class EventTemplateOptionsModal extends Component {
     if (key(prevProps.ts) !== key(this.props.ts) || this.sequenceModes() !== this.fetchedModes) {
       this.fetchHints()
     }
+
+    // Placeholders follow the template's own sequence fields
+    if (this.sequenceFieldValues() !== this.textPrefilledFrom) {
+      this.prefillTextFields()
+    }
+  }
+
+  // The template's sequence option on the named sequence, by index, or -1
+  ownSequenceIndex(name) {
+    return this.props.eventTemplate.event_options.findIndex(
+      (option) => option.event_option_type === 'sequence' && option.event_option_sequence === name
+    )
+  }
+
+  // The sequence fields' values, as a string to compare
+  sequenceFieldValues() {
+    const { eventTemplate, formValues } = this.props
+    if (!eventTemplate) {
+      return ''
+    }
+
+    return eventTemplate.event_options
+      .map((option, index) => (option.event_option_type === 'sequence' ? (formValues && formValues[`option_${index}`]) || '' : ''))
+      .join('\n')
+  }
+
+  // A text field's default with its placeholders filled in: { value }, or
+  // { missing } naming a sequence with no ID to show
+  resolveText(option) {
+    const ids = {}
+    for (const name of sequenceRefs(option.event_option_default_value)) {
+      const own = this.ownSequenceIndex(name)
+      const id =
+        own !== -1
+          ? (this.props.formValues && this.props.formValues[`option_${own}`]) || (this.state.hints[own] && this.state.hints[own].id)
+          : this.state.refIds[name] && this.state.refIds[name].id
+      if (!id) {
+        return { missing: name }
+      }
+      ids[name] = id
+    }
+
+    return { value: fillSequenceRefs(option.event_option_default_value, ids) }
+  }
+
+  // Fill text fields with placeholders with their resolved default, so a
+  // logger can edit it. Fields the logger has changed are left alone.
+  prefillTextFields() {
+    const { eventTemplate } = this.props
+    if (!eventTemplate || this.finalized) {
+      return
+    }
+
+    this.textPrefilledFrom = this.sequenceFieldValues()
+    eventTemplate.event_options.forEach((option, index) => {
+      if (!hasSequenceRefs(option)) {
+        return
+      }
+
+      const current = this.props.formValues ? this.props.formValues[`option_${index}`] : undefined
+      if (current && current !== this.prefilledText[index]) {
+        return
+      }
+
+      const value = this.resolveText(option).value || ''
+      if (value !== (current || '')) {
+        this.props.change(`event_options.option_${index}`, value)
+      }
+      this.prefilledText[index] = value
+    })
+  }
+
+  // The current IDs of sequences that placeholders name and the template has
+  // no option on
+  async fetchRefIds(ts) {
+    const names = new Set(
+      this.props.eventTemplate.event_options
+        .filter(hasSequenceRefs)
+        .flatMap((option) => sequenceRefs(option.event_option_default_value))
+        .filter((name) => this.ownSequenceIndex(name) === -1)
+    )
+
+    const refIds = {}
+    await Promise.all(
+      [...names].map(async (name) => {
+        const response = await get_sequence_current(name, ts)
+        refIds[name] = response.data || { error: response.error }
+      })
+    )
+
+    return refIds
   }
 
   // Whether a sequence option takes a new ID with the values picked: all its
@@ -135,18 +236,19 @@ class EventTemplateOptionsModal extends Component {
     // Responses can arrive out of order: only the latest request's are used
     const request = (this.hintRequest = (this.hintRequest || 0) + 1)
     const hints = {}
-    await Promise.all(
-      eventTemplate.event_options.map(async (option, index) => {
+    const [refIds] = await Promise.all([
+      this.fetchRefIds(ts),
+      ...eventTemplate.event_options.map(async (option, index) => {
         if (option.event_option_type === 'sequence' && option.event_option_sequence) {
           const mode = this.takesNewId(option) ? 'next' : 'current'
           const response = await (mode === 'next' ? get_sequence_next : get_sequence_current)(option.event_option_sequence, ts)
           hints[index] = { ...(response.data || { error: response.error }), mode }
         }
       })
-    )
+    ])
 
     if (!this.finalized && request === this.hintRequest) {
-      this.setState({ hints })
+      this.setState({ hints, refIds }, () => this.prefillTextFields())
       this.prefillSequenceFields(hints)
     }
 
@@ -222,6 +324,11 @@ class EventTemplateOptionsModal extends Component {
     let event_options = {}
 
     this.props.eventTemplate.event_options.forEach((option, index) => {
+      // Filled in once the IDs are fetched (see prefillTextFields)
+      if (hasSequenceRefs(option)) {
+        return
+      }
+
       if (option.event_option_default_value && option.event_option_type !== 'checkboxes') {
         event_options[`option_${index}`] = option.event_option_default_value
       } else if (option.event_option_default_value && option.event_option_type === 'checkboxes') {
@@ -257,6 +364,14 @@ class EventTemplateOptionsModal extends Component {
     Object.entries(this.prefilled).forEach(([index, id]) => {
       if (id && raw_event_options[`option_${index}`] === id) {
         raw_event_options[`option_${index}`] = ''
+      }
+    })
+
+    // Likewise, untouched text with placeholders is sent as the template's
+    // default, so the server fills in the IDs the event is saved with
+    Object.entries(this.prefilledText).forEach(([index, value]) => {
+      if (value && raw_event_options[`option_${index}`] === value) {
+        raw_event_options[`option_${index}`] = this.props.eventTemplate.event_options[index].event_option_default_value
       }
     })
 
@@ -406,6 +521,29 @@ class EventTemplateOptionsModal extends Component {
               required={option.event_option_required}
               validate={option.event_option_required ? requiredArray : undefined}
             />
+          </div>
+        )
+      }
+
+      if (hasSequenceRefs(option)) {
+        const { value, missing } = this.resolveText(option)
+        const ownMissing = missing && this.ownSequenceIndex(missing) !== -1
+        const error = missing && !ownMissing && this.state.refIds[missing] && this.state.refIds[missing].error
+        return (
+          <div key={`event_options.option_${index}`}>
+            <Field
+              name={`event_options.option_${index}`}
+              component={renderTextField}
+              label={option.event_option_name}
+              required={option.event_option_required}
+              validate={option.event_option_required ? required : undefined}
+              className='pb-0'
+            />
+            <Form.Text className='d-block pb-2 text-muted'>
+              {value &&
+                `Filled in with the ${sequenceRefs(option.event_option_default_value).join(' and ')} ID when you submit. Edit it to use other text.`}
+              {error && `No ${missing} ID to fill in (${error}): type the text instead.`}
+            </Form.Text>
           </div>
         )
       }
