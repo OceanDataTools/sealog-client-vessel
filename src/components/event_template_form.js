@@ -21,6 +21,7 @@ import VisibilityValuesField, { asList } from './visibility_values_field'
 import { get_sequences } from '../api'
 import { sequenceExample, sequenceRefs } from '../sequences'
 import * as mapDispatchToProps from '../actions'
+import { CREATE_EVENT_TEMPLATE_ERROR, UPDATE_EVENT_TEMPLATE_ERROR } from '../actions/types'
 import { DEFAULT_EVENT_TEMPLATE_BUTTON_COLOR, WS_ROOT_URL } from '../client_settings'
 import { connectWSClient } from '../utils'
 import {
@@ -193,7 +194,10 @@ class EventTemplateForm extends Component {
     this.props.leaveEventTemplateForm()
   }
 
-  handleFormSubmit(formProps) {
+  async handleFormSubmit(values) {
+    // A copy: the form keeps its values if the save fails, so they're fixed
+    // and sent again, and redux-form's own values mustn't be changed here
+    const formProps = JSON.parse(JSON.stringify(values))
     formProps.system_template = formProps.system_template || false
     formProps.disabled = formProps.disabled || false
     formProps.admin_only = !formProps.system_template ? false : formProps.admin_only || false
@@ -262,13 +266,13 @@ class EventTemplateForm extends Component {
       return event_option
     })
 
-    if (formProps.id) {
-      this.props.updateEventTemplate(formProps)
-    } else {
-      this.props.createEventTemplate(formProps)
-    }
+    const result = formProps.id ? await this.props.updateEventTemplate(formProps) : await this.props.createEventTemplate(formProps)
 
-    this.props.handleFormSubmit()
+    // Only after a save: refreshing the templates reinitializes the form from
+    // the stored template, which would drop the edits a failed save kept
+    if (!result || ![UPDATE_EVENT_TEMPLATE_ERROR, CREATE_EVENT_TEMPLATE_ERROR].includes(result.type)) {
+      this.props.handleFormSubmit()
+    }
   }
 
   renderVocabularyField(prefix, index) {
