@@ -99,8 +99,9 @@ const optionSummary = (option, sequences) => {
 
 const hasErrors = (errors) => Boolean(errors) && (typeof errors === 'string' || Object.values(errors).some((value) => hasErrors(value)))
 
-// A text option's default value, which can hold {seq:name} placeholders for
-// a sequence's ID (sealog-server lib/sequences.js)
+// A text option's default value, which can hold placeholders filled in for
+// each event: a sequence's ID, the cruise and the date (sealog-server
+// lib/sequences.js)
 const renderTextDefaultField = (field) => {
   const { input, sequences } = field
   const unknown = sequences.length ? sequenceRefs(input.value).filter((name) => !sequences.some((sequence) => sequence.name === name)) : []
@@ -114,7 +115,9 @@ const renderTextDefaultField = (field) => {
           `No sequence named ${unknown.join(', ')}`
         ) : (
           <React.Fragment>
-            <code>{`{seq:${example}}`}</code> puts in the sequence&apos;s current ID, with any text around it, e.g.{' '}
+            Can include <code>{`{seq:${example}}`}</code> (the sequence&apos;s current ID), <code>{'{cruise_id}'}</code> and the
+            event&apos;s date as <code>{'{yyyy}'}</code> <code>{'{yy}'}</code> <code>{'{mm}'}</code> <code>{'{dd}'}</code>{' '}
+            <code>{'{doy}'}</code> (UTC), with any text around them, e.g. <code>{'{cruise_id}_XBT_{yyyy}{mm}{dd}.edf'}</code> or{' '}
             <code>{`{seq:${example}}.hex`}</code>
           </React.Fragment>
         )}
