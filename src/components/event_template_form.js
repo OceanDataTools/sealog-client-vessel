@@ -60,19 +60,31 @@ const SWITCH_COL = { xs: 'auto', sm: 'auto', md: 'auto', lg: 'auto' }
 const vocabularySummary = (vocab) =>
   `${vocab.collection}: ${vocab.terms ? `${vocab.terms.length} term${vocab.terms.length === 1 ? '' : 's'}` : 'all shown terms'}`
 
+// The note on a sequence-by-condition entry's conditions: its error when it
+// has none (a string; errors of single conditions are shown on their fields)
+const renderConditionsNote = ({ meta: { error } }) =>
+  typeof error === 'string' ? <small className='text-danger'>{error}</small> : <small className='text-muted'>all of these match</small>
+
 // One line describing a collapsed option (its name is in the header)
 const optionSummary = (option, sequences) => {
   const parts = [option.event_option_type || 'no type']
   const vocab = option.event_option_vocab
 
   if (option.event_option_type === 'sequence') {
-    const sequence = sequences.find((item) => item.name === option.event_option_sequence)
-    parts.push(sequence ? `${sequence.name} (${sequence.format})` : option.event_option_sequence || 'no sequence')
+    const describe = (conditions) =>
+      conditions
+        .map((condition) => `${condition.event_option_name || '?'} = ${asList(condition.event_option_values).join('/') || '?'}`)
+        .join(', ')
+    const entries = option.event_option_sequences || []
+    entries.forEach((entry) => parts.push(`${entry.sequence || '?'} if ${describe(entry.when || []) || '?'}`))
+    if (option.event_option_sequence || !entries.length) {
+      const sequence = sequences.find((item) => item.name === option.event_option_sequence)
+      const name = sequence ? `${sequence.name} (${sequence.format})` : option.event_option_sequence || 'no sequence'
+      parts.push(entries.length ? `else ${name}` : name)
+    }
     const conditions = option.event_option_sequence_new_when || []
     if (conditions.length) {
-      parts.push(
-        `new when ${conditions.map((condition) => `${condition.event_option_name || '?'} = ${asList(condition.event_option_values).join('/') || '?'}`).join(', ')}`
-      )
+      parts.push(`new when ${describe(conditions)}`)
     }
   } else if (vocab && vocab.collection) {
     parts.push(vocabularySummary(vocab))
@@ -228,9 +240,32 @@ class EventTemplateForm extends Component {
         } else {
           delete event_option.event_option_sequence_new_when
         }
+
+        const entries = (event_option.event_option_sequences || [])
+          .filter((entry) => entry && entry.sequence)
+          .map((entry) => ({
+            sequence: entry.sequence,
+            when: (entry.when || [])
+              .filter((condition) => condition && condition.event_option_name)
+              .map((condition) => ({
+                event_option_name: condition.event_option_name,
+                event_option_values: asList(condition.event_option_values)
+              }))
+          }))
+        if (entries.length) {
+          event_option.event_option_sequences = entries
+        } else {
+          delete event_option.event_option_sequences
+        }
+
+        // With sequences by condition, the fallback can be left out
+        if (!event_option.event_option_sequence) {
+          delete event_option.event_option_sequence
+        }
       } else {
         delete event_option.event_option_sequence
         delete event_option.event_option_sequence_new_when
+        delete event_option.event_option_sequences
       }
 
       // The server fills in the values of vocabulary options
@@ -310,24 +345,28 @@ class EventTemplateForm extends Component {
     }
   }
 
+  // The sequence names to choose from, keeping an unknown choice selectable
+  // so the form shows what it holds
+  sequenceNames(chosen) {
+    const names = this.state.sequences.map((item) => item.name)
+    return chosen && !names.includes(chosen) ? [...names, chosen] : names
+  }
+
   renderSequenceOptions(prefix, index) {
     const { sequences } = this.state
     const chosen = this.props.event_options[index].event_option_sequence
     const sequence = sequences.find((item) => item.name === chosen)
-    const names = sequences.map((item) => item.name)
-    // Keep an unknown choice selectable, so the form shows what it holds
-    if (chosen && !sequence) {
-      names.push(chosen)
-    }
+    const byCondition = (this.props.event_options[index].event_option_sequences || []).length > 0
 
     return (
       <Row>
+        {this.renderSequenceChoices(prefix, index)}
         <Field
           name={`${prefix}.event_option_sequence`}
           component={renderSelectField}
-          options={names}
-          label='Sequence'
-          required={true}
+          options={this.sequenceNames(chosen)}
+          label={byCondition ? 'Otherwise, sequence' : 'Sequence'}
+          required={!byCondition}
           sm={6}
           lg={6}
         />
@@ -338,6 +377,7 @@ class EventTemplateForm extends Component {
               an event is saved; loggers can type their own.
             </React.Fragment>
           )}
+          {byCondition && !sequence && !chosen && 'Optional: leave empty for no ID when no condition matches.'}
           {!sequences.length && 'No sequences on this server yet: an admin needs to create one.'}
           {chosen && !sequence && sequences.length > 0 && <span className='text-danger'>{chosen} doesn&apos;t exist on this server.</span>}
         </Col>
@@ -346,15 +386,89 @@ class EventTemplateForm extends Component {
     )
   }
 
+  // Sequences the option takes its ID from by condition: the first whose
+  // conditions all match, else the sequence below
+  renderSequenceChoices(prefix, index) {
+    const entries = this.props.event_options[index].event_option_sequences || []
+    const path = `${prefix}.event_option_sequences`
+
+    return (
+      <Col xs={12} className='pb-2'>
+        <Form.Label className='mb-0'>Pick the sequence by condition</Form.Label>{' '}
+        <small className='text-muted'>
+          {entries.length
+            ? 'the first whose conditions all match; otherwise the sequence below.'
+            : 'optional, e.g. a separate series for each cast type, stored under this one option.'}
+        </small>
+        {entries.map((entry, e) => {
+          const sequence = this.state.sequences.find((item) => item.name === entry.sequence)
+          const when = entry.when || []
+
+          return (
+            <div key={`${path}_${e}`} className='border rounded px-2 pt-1 mb-2'>
+              <Row className='align-items-start'>
+                <Field
+                  name={`${path}[${e}].sequence`}
+                  component={renderSelectField}
+                  options={this.sequenceNames(entry.sequence)}
+                  label='Use sequence'
+                  required={true}
+                  sm={6}
+                  lg={6}
+                />
+                <Col sm={5} lg={5} className='small text-muted pt-sm-4'>
+                  {sequence && (
+                    <React.Fragment>
+                      <code>{sequence.format}</code>, e.g. {sequenceExample(sequence)}
+                    </React.Fragment>
+                  )}
+                  {entry.sequence && !sequence && this.state.sequences.length > 0 && (
+                    <span className='text-danger'>{entry.sequence} doesn&apos;t exist on this server.</span>
+                  )}
+                </Col>
+                <Col sm={1} lg={1} className='pt-sm-4'>
+                  <FontAwesomeIcon
+                    className='text-danger'
+                    icon='times'
+                    fixedWidth
+                    role='button'
+                    title='Remove this sequence'
+                    onClick={() =>
+                      this.props.change(
+                        path,
+                        entries.filter((item, i) => i !== e)
+                      )
+                    }
+                  />
+                </Col>
+                <Col xs={12} className='pb-1'>
+                  <Form.Label className='mb-0'>when</Form.Label> {/* Registered so its error (no conditions) keeps the form invalid */}
+                  <Field name={`${path}[${e}].when`} component={renderConditionsNote} />
+                  {this.renderConditionRows(index, `${path}[${e}].when`, when)}
+                </Col>
+              </Row>
+            </div>
+          )
+        })}
+        <div>
+          <span
+            className='text-primary small'
+            role='button'
+            onClick={() =>
+              this.props.change(path, [...entries, { sequence: '', when: [{ event_option_name: '', event_option_values: [] }] }])
+            }
+          >
+            <FontAwesomeIcon icon='plus' fixedWidth /> Add sequence by condition
+          </span>
+        </div>
+      </Col>
+    )
+  }
+
   // When the option takes a new ID: conditions on the template's other
   // options, all of which must match; otherwise the current ID is reused
   renderSequenceConditions(prefix, index) {
-    const options = this.props.event_options || []
-    const conditions = options[index].event_option_sequence_new_when || []
-    const path = `${prefix}.event_option_sequence_new_when`
-    const names = options
-      .filter((option, i) => i !== index && option.event_option_name && !['static text', 'sequence'].includes(option.event_option_type))
-      .map((option) => option.event_option_name)
+    const conditions = this.props.event_options[index].event_option_sequence_new_when || []
 
     return (
       <Col xs={12} className='pb-2'>
@@ -364,13 +478,27 @@ class EventTemplateForm extends Component {
             ? 'all of these match; other events reuse the current ID (e.g. a cast ID carried by the rest of the cast).'
             : 'always. Add a condition to reuse the current ID until it matches.'}
         </small>
+        {this.renderConditionRows(index, `${prefix}.event_option_sequence_new_when`, conditions)}
+      </Col>
+    )
+  }
+
+  // Rows of conditions on the template's other options, with a link to add one
+  renderConditionRows(index, path, conditions) {
+    const options = this.props.event_options || []
+    const names = options
+      .filter((option, i) => i !== index && option.event_option_name && !['static text', 'sequence'].includes(option.event_option_type))
+      .map((option) => option.event_option_name)
+
+    return (
+      <React.Fragment>
         {conditions.map((condition, c) => {
           const choices =
             condition.event_option_name && !names.includes(condition.event_option_name) ? [...names, condition.event_option_name] : names
           const controller = options.find((option, i) => i !== index && option.event_option_name === condition.event_option_name)
 
           return (
-            <Row key={`${prefix}.condition_${c}`} className='align-items-start'>
+            <Row key={`${path}_${c}`} className='align-items-start'>
               <Field
                 name={`${path}[${c}].event_option_name`}
                 component={renderSelectField}
@@ -419,7 +547,7 @@ class EventTemplateForm extends Component {
             <FontAwesomeIcon icon='plus' fixedWidth /> Add condition
           </span>
         </div>
-      </Col>
+      </React.Fragment>
     )
   }
 
@@ -518,6 +646,13 @@ class EventTemplateForm extends Component {
         if (condition && condition.event_option_name === from) {
           this.props.change(`event_options[${i}].event_option_sequence_new_when[${c}].event_option_name`, to)
         }
+      })
+      ;(option.event_option_sequences || []).forEach((entry, e) => {
+        ;((entry && entry.when) || []).forEach((condition, c) => {
+          if (condition && condition.event_option_name === from) {
+            this.props.change(`event_options[${i}].event_option_sequences[${e}].when[${c}].event_option_name`, to)
+          }
+        })
       })
     })
   }
@@ -950,12 +1085,8 @@ const validate = (formProps) => {
         }
       }
 
-      if (event_option.event_option_type === 'sequence' && !event_option.event_option_sequence) {
-        event_optionErrors.event_option_sequence = 'Choose a sequence'
-      }
-
-      if (event_option.event_option_type === 'sequence' && event_option.event_option_sequence_new_when) {
-        const conditionErrors = event_option.event_option_sequence_new_when.map((condition) => {
+      const conditionErrors = (conditions) => {
+        const errors = conditions.map((condition) => {
           const conditionError = {}
           if (!condition || !condition.event_option_name || !event_option_names.includes(condition.event_option_name)) {
             conditionError.event_option_name = 'Choose an option'
@@ -965,9 +1096,41 @@ const validate = (formProps) => {
           }
           return conditionError
         })
-        if (conditionErrors.some((conditionError) => Object.keys(conditionError).length)) {
-          event_optionErrors.event_option_sequence_new_when = conditionErrors
+        return errors.some((conditionError) => Object.keys(conditionError).length) ? errors : null
+      }
+
+      const sequenceEntries = (event_option.event_option_type === 'sequence' && event_option.event_option_sequences) || []
+
+      if (event_option.event_option_type === 'sequence' && !event_option.event_option_sequence && !sequenceEntries.length) {
+        event_optionErrors.event_option_sequence = 'Choose a sequence'
+      }
+
+      if (event_option.event_option_type === 'sequence' && event_option.event_option_sequence_new_when) {
+        const errors = conditionErrors(event_option.event_option_sequence_new_when)
+        if (errors) {
+          event_optionErrors.event_option_sequence_new_when = errors
         }
+      }
+
+      const entryErrors = sequenceEntries.map((entry) => {
+        const entryError = {}
+        if (!entry || !entry.sequence) {
+          entryError.sequence = 'Choose a sequence'
+        }
+        const when = (entry && entry.when) || []
+        if (when.length) {
+          const errors = conditionErrors(when)
+          if (errors) {
+            entryError.when = errors
+          }
+        } else {
+          // Shown by the entry itself
+          entryError.when = 'Add at least one condition'
+        }
+        return entryError
+      })
+      if (entryErrors.some((entryError) => Object.keys(entryError).length)) {
+        event_optionErrors.event_option_sequences = entryErrors
       }
 
       if (event_option.event_option_type === 'static text' && !vocab) {

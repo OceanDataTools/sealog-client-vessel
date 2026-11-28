@@ -119,10 +119,11 @@ class EventTemplateOptionsModal extends Component {
     }
   }
 
-  // The template's sequence option on the named sequence, by index, or -1
+  // The template's sequence option taking its ID from the named sequence
+  // with the values picked, by index, or -1
   ownSequenceIndex(name) {
     return this.props.eventTemplate.event_options.findIndex(
-      (option) => option.event_option_type === 'sequence' && option.event_option_sequence === name
+      (option) => option.event_option_type === 'sequence' && this.pickedSequence(option) === name
     )
   }
 
@@ -213,10 +214,9 @@ class EventTemplateOptionsModal extends Component {
     return refIds
   }
 
-  // Whether a sequence option takes a new ID with the values picked: all its
-  // conditions match (any ticked value, for checkboxes), or it has none
-  takesNewId(option) {
-    const conditions = option.event_option_sequence_new_when || []
+  // Whether the values picked meet all the conditions (any ticked value, for
+  // checkboxes)
+  meetsConditions(conditions) {
     const options = this.props.eventTemplate.event_options
 
     return conditions.every((condition) => {
@@ -227,7 +227,22 @@ class EventTemplateOptionsModal extends Component {
     })
   }
 
-  // 'next' or 'current' for each sequence option, as a string to compare
+  // Whether a sequence option takes a new ID with the values picked: its
+  // conditions match, or it has none
+  takesNewId(option) {
+    return this.meetsConditions(option.event_option_sequence_new_when || [])
+  }
+
+  // The sequence a sequence option takes its ID from with the values picked,
+  // as the server picks it: the first of its sequences by condition whose
+  // conditions match, else its sequence (null when it has none)
+  pickedSequence(option) {
+    const picked = (option.event_option_sequences || []).find((entry) => this.meetsConditions(entry.when))
+    return picked ? picked.sequence : option.event_option_sequence || null
+  }
+
+  // 'next' or 'current', and the sequence, for each sequence option, as a
+  // string to compare
   sequenceModes() {
     const { eventTemplate } = this.props
     if (!eventTemplate) {
@@ -235,7 +250,11 @@ class EventTemplateOptionsModal extends Component {
     }
 
     return eventTemplate.event_options
-      .map((option) => (option.event_option_type === 'sequence' ? (this.takesNewId(option) ? 'next' : 'current') : ''))
+      .map((option) =>
+        option.event_option_type === 'sequence'
+          ? `${this.takesNewId(option) ? 'next' : 'current'}:${this.pickedSequence(option) || ''}`
+          : ''
+      )
       .join(',')
   }
 
@@ -259,11 +278,19 @@ class EventTemplateOptionsModal extends Component {
     const [refIds] = await Promise.all([
       this.fetchRefIds(ts),
       ...eventTemplate.event_options.map(async (option, index) => {
-        if (option.event_option_type === 'sequence' && option.event_option_sequence) {
-          const mode = this.takesNewId(option) ? 'next' : 'current'
-          const response = await (mode === 'next' ? get_sequence_next : get_sequence_current)(option.event_option_sequence, ts)
-          hints[index] = { ...(response.data || { error: response.error }), mode }
+        if (option.event_option_type !== 'sequence') {
+          return
         }
+
+        const sequence = this.pickedSequence(option)
+        const mode = this.takesNewId(option) ? 'next' : 'current'
+        if (!sequence) {
+          hints[index] = { mode, none: true }
+          return
+        }
+
+        const response = await (mode === 'next' ? get_sequence_next : get_sequence_current)(sequence, ts)
+        hints[index] = { ...(response.data || { error: response.error }), mode, sequence }
       })
     ])
 
@@ -594,6 +621,9 @@ class EventTemplateOptionsModal extends Component {
 
       if (option.event_option_type === 'sequence') {
         const hint = this.state.hints[index]
+        // Name the sequence when the option picks it by condition
+        const from =
+          hint && hint.sequence && option.event_option_sequences && option.event_option_sequences.length ? `${hint.sequence} ` : ''
         return (
           <div key={`event_options.option_${index}`}>
             <Field
@@ -607,8 +637,9 @@ class EventTemplateOptionsModal extends Component {
               {hint &&
                 hint.id &&
                 (hint.mode === 'current'
-                  ? `Current: ${hint.id}, reused from the earlier events. Edit it to use another ID.`
-                  : `Next: ${hint.id}, assigned when you submit (it may differ if someone logs first). Edit it to use another ID.`)}
+                  ? `Current ${from}ID: ${hint.id}, reused from the earlier events. Edit it to use another ID.`
+                  : `Next ${from}ID: ${hint.id}, assigned when you submit (it may differ if someone logs first). Edit it to use another ID.`)}
+              {hint && hint.none && "No ID: none of this option's sequences apply to the values picked."}
               {hint && hint.error}
               {hint && hint.error && hint.mode === 'current' && `. Pick ${describeConditions(option)} to take a new one.`}
             </Form.Text>
