@@ -48,6 +48,20 @@ const describeConditions = (option) =>
 // A text option whose default holds placeholders ({seq:name}, {cruise_id}, {yyyy}...)
 const hasPlaceholders = (option) => option.event_option_type === 'text' && placeholders(option.event_option_default_value).length > 0
 
+// The texts of an option that can hold placeholders: a text option's
+// default, or a plain static text option's value and those it picks by condition
+const placeholderTexts = (option) => {
+  if (option.event_option_type === 'text') {
+    return [option.event_option_default_value || '']
+  }
+
+  if (option.event_option_type === 'static text' && !option.event_option_vocab) {
+    return [option.event_option_default_value || '', ...(option.event_option_static_values || []).map((entry) => entry.value || '')]
+  }
+
+  return []
+}
+
 // What a text's placeholders stand for, e.g. 'the ctd_cast ID and the date'
 const describePlaceholders = (text) => {
   const found = placeholders(text)
@@ -182,12 +196,12 @@ class EventTemplateOptionsModal extends Component {
       .join('\n')
   }
 
-  // A text field's default with its placeholders filled in for the event's
-  // time: { value }, or { missing } naming a placeholder with no value
-  resolveText(option) {
+  // A text with its placeholders filled in for the event's time: { value },
+  // or { missing } naming a placeholder with no value
+  resolveText(text) {
     const dates = dateValues(new Date(this.eventTs()))
     const values = {}
-    for (const placeholder of placeholders(option.event_option_default_value)) {
+    for (const placeholder of placeholders(text)) {
       const own = placeholder.startsWith('seq:') ? this.ownSequenceIndex(placeholder.slice(4)) : -1
       const value =
         dates[placeholder] ||
@@ -200,7 +214,7 @@ class EventTemplateOptionsModal extends Component {
       values[placeholder] = value
     }
 
-    return { value: fillPlaceholders(option.event_option_default_value, values) }
+    return { value: fillPlaceholders(text, values) }
   }
 
   // Fill text fields with placeholders with their resolved default, so a
@@ -223,7 +237,7 @@ class EventTemplateOptionsModal extends Component {
       }
 
       // Set even when empty, so an untouched field is told from a hidden one
-      const value = this.resolveText(option).value || ''
+      const value = this.resolveText(option.event_option_default_value).value || ''
       if (value !== (current || '') || current === undefined) {
         this.props.change(`event_options.option_${index}`, value)
       }
@@ -231,12 +245,10 @@ class EventTemplateOptionsModal extends Component {
     })
   }
 
-  // The values of text placeholders looked up for ts: the current IDs of
-  // sequences the template has no option on, and the cruise
+  // The values of text and static text placeholders looked up for ts: the
+  // current IDs of sequences the template has no option on, and the cruise
   async fetchRefIds(ts) {
-    const found = new Set(
-      this.props.eventTemplate.event_options.filter(hasPlaceholders).flatMap((option) => placeholders(option.event_option_default_value))
-    )
+    const found = new Set(this.props.eventTemplate.event_options.flatMap(placeholderTexts).flatMap(placeholders))
 
     const refIds = {}
     await Promise.all(
@@ -617,7 +629,7 @@ class EventTemplateOptionsModal extends Component {
       }
 
       if (hasPlaceholders(option)) {
-        const { value, missing } = this.resolveText(option)
+        const { value, missing } = this.resolveText(option.event_option_default_value)
         // A missing ID of the template's own sequence field is explained there
         const error = missing && this.state.refIds[missing] && this.state.refIds[missing].error
         const missingName = missing === 'cruise_id' ? 'cruise ID' : missing && `${missing.slice(4)} ID`
@@ -660,9 +672,33 @@ class EventTemplateOptionsModal extends Component {
           return null
         }
 
+        // A value with placeholders is shown filled in; it's sent as is and
+        // the server fills it in on save
+        const raw = (formValues && formValues[`option_${index}`]) || ''
+        if (option.event_option_vocab || !placeholders(raw).length) {
+          return (
+            <div key={`event_options.option_${index}`}>
+              <Field name={`event_options.option_${index}`} component={renderStaticTextField} label={option.event_option_name} />
+            </div>
+          )
+        }
+
+        const { value, missing } = this.resolveText(raw)
+        // A missing ID of the template's own sequence field is explained there
+        const error = missing && this.state.refIds[missing] && this.state.refIds[missing].error
+        const missingName = missing === 'cruise_id' ? 'cruise ID' : missing && `${missing.slice(4)} ID`
         return (
           <div key={`event_options.option_${index}`}>
-            <Field name={`event_options.option_${index}`} component={renderStaticTextField} label={option.event_option_name} />
+            <Field
+              name={`event_options.option_${index}`}
+              component={renderStaticTextField}
+              label={option.event_option_name}
+              format={() => value || ''}
+            />
+            <Form.Text className={`d-block pb-2 ${error ? 'text-danger' : 'text-muted'}`}>
+              {value && `Filled in with ${describePlaceholders(raw)} when you submit.`}
+              {error && `No ${missingName} to fill in (${error}), so ${option.event_option_name} will be left out.`}
+            </Form.Text>
           </div>
         )
       }

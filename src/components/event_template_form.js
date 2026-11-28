@@ -122,13 +122,18 @@ const optionSummary = (option, sequences) => {
 
 const hasErrors = (errors) => Boolean(errors) && (typeof errors === 'string' || Object.values(errors).some((value) => hasErrors(value)))
 
-// A text option's default value, which can hold placeholders filled in for
-// each event: a sequence's ID, the cruise and the date (sealog-server
-// lib/sequences.js)
+// A text option's default value, or a static text option's value, which can
+// hold placeholders filled in for each event: a sequence's ID, the cruise
+// and the date (sealog-server lib/sequences.js). With brief, only unknown
+// sequences are noted.
 const renderTextDefaultField = (field) => {
-  const { input, sequences } = field
+  const { input, sequences, brief } = field
   const unknown = sequences.length ? sequenceRefs(input.value).filter((name) => !sequences.some((sequence) => sequence.name === name)) : []
   const example = sequences.length ? sequences[0].name : 'name'
+
+  if (brief && !unknown.length) {
+    return renderTextField(field)
+  }
 
   return (
     <div>
@@ -535,7 +540,16 @@ class EventTemplateForm extends Component {
                     lg={11}
                   />
                 ) : (
-                  <Field name={`${path}[${e}].value`} component={renderTextField} label='Use text' required={true} sm={11} lg={11} />
+                  <Col sm={11} lg={11} className='px-0'>
+                    <Field
+                      name={`${path}[${e}].value`}
+                      component={renderTextDefaultField}
+                      sequences={this.state.sequences}
+                      brief={true}
+                      label='Use text'
+                      required={true}
+                    />
+                  </Col>
                 )}
                 <Col sm={1} lg={1} className='pt-sm-4'>
                   <FontAwesomeIcon
@@ -683,7 +697,8 @@ class EventTemplateForm extends Component {
           <div>
             <Field
               name={`${prefix}.event_option_default_value`}
-              component={renderTextField}
+              component={renderTextDefaultField}
+              sequences={this.state.sequences}
               label={(this.props.event_options[index].event_option_static_values || []).length ? 'Otherwise, value' : 'Value'}
               required={!(this.props.event_options[index].event_option_static_values || []).length}
             />
