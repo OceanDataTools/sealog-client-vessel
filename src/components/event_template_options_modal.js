@@ -117,6 +117,49 @@ class EventTemplateOptionsModal extends Component {
     if (this.sequenceFieldValues() !== this.textPrefilledFrom) {
       this.prefillTextFields()
     }
+
+    // Static text picked by condition follows the values chosen
+    if (this.staticValues() !== this.staticApplied) {
+      this.applyStaticValues()
+    }
+  }
+
+  // The value a static text option shows with the values chosen: the first
+  // of its values by condition whose conditions match, else its own
+  staticValue(option) {
+    const picked = (option.event_option_static_values || []).find((entry) => this.meetsConditions(entry.when))
+    return picked ? picked.value || '' : option.event_option_default_value || ''
+  }
+
+  // The values of the static text options picked by condition, as a string to compare
+  staticValues() {
+    const { eventTemplate } = this.props
+    if (!eventTemplate) {
+      return ''
+    }
+
+    return eventTemplate.event_options
+      .map((option) => ((option.event_option_static_values || []).length ? this.staticValue(option) : ''))
+      .join('\n')
+  }
+
+  applyStaticValues() {
+    if (this.finalized) {
+      return
+    }
+
+    this.staticApplied = this.staticValues()
+    this.props.eventTemplate.event_options.forEach((option, index) => {
+      if (!(option.event_option_static_values || []).length) {
+        return
+      }
+
+      const value = this.staticValue(option)
+      const current = this.props.formValues ? this.props.formValues[`option_${index}`] : undefined
+      if (value !== (current || '')) {
+        this.props.change(`event_options.option_${index}`, value)
+      }
+    })
   }
 
   // The template's sequence option taking its ID from the named sequence
@@ -612,6 +655,11 @@ class EventTemplateOptionsModal extends Component {
       }
 
       if (option.event_option_type === 'static text') {
+        // Nothing to show when no value by condition applies and it has none of its own
+        if ((option.event_option_static_values || []).length && !(formValues && formValues[`option_${index}`])) {
+          return null
+        }
+
         return (
           <div key={`event_options.option_${index}`}>
             <Field name={`event_options.option_${index}`} component={renderStaticTextField} label={option.event_option_name} />
