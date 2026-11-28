@@ -430,7 +430,7 @@ class VocabularyOptionField extends Component {
   }
 
   renderPreview(values) {
-    if (!this.vocab.terms && !values.length) {
+    if (!this.single && !this.vocab.terms && !values.length) {
       return (
         <Alert variant='warning' className='py-2 mb-2'>
           No terms of this vocabulary are shown on this server.
@@ -459,7 +459,8 @@ class VocabularyOptionField extends Component {
     if (this.collection() && !this.state.terms) {
       body = <small className='text-muted'>Loading terms…</small>
     } else if (this.state.terms) {
-      const values = resolveValues(this.vocab, this.state.terms)
+      // Static text without a term of its own (it picks one by condition) has no value
+      const values = this.single && !this.vocab.terms ? [] : resolveValues(this.vocab, this.state.terms)
       body = (
         <React.Fragment>
           {this.renderProblems()}

@@ -18,6 +18,7 @@ import {
 } from './form_elements'
 import VocabularyOptionField, { clearVocabularyCache, VOCABULARY_OPTION_TYPES } from './vocabulary_option_field'
 import VisibilityValuesField, { asList } from './visibility_values_field'
+import TermSelectField from './term_select_field'
 import { get_sequences } from '../api'
 import { sequenceExample, sequenceRefs } from '../sequences'
 import * as mapDispatchToProps from '../actions'
@@ -97,6 +98,15 @@ const optionSummary = (option, sequences) => {
     parts.push(
       option.event_option_type === 'static text' ? option.event_option_default_value : `default ${option.event_option_default_value}`
     )
+  }
+
+  if (option.event_option_type === 'static text') {
+    ;(option.event_option_static_values || []).forEach((entry) => {
+      const when = (entry.when || [])
+        .map((condition) => `${condition.event_option_name || '?'} = ${asList(condition.event_option_values).join('/') || '?'}`)
+        .join(', ')
+      parts.push(`${entry.value || entry.term || '?'} if ${when || '?'}`)
+    })
   }
 
   if (isConditional(option)) {
@@ -268,6 +278,34 @@ class EventTemplateForm extends Component {
         delete event_option.event_option_sequences
       }
 
+      // Values static text picks by condition: a term each with a
+      // vocabulary, else a value
+      if (event_option.event_option_type === 'static text') {
+        const vocab = event_option.event_option_vocab
+        const entries = (event_option.event_option_static_values || [])
+          .filter((entry) => entry && (vocab ? entry.term : entry.value))
+          .map((entry) => ({
+            ...(vocab ? { term: entry.term } : { value: entry.value }),
+            when: (entry.when || [])
+              .filter((condition) => condition && condition.event_option_name)
+              .map((condition) => ({
+                event_option_name: condition.event_option_name,
+                event_option_values: asList(condition.event_option_values)
+              }))
+          }))
+        if (entries.length) {
+          event_option.event_option_static_values = entries
+          // Its own term can be left out then
+          if (vocab && vocab.terms && !vocab.terms.length) {
+            event_option.event_option_vocab = { collection: vocab.collection }
+          }
+        } else {
+          delete event_option.event_option_static_values
+        }
+      } else {
+        delete event_option.event_option_static_values
+      }
+
       // The server fills in the values of vocabulary options
       if (!event_option.event_option_vocab || !VOCABULARY_OPTION_TYPES.includes(event_option.event_option_type)) {
         delete event_option.event_option_vocab
@@ -340,6 +378,7 @@ class EventTemplateForm extends Component {
           <div className={this.props.event_options[index].event_option_vocab ? 'd-none' : undefined}>
             {this.renderValueOptions(prefix, index)}
           </div>
+          {this.props.event_options[index].event_option_type === 'static text' && this.renderStaticChoices(prefix, index)}
         </React.Fragment>
       )
     }
@@ -465,6 +504,92 @@ class EventTemplateForm extends Component {
     )
   }
 
+  // Values a static text option shows by condition: the first whose
+  // conditions all match, else its own value or term above
+  renderStaticChoices(prefix, index) {
+    const option = this.props.event_options[index]
+    const entries = option.event_option_static_values || []
+    const vocab = option.event_option_vocab
+    const path = `${prefix}.event_option_static_values`
+
+    return (
+      <Row>
+        <Col xs={12} className='pb-2'>
+          <Form.Label className='mb-0'>Pick the {vocab ? 'term' : 'text'} by condition</Form.Label>{' '}
+          <small className='text-muted'>
+            {entries.length
+              ? `the first whose conditions all match; otherwise the ${vocab ? 'term' : 'value'} above.`
+              : 'optional, e.g. a different instrument for each cast type.'}
+          </small>
+          {entries.map((entry, e) => (
+            <div key={`${path}_${e}`} className='border rounded px-2 pt-1 mb-2'>
+              <Row className='align-items-start'>
+                {vocab ? (
+                  <Field
+                    name={`${path}[${e}].term`}
+                    component={TermSelectField}
+                    collection={vocab.collection}
+                    revision={this.state.vocabularyRevision}
+                    label='Use term'
+                    sm={11}
+                    lg={11}
+                  />
+                ) : (
+                  <Field name={`${path}[${e}].value`} component={renderTextField} label='Use text' required={true} sm={11} lg={11} />
+                )}
+                <Col sm={1} lg={1} className='pt-sm-4'>
+                  <FontAwesomeIcon
+                    className='text-danger'
+                    icon='times'
+                    fixedWidth
+                    role='button'
+                    title='Remove this value'
+                    onClick={() =>
+                      this.props.change(
+                        path,
+                        entries.filter((item, i) => i !== e)
+                      )
+                    }
+                  />
+                </Col>
+                <Col xs={12} className='pb-1'>
+                  <Form.Label className='mb-0'>when</Form.Label> {/* Registered so its error (no conditions) keeps the form invalid */}
+                  <Field name={`${path}[${e}].when`} component={renderConditionsNote} />
+                  {this.renderConditionRows(index, `${path}[${e}].when`, entry.when || [])}
+                </Col>
+              </Row>
+            </div>
+          ))}
+          <div>
+            <span
+              className='text-primary small'
+              role='button'
+              onClick={() =>
+                this.props.change(path, [
+                  ...entries,
+                  { ...(vocab ? { term: '' } : { value: '' }), when: [{ event_option_name: '', event_option_values: [] }] }
+                ])
+              }
+            >
+              <FontAwesomeIcon icon='plus' fixedWidth /> Add {vocab ? 'term' : 'text'} by condition
+            </span>
+          </div>
+          {entries.length > 0 && vocab && vocab.terms && vocab.terms.length > 0 && (
+            <div>
+              <span
+                className='text-primary small'
+                role='button'
+                onClick={() => this.props.change(`${prefix}.event_option_vocab`, { collection: vocab.collection, terms: [] })}
+              >
+                <FontAwesomeIcon icon='times' fixedWidth /> Clear the term above (no value when no condition matches)
+              </span>
+            </div>
+          )}
+        </Col>
+      </Row>
+    )
+  }
+
   // When the option takes a new ID: conditions on the template's other
   // options, all of which must match; otherwise the current ID is reused
   renderSequenceConditions(prefix, index) {
@@ -556,7 +681,12 @@ class EventTemplateForm extends Component {
       if (this.props.event_options[index].event_option_type === 'static text') {
         return (
           <div>
-            <Field name={`${prefix}.event_option_default_value`} component={renderTextField} label='Value' required={true} />
+            <Field
+              name={`${prefix}.event_option_default_value`}
+              component={renderTextField}
+              label={(this.props.event_options[index].event_option_static_values || []).length ? 'Otherwise, value' : 'Value'}
+              required={!(this.props.event_options[index].event_option_static_values || []).length}
+            />
           </div>
         )
       } else if (this.props.event_options[index].event_option_type === 'text') {
@@ -647,11 +777,13 @@ class EventTemplateForm extends Component {
           this.props.change(`event_options[${i}].event_option_sequence_new_when[${c}].event_option_name`, to)
         }
       })
-      ;(option.event_option_sequences || []).forEach((entry, e) => {
-        ;((entry && entry.when) || []).forEach((condition, c) => {
-          if (condition && condition.event_option_name === from) {
-            this.props.change(`event_options[${i}].event_option_sequences[${e}].when[${c}].event_option_name`, to)
-          }
+      ;['event_option_sequences', 'event_option_static_values'].forEach((field) => {
+        ;(option[field] || []).forEach((entry, e) => {
+          ;((entry && entry.when) || []).forEach((condition, c) => {
+            if (condition && condition.event_option_name === from) {
+              this.props.change(`event_options[${i}].${field}[${e}].when[${c}].event_option_name`, to)
+            }
+          })
         })
       })
     })
@@ -1047,8 +1179,11 @@ const validate = (formProps) => {
       if (vocab) {
         if (!vocab.collection) {
           event_optionErrors.event_option_vocab = 'Choose a vocabulary'
-        } else if (event_option.event_option_type === 'static text' && (!vocab.terms || vocab.terms.length !== 1)) {
-          event_optionErrors.event_option_vocab = 'Pick a term'
+        } else if (event_option.event_option_type === 'static text') {
+          // Its own term is optional when it picks one by condition
+          if ((!vocab.terms || vocab.terms.length !== 1) && !(event_option.event_option_static_values || []).length) {
+            event_optionErrors.event_option_vocab = 'Pick a term'
+          }
         } else if (vocab.terms && !vocab.terms.length) {
           event_optionErrors.event_option_vocab = 'Tick at least one term, or use all shown terms'
         }
@@ -1133,10 +1268,35 @@ const validate = (formProps) => {
         event_optionErrors.event_option_sequences = entryErrors
       }
 
-      if (event_option.event_option_type === 'static text' && !vocab) {
+      const staticEntries = (event_option.event_option_type === 'static text' && event_option.event_option_static_values) || []
+
+      if (event_option.event_option_type === 'static text' && !vocab && !staticEntries.length) {
         if (!event_option.event_option_default_value || event_option.event_option_default_value.trim() === '') {
           event_optionErrors.event_option_default_value = 'Required'
         }
+      }
+
+      const staticErrors = staticEntries.map((entry) => {
+        const entryError = {}
+        if (vocab && (!entry || !entry.term)) {
+          entryError.term = 'Choose a term'
+        } else if (!vocab && (!entry || !entry.value || !entry.value.trim())) {
+          entryError.value = 'Required'
+        }
+        const when = (entry && entry.when) || []
+        if (when.length) {
+          const errors = conditionErrors(when)
+          if (errors) {
+            entryError.when = errors
+          }
+        } else {
+          // Shown by the entry itself
+          entryError.when = 'Add at least one condition'
+        }
+        return entryError
+      })
+      if (staticErrors.some((entryError) => Object.keys(entryError).length)) {
+        event_optionErrors.event_option_static_values = staticErrors
       }
 
       if (event_option.event_option_visibility && ['show if', 'hide if'].includes(event_option.event_option_visibility.show_hide)) {
